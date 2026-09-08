@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --safran: #c45c14;
+  --safran-dark: #8a3a0a;
+  --maroon: #6b1d1d;
+  --cream: #f6efe4;
+  --ink: #1c1410;
+  --paper: #fffaf3;
+  --muted: #6f6258;
+}
+
+@theme inline {
+  --color-safran: var(--safran);
+  --color-safran-dark: var(--safran-dark);
+  --color-maroon: var(--maroon);
+  --color-cream: var(--cream);
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-dm-sans);
+  --font-serif: var(--font-playfair);
+  --animate-spin-slow: spin 22s linear infinite;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--safran) 35%, white);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
