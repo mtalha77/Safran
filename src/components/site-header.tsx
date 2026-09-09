@@ -6,7 +6,8 @@ import { usePathname } from "next/navigation";
 
 const nav = [
   { href: "/speisekarte", label: "Speisekarte" },
-  { href: "/kasse", label: "Kasse" },
+  { href: "/#ueber-uns", label: "Über uns" },
+  { href: "/#kontakt", label: "Kontakt" },
 ];
 
 export function SiteHeader() {
@@ -25,48 +26,50 @@ export function SiteHeader() {
 
   return (
     <header
-      className={`fixed z-50 transition-[top,padding,left] duration-300 ${
+      className={`fixed inset-x-0 z-50 transition-[top,padding] duration-300 ${
         floating
-          ? onHero
-            ? "inset-x-0 top-4 px-4 md:left-[72px]"
-            : "inset-x-0 top-4 px-4"
-          : "inset-x-0 top-0 px-0 md:left-[72px]"
+          ? "top-4 px-4"
+          : "top-0 px-0"
       }`}
     >
       <div
-        className={`mx-auto flex max-w-7xl items-center justify-between px-7 py-4 transition-all duration-300 ${
-          floating ? "rounded-2xl bg-cream shadow-lg" : "bg-transparent"
+        className={`mx-auto flex max-w-[1440px] items-center justify-between px-5 transition-all duration-300 sm:px-8 lg:px-[54px] ${
+          floating
+            ? "rounded-2xl bg-cream py-2 shadow-lg"
+            : "border-b border-white/20 bg-transparent py-4"
         }`}
       >
         <Link
           href="/"
-          className={`font-serif text-2xl ${
+          className={`font-serif text-[34px] leading-none ${
             floating ? "text-sage" : "text-white"
           }`}
         >
           Safran
         </Link>
-        <div className="flex items-center gap-7">
-          <nav
-            className={`flex items-center gap-7 text-sm font-medium ${
-              floating ? "text-sage" : "text-white/90"
-            }`}
-          >
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="transition hover:text-sage-dark"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+        <nav
+          className={`absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 text-base font-medium md:flex ${
+            floating ? "text-sage" : "text-white/90"
+          }`}
+        >
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition hover:text-sage-dark"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="flex items-center">
           <Link
             href="/speisekarte"
-            className="rounded-full bg-sage px-5 py-2 text-sm font-semibold text-cream transition hover:bg-sage-dark"
+            className={`rounded-full bg-sage px-5 text-xs font-semibold text-white transition hover:bg-sage-dark sm:px-7 ${
+              floating ? "py-2" : "py-3"
+            }`}
           >
-            Order now
+            Jetzt bestellen
           </Link>
         </div>
       </div>
