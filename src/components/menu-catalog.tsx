@@ -1,0 +1,256 @@
+"use client";
+
+import Image from "next/image";
+import { useMemo, useState } from "react";
+import { useCart } from "@/components/cart-provider";
+import { menuCategories } from "@/data/menu";
+
+function SearchIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5 fill-none stroke-current"
+      aria-hidden
+    >
+      <circle cx="11" cy="11" r="6.5" strokeWidth="1.7" />
+      <path d="m16 16 4 4" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function formatPrice(price: number) {
+  return new Intl.NumberFormat("de-CH", {
+    style: "currency",
+    currency: "CHF",
+  }).format(price);
+}
+
+export function MenuCatalog() {
+  const [query, setQuery] = useState("");
+  const { items: cartItems, addItem, updateQuantity } = useCart();
+
+  const visibleCategories = useMemo(() => {
+    const normalizedQuery = query.trim().toLocaleLowerCase("de-CH");
+    if (!normalizedQuery) return menuCategories;
+
+    return menuCategories
+      .map((category) => ({
+        ...category,
+        items: category.items.filter((item) =>
+          [
+            item.name,
+            item.descriptionDe,
+            item.descriptionEn,
+            category.title,
+            category.subtitle,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLocaleLowerCase("de-CH")
+            .includes(normalizedQuery),
+        ),
+      }))
+      .filter((category) => category.items.length > 0);
+  }, [query]);
+
+  return (
+    <>
+      <div className="border-b border-ink/10 bg-paper px-5 py-8 sm:px-8">
+        <div className="mx-auto max-w-7xl">
+          <label className="relative mx-auto block max-w-2xl">
+            <span className="sr-only">Gerichte suchen</span>
+            <span className="pointer-events-none absolute top-1/2 left-5 -translate-y-1/2 text-muted">
+              <SearchIcon />
+            </span>
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Gerichte oder Zutaten suchen …"
+              className="w-full rounded-full border border-ink/12 bg-white py-4 pr-6 pl-14 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/65 focus:border-sage focus:ring-2 focus:ring-sage/15"
+            />
+          </label>
+        </div>
+      </div>
+
+      {!query && (
+        <nav
+          aria-label="Menükategorien"
+          className="sticky top-[112px] z-30 border-b border-ink/10 bg-paper/95 shadow-sm backdrop-blur-md"
+        >
+          <div className="flex w-full gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] sm:px-8 lg:px-10 [&::-webkit-scrollbar]:hidden">
+            {menuCategories.map((category) => (
+              <a
+                key={category.id}
+                href={`#${category.id}`}
+                className="shrink-0 rounded-full border border-ink/10 bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-sage hover:bg-sage hover:text-white"
+              >
+                {category.title}
+              </a>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      <div className="bg-paper px-5 py-14 sm:px-8 sm:py-20">
+        <div className="mx-auto max-w-7xl space-y-20">
+          {visibleCategories.map((category) => (
+            <section
+              key={category.id}
+              id={category.id}
+              className="scroll-mt-44 [content-visibility:auto] [contain-intrinsic-size:auto_700px]"
+            >
+              <div className="mb-8 border-b border-sage/30 pb-6">
+                <div className="flex items-end justify-between gap-5">
+                  <div>
+                    <p className="text-[10px] font-semibold tracking-[0.28em] text-sage uppercase">
+                      Safran Speisekarte
+                    </p>
+                    <h2 className="mt-2 font-serif text-4xl text-ink sm:text-5xl">
+                      {category.title}
+                    </h2>
+                    {category.subtitle && (
+                      <p className="mt-2 text-sm text-muted">
+                        {category.subtitle}
+                      </p>
+                    )}
+                  </div>
+                  <span className="hidden font-serif text-5xl text-sage/25 sm:block">
+                    {String(category.items[0]?.number ?? 0).padStart(2, "0")}
+                  </span>
+                </div>
+                {(category.noteDe || category.noteEn) && (
+                  <div className="mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-xs leading-5 text-sage-deep">
+                    {category.noteDe && <p>{category.noteDe}</p>}
+                    {category.noteEn && (
+                      <p className="text-muted">{category.noteEn}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-4 lg:grid-cols-2">
+                {category.items.map((item) => {
+                  const cartId = `menu-${item.number}`;
+                  const cartItem = cartItems.find(
+                    (currentItem) => currentItem.id === cartId,
+                  );
+
+                  return (
+                    <article
+                      key={item.number}
+                      className="group flex min-h-52 flex-col overflow-hidden rounded-3xl border border-ink/8 bg-white p-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-sage/40 hover:shadow-lg sm:flex-row sm:p-4"
+                    >
+                      <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-2xl bg-sage/10 sm:w-44">
+                        <Image
+                          src={`/images/menu/items/${String(item.number).padStart(3, "0")}.webp`}
+                          alt={item.name}
+                          fill
+                          sizes="(max-width: 640px) calc(100vw - 64px), 176px"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span className="absolute top-3 left-3 rounded-full bg-ink/80 px-3 py-1 font-serif text-sm text-sage backdrop-blur-sm">
+                          {String(item.number).padStart(2, "0")}.
+                        </span>
+                      </div>
+
+                      <div className="flex min-w-0 flex-1 flex-col px-2 pt-5 pb-2 sm:py-2 sm:pr-2 sm:pl-5">
+                        <h3 className="font-serif text-xl leading-6 text-ink sm:text-2xl">
+                          {item.name}
+                        </h3>
+                        {item.descriptionDe && (
+                          <p className="mt-3 text-sm leading-6 text-muted">
+                            {item.descriptionDe}
+                          </p>
+                        )}
+                        {item.descriptionEn && (
+                          <p className="mt-1 text-xs leading-5 text-muted/70">
+                            {item.descriptionEn}
+                          </p>
+                        )}
+
+                        <div className="mt-auto flex items-center justify-between gap-4 pt-6">
+                          <p className="font-serif text-xl text-sage-deep">
+                            {formatPrice(item.price)}
+                          </p>
+
+                          {cartItem ? (
+                            <div className="flex items-center rounded-full border border-sage/40 bg-sage/8">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateQuantity(
+                                    cartId,
+                                    cartItem.quantity - 1,
+                                  )
+                                }
+                                aria-label={`${item.name} einmal weniger`}
+                                className="flex h-10 w-10 items-center justify-center text-lg text-sage-deep transition hover:text-sage"
+                              >
+                                −
+                              </button>
+                              <span className="min-w-8 text-center text-sm font-semibold">
+                                {cartItem.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  updateQuantity(
+                                    cartId,
+                                    cartItem.quantity + 1,
+                                  )
+                                }
+                                aria-label={`${item.name} einmal mehr`}
+                                className="flex h-10 w-10 items-center justify-center text-lg text-sage-deep transition hover:text-sage"
+                              >
+                                +
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                addItem({
+                                  id: cartId,
+                                  name: item.name,
+                                  price: item.price,
+                                  details: category.title,
+                                })
+                              }
+                              className="inline-flex items-center gap-2 rounded-full bg-sage px-5 py-3 text-xs font-semibold text-white transition hover:bg-sage-dark"
+                            >
+                              <span className="text-lg leading-none">+</span>
+                              Hinzufügen
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+
+          {!visibleCategories.length && (
+            <div className="py-24 text-center">
+              <p className="font-serif text-3xl text-ink">
+                Kein Gericht gefunden
+              </p>
+              <p className="mt-3 text-sm text-muted">
+                Versuchen Sie einen anderen Suchbegriff.
+              </p>
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="mt-6 rounded-full bg-sage px-6 py-3 text-sm font-semibold text-white transition hover:bg-sage-dark"
+              >
+                Suche zurücksetzen
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

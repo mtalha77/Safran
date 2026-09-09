@@ -3,6 +3,7 @@ import { Amiri, DM_Sans, Playfair_Display } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { StoreStatusBanner } from "@/components/store-status-banner";
+import { CartProvider } from "@/components/cart-provider";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -45,12 +46,14 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`${playfair.variable} ${dmSans.variable} ${amiri.variable} min-h-screen bg-paper font-sans text-ink antialiased`}
       >
-        <div className="flex min-h-screen flex-col">
-          <StoreStatusBanner />
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-          <SiteFooter />
-        </div>
+        <CartProvider>
+          <div className="flex min-h-screen flex-col">
+            <StoreStatusBanner />
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+          </div>
+        </CartProvider>
       </body>
     </html>
   );

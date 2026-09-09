@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useCart } from "@/components/cart-provider";
 
 const nav = [
   { href: "/speisekarte", label: "Speisekarte" },
@@ -10,8 +11,26 @@ const nav = [
   { href: "/#kontakt", label: "Kontakt" },
 ];
 
+function CartIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-[19px] w-[19px] fill-none stroke-current"
+      aria-hidden
+    >
+      <path
+        d="M3.5 4.5h2l1.8 10.1a2 2 0 0 0 2 1.7h7.8a2 2 0 0 0 1.9-1.5l1.2-6.5H6.4M9.5 20a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm9 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function SiteHeader() {
   const pathname = usePathname();
+  const { itemCount } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -94,8 +113,24 @@ export function SiteHeader() {
             </span>
           </button>
           <Link
+            href="/kasse"
+            aria-label={`Warenkorb, ${itemCount} Artikel`}
+            className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-sage hover:bg-sage hover:text-white ${
+              floating
+                ? "border-sage/35 text-sage"
+                : "border-white/40 text-white"
+            }`}
+          >
+            <CartIcon />
+            {itemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-sage px-1 text-[10px] font-bold leading-none text-white ring-2 ring-ink">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
+            )}
+          </Link>
+          <Link
             href="/speisekarte"
-            className={`rounded-full bg-sage px-5 text-xs font-semibold text-white transition hover:bg-sage-dark sm:px-7 ${
+            className={`hidden rounded-full bg-sage px-5 text-xs font-semibold text-white transition hover:bg-sage-dark sm:inline-flex sm:px-7 ${
               floating ? "py-2" : "py-3"
             }`}
           >
