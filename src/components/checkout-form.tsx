@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 
 type Fulfillment = "delivery" | "pickup";
-type Payment = "online" | "cash";
 
 const inputClass =
   "mt-2 w-full rounded-xl border border-ink/12 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-sage focus:ring-2 focus:ring-sage/15";
@@ -35,18 +35,93 @@ function BagIcon() {
 }
 
 export function CheckoutForm() {
-  const { items, itemCount, subtotal, updateQuantity, removeItem } = useCart();
+  const router = useRouter();
+  const {
+    items,
+    itemCount,
+    subtotal,
+    updateQuantity,
+    removeItem,
+    clearCart,
+  } = useCart();
   const [fulfillment, setFulfillment] = useState<Fulfillment>("delivery");
-  const [payment, setPayment] = useState<Payment>("online");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [idempotencyKey, setIdempotencyKey] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!items.length || !acceptedPolicy) return;
-    setNotice(
-      "Die Bestellübermittlung und Zahlung werden im nächsten Schritt angebunden.",
-    );
+    if (!items.length || !acceptedPolicy || submitting) return;
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const key =
+      idempotencyKey ||
+      (typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `${Date.now()}_${Math.random().toString(36).slice(2)}`);
+    setIdempotencyKey(key);
+    setSubmitting(true);
+    setNotice("");
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": key,
+        },
+        body: JSON.stringify({
+          idempotencyKey: key,
+          fulfillment,
+          paymentMethod: "cash",
+          acceptedNoCancellation: acceptedPolicy,
+          customer: {
+            firstName: formData.get("firstName"),
+            lastName: formData.get("lastName"),
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+          },
+          address:
+            fulfillment === "delivery"
+              ? {
+                  street: formData.get("street"),
+                  houseNumber: formData.get("houseNumber"),
+                  postalCode: formData.get("postalCode"),
+                  city: formData.get("city"),
+                }
+              : undefined,
+          notes: formData.get("notes"),
+          items: items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            details: item.details,
+          })),
+        }),
+      });
+      const result = (await response.json()) as {
+        confirmationToken?: string;
+        message?: string;
+      };
+      if (!response.ok || !result.confirmationToken) {
+        throw new Error(
+          result.message || "Die Bestellung konnte nicht gesendet werden.",
+        );
+      }
+
+      clearCart();
+      router.push(`/bestellung/${result.confirmationToken}`);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : "Die Bestellung konnte nicht gesendet werden.",
+      );
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -202,47 +277,45 @@ export function CheckoutForm() {
           <legend className="sr-only">Zahlung</legend>
           <h2 className="font-serif text-2xl text-ink">Zahlung</h2>
           <div className="mt-3 space-y-3">
-            {[
-              {
-                value: "online" as const,
-                title: "Online bezahlen",
-                description: "Karte oder TWINT",
-              },
-              {
-                value: "cash" as const,
-                title:
-                  fulfillment === "delivery"
+            <label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-sage bg-sage/8 p-4">
+              <input
+                type="radio"
+                name="payment"
+                value="cash"
+                checked
+                readOnly
+                className="h-4 w-4 accent-sage"
+              />
+              <span>
+                <span className="block text-sm font-semibold">
+                  {fulfillment === "delivery"
                     ? "Bar bei Lieferung"
-                    : "Bar bei Abholung",
-                description: "Direkt beim Erhalt bezahlen",
-              },
-            ].map((option) => (
-              <label
-                key={option.value}
-                className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${
-                  payment === option.value
-                    ? "border-sage bg-sage/8"
-                    : "border-ink/10 hover:border-sage/50"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="payment"
-                  value={option.value}
-                  checked={payment === option.value}
-                  onChange={() => setPayment(option.value)}
-                  className="h-4 w-4 accent-sage"
-                />
-                <span>
-                  <span className="block text-sm font-semibold">
-                    {option.title}
-                  </span>
-                  <span className="mt-0.5 block text-xs text-muted">
-                    {option.description}
-                  </span>
+                    : "Bar bei Abholung"}
                 </span>
-              </label>
-            ))}
+                <span className="mt-0.5 block text-xs text-muted">
+                  Direkt beim Erhalt bezahlen
+                </span>
+              </span>
+            </label>
+            <div
+              aria-disabled="true"
+              className="flex items-center gap-4 rounded-2xl border border-ink/10 bg-ink/[0.02] p-4 opacity-55"
+            >
+              <input
+                type="radio"
+                disabled
+                aria-label="Online bezahlen – derzeit nicht verfügbar"
+                className="h-4 w-4"
+              />
+              <span>
+                <span className="block text-sm font-semibold">
+                  Online bezahlen
+                </span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  Karte und TWINT – derzeit nicht verfügbar
+                </span>
+              </span>
+            </div>
           </div>
         </fieldset>
 
@@ -259,7 +332,7 @@ export function CheckoutForm() {
       <aside className="rounded-3xl bg-ink p-5 text-cream shadow-xl sm:p-7 lg:sticky lg:top-32">
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-3xl text-white">Ihre Bestellung</h2>
-          <span className="rounded-full bg-sage/15 px-3 py-1 text-xs text-sage">
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-cream">
             {itemCount} Artikel
           </span>
         </div>
@@ -279,7 +352,7 @@ export function CheckoutForm() {
                       </p>
                     )}
                   </div>
-                  <p className="shrink-0 text-sm text-sage">
+                  <p className="shrink-0 text-sm text-cream">
                     {formatCurrency(item.price * item.quantity)}
                   </p>
                 </div>
@@ -291,7 +364,7 @@ export function CheckoutForm() {
                         updateQuantity(item.id, item.quantity - 1)
                       }
                       aria-label={`${item.name} einmal weniger`}
-                      className="flex h-8 w-8 items-center justify-center text-cream/70 transition hover:text-sage"
+                      className="flex h-8 w-8 items-center justify-center text-cream/70 transition hover:text-white"
                     >
                       −
                     </button>
@@ -304,7 +377,7 @@ export function CheckoutForm() {
                         updateQuantity(item.id, item.quantity + 1)
                       }
                       aria-label={`${item.name} einmal mehr`}
-                      className="flex h-8 w-8 items-center justify-center text-cream/70 transition hover:text-sage"
+                      className="flex h-8 w-8 items-center justify-center text-cream/70 transition hover:text-white"
                     >
                       +
                     </button>
@@ -312,7 +385,7 @@ export function CheckoutForm() {
                   <button
                     type="button"
                     onClick={() => removeItem(item.id)}
-                    className="text-xs text-cream/45 underline-offset-4 transition hover:text-sage hover:underline"
+                    className="text-xs text-cream/45 underline-offset-4 transition hover:text-white hover:underline"
                   >
                     Entfernen
                   </button>
@@ -322,7 +395,7 @@ export function CheckoutForm() {
           </ul>
         ) : (
           <div className="mt-6 rounded-2xl border border-dashed border-white/15 px-5 py-9 text-center">
-            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-sage">
+            <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-white/5 text-cream">
               <BagIcon />
             </span>
             <p className="mt-4 text-sm font-semibold text-white">
@@ -333,7 +406,7 @@ export function CheckoutForm() {
             </p>
             <Link
               href="/speisekarte"
-              className="mt-5 inline-flex rounded-full border border-sage px-5 py-2.5 text-xs font-semibold text-sage transition hover:bg-sage hover:text-white"
+              className="mt-5 inline-flex rounded-full border border-cream/50 px-5 py-2.5 text-xs font-semibold text-cream transition hover:bg-sage hover:text-white"
             >
               Zur Speisekarte
             </Link>
@@ -378,12 +451,10 @@ export function CheckoutForm() {
 
         <button
           type="submit"
-          disabled={!items.length || !acceptedPolicy}
+          disabled={!items.length || !acceptedPolicy || submitting}
           className="mt-6 w-full rounded-full bg-sage px-6 py-4 text-sm font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {payment === "online"
-            ? "Weiter zur Zahlung"
-            : "Zahlungspflichtig bestellen"}
+          {submitting ? "Bestellung wird gesendet…" : "Zahlungspflichtig bestellen"}
         </button>
 
         {notice && (

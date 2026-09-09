@@ -1,18 +1,32 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getStoreStatus, type StoreStatus } from "@/lib/store-status";
+import { useRouter } from "next/navigation";
+import {
+  getStoreStatus,
+  type StoreStatusConfig,
+} from "@/lib/store-status";
 
-export function StoreStatusBanner() {
-  const [status, setStatus] = useState<StoreStatus | null>(null);
+export function StoreStatusBanner({
+  config,
+}: {
+  config: StoreStatusConfig;
+}) {
+  const router = useRouter();
+  const [now, setNow] = useState(() => Date.now());
+  const status = getStoreStatus(config, new Date(now));
 
   useEffect(() => {
-    setStatus(getStoreStatus());
-    const id = setInterval(() => setStatus(getStoreStatus()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-
-  if (!status) return null;
+    const statusTimer = setInterval(
+      () => setNow(Date.now()),
+      60_000,
+    );
+    const dataTimer = setInterval(() => router.refresh(), 5 * 60_000);
+    return () => {
+      clearInterval(statusTimer);
+      clearInterval(dataTimer);
+    };
+  }, [router]);
 
   return (
     <div

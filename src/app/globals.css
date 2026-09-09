@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --sage: #8b9a6e;
-  --sage-dark: #6e7c55;
-  --sage-deep: #4f5a3c;
+  --sage: #2f0d29;
+  --sage-dark: #23091f;
+  --sage-deep: #1a0716;
+  --gold: #ebc37d;
+  --gold-dark: #d4a85f;
   --cream: #eae2d6;
   --paper: #f7f2eb;
-  --ink: #2b2e24;
-  --muted: #77796b;
+  --ink: #1c1018;
+  --muted: #6f6468;
 }
 
 @theme inline {
   --color-sage: var(--sage);
   --color-sage-dark: var(--sage-dark);
   --color-sage-deep: var(--sage-deep);
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
   --color-cream: var(--cream);
   --color-paper: var(--paper);
   --color-ink: var(--ink);
@@ -116,6 +120,131 @@ body {
 
 .flavor-marquee-reverse {
   animation: flavor-marquee-reverse 42s linear infinite;
+}
+
+.btn-fill {
+  --fill: #2f0d29;
+  --hover-color: #ffffff;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  isolation: isolate;
+  transition:
+    color 0.2s ease-in,
+    border-color 0.2s ease-in;
+}
+
+.btn-fill-inverse {
+  --fill: #ebc37d;
+  --hover-color: #2f0d29;
+}
+
+.btn-fill::before,
+.btn-fill::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  border-radius: 50%;
+  display: block;
+  z-index: -1;
+  transition:
+    top 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1),
+    transform 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1),
+    background-color 0.5s 0.1s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
+.btn-fill::before {
+  transform: translateX(-50%) scaleY(1) scaleX(1.25);
+  width: 140%;
+  height: 180%;
+  background-color: color-mix(in srgb, var(--fill) 12%, transparent);
+}
+
+.btn-fill::after {
+  left: 55%;
+  transform: translateX(-50%) scaleY(1) scaleX(1.45);
+  top: 180%;
+  width: 160%;
+  height: 190%;
+  background-color: var(--fill);
+}
+
+.btn-fill:hover {
+  color: var(--hover-color);
+  border-color: var(--fill);
+}
+
+.btn-fill:hover::before {
+  top: -35%;
+  background-color: var(--fill);
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+
+.btn-fill:hover::after {
+  top: -45%;
+  background-color: var(--fill);
+  transform: translateX(-50%) scaleY(1.3) scaleX(0.8);
+}
+
+.btn-cart {
+  position: relative;
+  display: flex;
+  height: 42px;
+  width: 148px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #eae2d6;
+}
+
+.btn-cart-face {
+  position: relative;
+  display: flex;
+  height: 42px;
+  width: 148px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 2px solid #2f0d29;
+  border-radius: 50px;
+  background-color: #2f0d29;
+  pointer-events: none;
+  transition: width 0.6s;
+}
+
+.btn-cart-face > span {
+  transform: translateX(10px);
+  transition: 0.5s;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.btn-cart svg {
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  transform: translateX(-220px);
+  transition: 0.6s;
+  z-index: 3;
+}
+
+.btn-cart:hover .btn-cart-face {
+  width: 42px;
+}
+
+.btn-cart:hover svg {
+  transform: translateX(0);
+}
+
+.btn-cart:hover .btn-cart-face > span {
+  transform: translateY(70px);
+  font-size: 0.1rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

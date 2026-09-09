@@ -2,31 +2,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
 
-type Category = {
+export type HomepageCategory = {
   name: string;
   subtitle: string;
   href: string;
   image: string;
 };
-
-const categories: Category[] = [
-  { name: "Vorspeisen", subtitle: "Starters", href: "/speisekarte#vorspeisen", image: "/images/menu/items/001.webp" },
-  { name: "Tandoori-Grillvorspeisen", subtitle: "From the Clay Oven", href: "/speisekarte#tandoori", image: "/images/menu/items/015.webp" },
-  { name: "Salate", subtitle: "Salads", href: "/speisekarte#salate", image: "/images/menu/items/017.webp" },
-  { name: "Brot", subtitle: "Breads from the Oven", href: "/speisekarte#brot", image: "/images/menu/items/023.webp" },
-  { name: "Vegetarische Gerichte", subtitle: "Vegetarian Specialities", href: "/speisekarte#vegetarisch", image: "/images/menu/items/038.webp" },
-  { name: "Gerichte mit Poulet", subtitle: "Chicken Specialities", href: "/speisekarte#poulet", image: "/images/menu/items/044.webp" },
-  { name: "Gerichte mit Lammfleisch", subtitle: "Lamb Specialities", href: "/speisekarte#lamm", image: "/images/menu/items/061.webp" },
-  { name: "Gerichte mit Rind", subtitle: "Beef Specialities", href: "/speisekarte#rind", image: "/images/menu/items/067.webp" },
-  { name: "Fisch & Crevetten", subtitle: "Fish & Seafood", href: "/speisekarte#fisch", image: "/images/menu/items/074.webp" },
-  { name: "Biryani", subtitle: "Aromatic Basmati Rice", href: "/speisekarte#biryani", image: "/images/menu/items/079.webp" },
-  { name: "Spezialmenü", subtitle: "Menus for Sharing", href: "/speisekarte#special-menu", image: "/images/menu/items/083.webp" },
-  { name: "Kindermenü", subtitle: "Kids Menu", href: "/speisekarte#kinder", image: "/images/menu/items/090.webp" },
-  { name: "Indische Nachspeisen", subtitle: "Desserts", href: "/speisekarte#desserts", image: "/images/menu/items/093.webp" },
-  { name: "Spezielle Beilagen", subtitle: "Extra Side Dishes", href: "/speisekarte#extras", image: "/images/menu/items/101.webp" },
-  { name: "Indische Getränke", subtitle: "Indian Beverages", href: "/speisekarte#indische-getraenke", image: "/images/menu/items/105.webp" },
-  { name: "Alkoholfreie Getränke", subtitle: "Soft Drinks", href: "/speisekarte#softdrinks", image: "/images/menu/items/116.webp" },
-];
 
 function ArrowIcon() {
   return (
@@ -36,12 +17,16 @@ function ArrowIcon() {
   );
 }
 
-export function MenuCategoriesSection() {
+export function MenuCategoriesSection({
+  categories,
+}: {
+  categories: HomepageCategory[];
+}) {
   return (
     <section className="w-full bg-ink py-20 [content-visibility:auto] [contain-intrinsic-size:auto_2300px] sm:py-28">
       <div className="mx-auto max-w-7xl px-5 text-center sm:px-8">
         <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full bg-sage/15 px-4 py-1.5 text-xs font-semibold tracking-[0.28em] text-sage uppercase">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-4 py-1.5 text-xs font-semibold tracking-[0.28em] text-cream uppercase">
             Entdecken Sie unsere Auswahl
           </span>
           <h2 className="mt-4 font-serif text-3xl text-cream sm:text-5xl">
@@ -83,7 +68,7 @@ export function MenuCategoriesSection() {
                 {category.subtitle}
               </span>
 
-              <span className="relative z-10 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-sage text-sage transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-sage group-hover:text-ink sm:h-12 sm:w-12">
+              <span className="relative z-10 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream/50 text-cream transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-sage group-hover:bg-sage group-hover:text-white sm:h-12 sm:w-12">
                 <ArrowIcon />
               </span>
             </Link>

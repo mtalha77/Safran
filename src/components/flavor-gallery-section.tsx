@@ -78,7 +78,7 @@ export function FlavorGallerySection() {
         aria-hidden
       />
       <div
-        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(43,46,36,0.94)_0%,rgba(43,46,36,0.82)_28%,rgba(43,46,36,0.2)_68%)]"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(47,13,41,0.94)_0%,rgba(47,13,41,0.82)_28%,rgba(47,13,41,0.2)_68%)]"
         aria-hidden
       />
       <div
@@ -89,7 +89,7 @@ export function FlavorGallerySection() {
       <div className="relative z-10 flex min-h-[436px] items-center justify-center px-5 text-center sm:min-h-[480px]">
         <Reveal className="blur-reveal">
           <div className="mx-auto max-w-3xl">
-            <p className="text-xs font-semibold tracking-[0.3em] text-sage uppercase">
+            <p className="text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
               Mit Liebe zubereitet
             </p>
             <h2 className="mt-5 font-serif text-5xl leading-[0.98] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
@@ -99,7 +99,7 @@ export function FlavorGallerySection() {
             </h2>
             <Link
               href="/speisekarte"
-              className="mt-9 inline-flex items-center gap-3 rounded-full border border-white/70 px-7 py-3.5 text-sm font-semibold text-white transition hover:border-sage hover:bg-sage hover:text-white"
+              className="btn-fill btn-fill-inverse mt-9 inline-flex items-center gap-3 rounded-full border border-white/70 px-4 py-2 text-sm font-extrabold text-white"
             >
               Speisekarte ansehen
               <ArrowIcon />

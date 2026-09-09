@@ -26,8 +26,8 @@ export function Reveal({
     ).matches;
 
     if (reducedMotion || !("IntersectionObserver" in window)) {
-      setVisible(true);
-      return;
+      const revealFrame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(revealFrame);
     }
 
     const observer = new IntersectionObserver(

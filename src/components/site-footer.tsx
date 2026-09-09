@@ -1,4 +1,9 @@
 import Link from "next/link";
+import type { StorefrontSettings } from "@/lib/storefront-data";
+import {
+  formatOpeningRanges,
+  type OpeningDay,
+} from "@/lib/store-status";
 
 const navigation = [
   { href: "/", label: "Startseite" },
@@ -7,7 +12,36 @@ const navigation = [
   { href: "/#kontakt", label: "Kontakt" },
 ];
 
-export function SiteFooter() {
+function groupedHours(hours: OpeningDay[]) {
+  const ordered = [...hours].sort(
+    (a, b) => ((a.day + 6) % 7) - ((b.day + 6) % 7),
+  );
+  const groups: Array<{ labels: string[]; ranges: OpeningDay["ranges"] }> = [];
+  for (const day of ordered) {
+    const key = JSON.stringify(day.ranges);
+    const previous = groups.at(-1);
+    if (previous && JSON.stringify(previous.ranges) === key) {
+      previous.labels.push(day.label);
+    } else {
+      groups.push({ labels: [day.label], ranges: day.ranges });
+    }
+  }
+  return groups;
+}
+
+function dayLabel(labels: string[]) {
+  return labels.length > 2
+    ? `${labels[0]} – ${labels.at(-1)}`
+    : labels.join(" & ");
+}
+
+export function SiteFooter({
+  settings,
+  hours,
+}: {
+  settings: StorefrontSettings;
+  hours: OpeningDay[];
+}) {
   return (
     <footer id="kontakt" className="overflow-hidden bg-ink text-cream">
       <div className="mx-auto max-w-7xl px-5 pt-16 pb-8 sm:px-8 sm:pt-20">
@@ -15,18 +49,17 @@ export function SiteFooter() {
           <div>
             <Link
               href="/"
-              className="font-serif text-5xl leading-none text-sage"
+              className="font-serif text-5xl leading-none text-cream"
             >
-              Safran
+              {settings.restaurantName}
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-7 text-cream/65">
-              Authentische indische Küche am Romanshorner Hafen – frisch
-              zubereitet, herzlich serviert und bequem nach Hause bestellt.
+              {settings.description}
             </p>
           </div>
 
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-sage uppercase">
+            <p className="text-xs font-semibold tracking-[0.24em] text-cream/70 uppercase">
               Entdecken
             </p>
             <nav className="mt-5 flex flex-col items-start gap-3">
@@ -34,7 +67,7 @@ export function SiteFooter() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-sm text-cream/65 transition hover:translate-x-1 hover:text-sage"
+                  className="text-sm text-cream/65 transition hover:translate-x-1 hover:text-white"
                 >
                   {item.label}
                 </Link>
@@ -43,45 +76,42 @@ export function SiteFooter() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-sage uppercase">
+            <p className="text-xs font-semibold tracking-[0.24em] text-cream/70 uppercase">
               Öffnungszeiten
             </p>
             <div className="mt-5 space-y-4 text-sm text-cream/65">
-              <div>
-                <p className="text-cream">Montag – Samstag</p>
-                <p className="mt-1">11:00 – 14:00 Uhr</p>
-                <p>17:00 – 22:30 Uhr</p>
-              </div>
-              <div>
-                <p className="text-cream">Sonntag</p>
-                <p className="mt-1">Geschlossen</p>
-              </div>
+              {groupedHours(hours).map((group) => (
+                <div key={group.labels.join("-")}>
+                  <p className="text-cream">{dayLabel(group.labels)}</p>
+                  <p className="mt-1">{formatOpeningRanges(group.ranges)}</p>
+                </div>
+              ))}
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold tracking-[0.24em] text-sage uppercase">
+            <p className="text-xs font-semibold tracking-[0.24em] text-cream/70 uppercase">
               Besuchen Sie uns
             </p>
             <address className="mt-5 space-y-4 text-sm leading-6 text-cream/65 not-italic">
               <p>
-                Hafenstrasse 31
-                <br />
-                8590 Romanshorn, Schweiz
+                {settings.addressLines.map((line) => (
+                  <span key={line} className="block">{line}</span>
+                ))}
               </p>
               <p>
                 <a
-                  href="tel:+41326235959"
-                  className="transition hover:text-sage"
+                  href={`tel:${settings.phone.replace(/[^\d+]/g, "")}`}
+                  className="transition hover:text-white"
                 >
-                  032 623 59 59
+                  {settings.phoneDisplay}
                 </a>
                 <br />
                 <a
-                  href="mailto:info@safran-solothurn.ch"
-                  className="break-all transition hover:text-sage"
+                  href={`mailto:${settings.email}`}
+                  className="break-all transition hover:text-white"
                 >
-                  info@safran-solothurn.ch
+                  {settings.email}
                 </a>
               </p>
             </address>

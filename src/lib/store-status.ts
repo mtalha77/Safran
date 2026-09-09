@@ -1,13 +1,14 @@
-// Weekly opening hours: Mon–Sat lunch + dinner, Sunday closed.
-// TODO: replace with a live read from the admin store-status toggle once it exists.
-const HOURS: Record<number, Array<[number, number]>> = {
-  1: [[11, 14], [17, 22.5]],
-  2: [[11, 14], [17, 22.5]],
-  3: [[11, 14], [17, 22.5]],
-  4: [[11, 14], [17, 22.5]],
-  5: [[11, 14], [17, 22.5]],
-  6: [[11, 14], [17, 22.5]],
-  0: [],
+export type OpeningDay = {
+  day: number;
+  label: string;
+  ranges: Array<[string, string]>;
+};
+
+export type StoreStatusConfig = {
+  timezone: string;
+  hours: OpeningDay[];
+  manualOverride: "auto" | "open" | "closed";
+  manualMessage?: string;
 };
 
 export type StoreStatus = {
@@ -15,16 +16,71 @@ export type StoreStatus = {
   label: string;
 };
 
-export function getStoreStatus(date: Date = new Date()): StoreStatus {
-  const day = date.getDay();
-  const hour = date.getHours() + date.getMinutes() / 60;
-  const ranges = HOURS[day] ?? [];
-  const open = ranges.some(([start, end]) => hour >= start && hour < end);
+function zonedParts(date: Date, timezone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const value = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  const weekdays: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+  return {
+    day: weekdays[value("weekday")] ?? 0,
+    minute: Number(value("hour")) * 60 + Number(value("minute")),
+  };
+}
+
+function timeToMinutes(time: string) {
+  const [hour = "0", minute = "0"] = time.split(":");
+  return Number(hour) * 60 + Number(minute);
+}
+
+export function formatOpeningRanges(ranges: OpeningDay["ranges"]) {
+  return ranges.length
+    ? ranges.map(([start, end]) => `${start}–${end}`).join(" & ")
+    : "Geschlossen";
+}
+
+export function getStoreStatus(
+  config: StoreStatusConfig,
+  date: Date = new Date(),
+): StoreStatus {
+  if (config.manualOverride !== "auto") {
+    const open = config.manualOverride === "open";
+    return {
+      open,
+      label:
+        config.manualMessage ??
+        (open ? "Heute ausnahmsweise geöffnet" : "Heute geschlossen"),
+    };
+  }
+
+  const { day, minute } = zonedParts(date, config.timezone);
+  const openingDay = config.hours.find((entry) => entry.day === day);
+  const ranges = openingDay?.ranges ?? [];
+  const open = ranges.some(
+    ([start, end]) =>
+      minute >= timeToMinutes(start) && minute < timeToMinutes(end),
+  );
+  const today = formatOpeningRanges(ranges);
 
   return {
     open,
     label: open
-      ? "Heute geöffnet · 11:00–14:00 & 17:00–22:30"
-      : "Heute geschlossen · Mo–Sa 11:00–14:00 & 17:00–22:30, So geschlossen",
+      ? `Heute geöffnet · ${today}`
+      : ranges.length
+        ? `Momentan geschlossen · Heute ${today}`
+        : "Heute geschlossen",
   };
 }

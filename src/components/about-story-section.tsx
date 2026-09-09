@@ -8,7 +8,7 @@ function FoodMark() {
   return (
     <svg
       viewBox="0 0 64 64"
-      className="h-14 w-14 fill-none stroke-sage"
+      className="h-14 w-14 fill-none stroke-cream"
       aria-hidden
     >
       <path
@@ -39,7 +39,7 @@ export function AboutStorySection() {
   return (
     <section
       id="ueber-uns"
-      className="relative isolate overflow-hidden bg-gradient-to-b from-ink via-[#25271f] to-sage-deep px-5 py-24 text-cream sm:px-8 sm:py-32"
+      className="relative isolate overflow-hidden bg-gradient-to-b from-ink via-[#24101f] to-sage-deep px-5 py-24 text-cream sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-7xl">
         <Reveal>
@@ -48,11 +48,11 @@ export function AboutStorySection() {
               Von bescheidenen Anfängen
             </h2>
             <div className="mt-5 flex items-center justify-center gap-4">
-              <span className="h-px w-12 bg-sage" />
+              <span className="h-px w-12 bg-cream/50" />
               <FoodMark />
-              <span className="h-px w-12 bg-sage" />
+              <span className="h-px w-12 bg-cream/50" />
             </div>
-            <p className="mt-2 text-xs font-semibold tracking-[0.3em] text-sage uppercase">
+            <p className="mt-2 text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
               Unsere Geschichte
             </p>
           </div>
@@ -78,7 +78,7 @@ export function AboutStorySection() {
               </p>
               <Link
                 href="/speisekarte"
-                className="mt-8 inline-flex border-b border-sage pb-1 text-sm font-semibold text-sage transition hover:text-cream"
+                className="mt-8 inline-flex border-b border-cream pb-1 text-sm font-semibold text-cream transition hover:text-white"
               >
                 Unsere Küche entdecken
               </Link>
@@ -124,7 +124,7 @@ export function AboutStorySection() {
               className="reveal-right absolute right-[6%] bottom-[3%]"
             >
               <div className="rounded-full border border-white/20 bg-ink/80 px-5 py-3 text-center">
-                <span className="block font-serif text-2xl text-sage">
+                <span className="block font-serif text-2xl text-cream">
                   Romanshorn
                 </span>
                 <span className="text-[10px] tracking-[0.22em] text-cream/65 uppercase">
@@ -148,7 +148,7 @@ export function AboutStorySection() {
                     : ""
                 }`}
               >
-                <span className="font-serif text-2xl text-sage">
+                <span className="font-serif text-2xl text-cream">
                   {value.number}
                 </span>
                 <h3 className="mt-3 font-serif text-xl text-white">

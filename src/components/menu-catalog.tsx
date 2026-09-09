@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
-import { menuCategories } from "@/data/menu";
+import type { MenuCategory } from "@/data/menu";
 
 function SearchIcon() {
   return (
@@ -18,6 +18,23 @@ function SearchIcon() {
   );
 }
 
+function CartBagIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5 fill-none stroke-current"
+      aria-hidden
+    >
+      <path
+        d="M3.5 4.5h2l1.8 10.1a2 2 0 0 0 2 1.7h7.8a2 2 0 0 0 1.9-1.5l1.2-6.5H6.4M9.5 20a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm9 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("de-CH", {
     style: "currency",
@@ -25,15 +42,23 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-export function MenuCatalog() {
+export function MenuCatalog({
+  categories,
+}: {
+  categories: MenuCategory[];
+}) {
   const [query, setQuery] = useState("");
   const { items: cartItems, addItem, updateQuantity } = useCart();
+  const cartById = useMemo(
+    () => new Map(cartItems.map((item) => [item.id, item])),
+    [cartItems],
+  );
 
   const visibleCategories = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("de-CH");
-    if (!normalizedQuery) return menuCategories;
+    if (!normalizedQuery) return categories;
 
-    return menuCategories
+    return categories
       .map((category) => ({
         ...category,
         items: category.items.filter((item) =>
@@ -51,7 +76,7 @@ export function MenuCatalog() {
         ),
       }))
       .filter((category) => category.items.length > 0);
-  }, [query]);
+  }, [categories, query]);
 
   return (
     <>
@@ -78,7 +103,7 @@ export function MenuCatalog() {
           <aside className="lg:sticky lg:top-[118px] lg:max-h-[calc(100vh-142px)] lg:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <div className="overflow-hidden rounded-3xl bg-ink text-cream shadow-lg">
               <div className="border-b border-white/10 px-5 py-5">
-                <p className="text-[10px] font-semibold tracking-[0.26em] text-sage uppercase">
+                <p className="text-[10px] font-semibold tracking-[0.26em] text-cream/70 uppercase">
                   Speisekarte
                 </p>
                 <h2 className="mt-1 font-serif text-2xl text-white">
@@ -89,13 +114,13 @@ export function MenuCatalog() {
                 aria-label="Menükategorien"
                 className="grid grid-cols-2 sm:grid-cols-3 lg:block"
               >
-                {menuCategories.map((category, index) => (
+                {categories.map((category, index) => (
                   <a
                     key={category.id}
                     href={`#${category.id}`}
                     className="group flex items-center gap-3 border-b border-white/8 px-4 py-3.5 text-xs text-cream/70 transition hover:bg-sage hover:text-white sm:px-5 lg:last:border-b-0"
                   >
-                    <span className="font-serif text-sage transition group-hover:text-white/70">
+                    <span className="font-serif text-cream/55 transition group-hover:text-white/70">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span>{category.title}</span>
@@ -113,8 +138,6 @@ export function MenuCatalog() {
               className="scroll-mt-44 [content-visibility:auto] [contain-intrinsic-size:auto_700px]"
             >
               <div className="mb-8 border-b border-sage/30 pb-6">
-                <div className="flex items-end justify-between gap-5">
-                  <div>
                     <p className="text-[10px] font-semibold tracking-[0.28em] text-sage uppercase">
                       Safran Speisekarte
                     </p>
@@ -126,11 +149,6 @@ export function MenuCatalog() {
                         {category.subtitle}
                       </p>
                     )}
-                  </div>
-                  <span className="hidden font-serif text-5xl text-sage/25 sm:block">
-                    {String(category.items[0]?.number ?? 0).padStart(2, "0")}
-                  </span>
-                </div>
                 {(category.noteDe || category.noteEn) && (
                   <div className="mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-xs leading-5 text-sage-deep">
                     {category.noteDe && <p>{category.noteDe}</p>}
@@ -144,9 +162,7 @@ export function MenuCatalog() {
               <div className="grid gap-4 lg:grid-cols-2">
                 {category.items.map((item) => {
                   const cartId = `menu-${item.number}`;
-                  const cartItem = cartItems.find(
-                    (currentItem) => currentItem.id === cartId,
-                  );
+                  const cartItem = cartById.get(cartId);
 
                   return (
                     <article
@@ -161,7 +177,7 @@ export function MenuCatalog() {
                           sizes="(max-width: 640px) calc(100vw - 64px), 176px"
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                        <span className="absolute top-3 left-3 rounded-full bg-ink/80 px-3 py-1 font-serif text-sm text-sage backdrop-blur-sm">
+                        <span className="absolute top-3 left-3 rounded-full bg-ink/80 px-3 py-1 font-serif text-sm text-cream backdrop-blur-sm">
                           {String(item.number).padStart(2, "0")}.
                         </span>
                       </div>
@@ -229,10 +245,13 @@ export function MenuCatalog() {
                                   details: category.title,
                                 })
                               }
-                              className="inline-flex items-center gap-2 rounded-full bg-sage px-5 py-3 text-xs font-semibold text-white transition hover:bg-sage-dark"
+                              className="btn-cart"
+                              aria-label={`${item.name} hinzufügen`}
                             >
-                              <span className="text-lg leading-none">+</span>
-                              Hinzufügen
+                              <span className="btn-cart-face">
+                                <CartBagIcon />
+                                <span>Hinzufügen</span>
+                              </span>
                             </button>
                           )}
                         </div>

@@ -36,17 +36,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [restored, setRestored] = useState(false);
 
   useEffect(() => {
-    try {
-      const storedCart = window.localStorage.getItem(STORAGE_KEY);
-      if (storedCart) {
-        const parsedCart = JSON.parse(storedCart) as CartItem[];
-        if (Array.isArray(parsedCart)) setItems(parsedCart);
+    const restoreTimer = window.setTimeout(() => {
+      try {
+        const storedCart = window.localStorage.getItem(STORAGE_KEY);
+        if (storedCart) {
+          const parsedCart = JSON.parse(storedCart) as CartItem[];
+          if (Array.isArray(parsedCart)) setItems(parsedCart);
+        }
+      } catch {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } finally {
+        setRestored(true);
       }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
-    } finally {
-      setRestored(true);
-    }
+    }, 0);
+
+    return () => window.clearTimeout(restoreTimer);
   }, []);
 
   useEffect(() => {

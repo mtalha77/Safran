@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { MenuCatalog } from "@/components/menu-catalog";
-import menuHeroImage from "../../../public/images/menu/tandoori.webp";
+import { getMenuCategories } from "@/lib/storefront-data";
+import menuHeroImage from "../../../../public/images/menu/tandoori.webp";
 
 export const metadata: Metadata = {
   title: "Speisekarte",
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
     "Entdecken Sie die vollständige Speisekarte von Safran Romanshorn und bestellen Sie indische Spezialitäten online.",
 };
 
-export default function SpeisekartePage() {
+export default async function SpeisekartePage() {
+  const menuCategories = await getMenuCategories();
+
   return (
     <>
       <section className="relative overflow-hidden bg-ink px-5 pt-40 pb-20 text-cream sm:px-8 sm:pt-48 sm:pb-28">
@@ -36,7 +39,7 @@ export default function SpeisekartePage() {
           <div className="absolute inset-24 rounded-full border border-sage/10" />
         </div>
         <div className="relative z-10 mx-auto max-w-7xl text-center">
-          <p className="text-xs font-semibold tracking-[0.3em] text-sage uppercase">
+          <p className="text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
             Frisch für Sie zubereitet
           </p>
           <h1 className="mt-5 font-serif text-6xl leading-none text-white sm:text-7xl lg:text-8xl">
@@ -51,14 +54,14 @@ export default function SpeisekartePage() {
             <span aria-hidden>·</span>
             <span>Preise in CHF inkl. MwSt.</span>
             <span aria-hidden>·</span>
-            <Link href="/kasse" className="text-sage transition hover:text-white">
+            <Link href="/kasse" className="text-cream transition hover:text-white">
               Zum Warenkorb
             </Link>
           </div>
         </div>
       </section>
 
-      <MenuCatalog />
+      <MenuCatalog categories={menuCategories} />
     </>
   );
 }

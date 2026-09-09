@@ -55,7 +55,7 @@ export function SiteHeader() {
       <div
         className={`relative mx-auto flex max-w-[1440px] items-center justify-between px-5 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-8 lg:px-[54px] ${
           floating
-            ? "scale-[0.99] rounded-2xl bg-ink py-2 shadow-lg"
+            ? "scale-[0.99] rounded-2xl bg-cream py-2 shadow-lg"
             : "border-b border-white/20 bg-transparent py-4"
         }`}
       >
@@ -76,7 +76,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="transition hover:text-sage-dark"
+              className="transition hover:text-sage/70"
             >
               {item.label}
             </Link>
@@ -115,23 +115,32 @@ export function SiteHeader() {
           <Link
             href="/kasse"
             aria-label={`Warenkorb, ${itemCount} Artikel`}
-            className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition hover:border-sage hover:bg-sage hover:text-white ${
+            className={`relative flex h-9 w-9 items-center justify-center rounded-full transition ${
               floating
-                ? "border-sage/35 text-sage"
-                : "border-white/40 text-white"
+                ? "bg-sage text-white hover:bg-sage-dark"
+                : "bg-gold text-sage hover:bg-gold-dark"
             }`}
           >
             <CartIcon />
             {itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-sage px-1 text-[10px] font-bold leading-none text-white ring-2 ring-ink">
+              <span
+                className={`absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ring-2 ${
+                  floating
+                    ? "bg-gold text-sage ring-cream"
+                    : "bg-sage text-white ring-gold"
+                }`}
+              >
                 {itemCount > 99 ? "99+" : itemCount}
               </span>
             )}
           </Link>
           <Link
             href="/speisekarte"
-            className={`hidden rounded-full bg-sage px-5 text-xs font-semibold text-white transition hover:bg-sage-dark sm:inline-flex sm:px-7 ${
-              floating ? "py-2" : "py-3"
+            aria-label="Jetzt bestellen"
+            className={`btn-fill hidden items-center rounded-full px-3 text-xs font-extrabold sm:inline-flex sm:px-4 ${
+              floating
+                ? "btn-fill-inverse bg-sage py-1.5 text-white"
+                : "bg-gold py-1.5 text-sage"
             }`}
           >
             Jetzt bestellen
@@ -152,7 +161,7 @@ export function SiteHeader() {
               key={item.href}
               href={item.href}
               onClick={() => setMenuOpen(false)}
-              className="rounded-xl px-4 py-3 text-sm font-medium text-cream transition hover:bg-white/5 hover:text-sage"
+              className="rounded-xl px-4 py-3 text-sm font-medium text-cream transition hover:bg-white/5 hover:text-white"
             >
               {item.label}
             </Link>
