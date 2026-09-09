@@ -66,8 +66,8 @@ function GalleryRow({
 
 export function FlavorGallerySection() {
   return (
-    <section className="relative isolate min-h-[500px] overflow-hidden bg-sage-deep py-8 [content-visibility:auto] [contain-intrinsic-size:auto_560px] sm:min-h-[560px] sm:py-10">
-      <div className="absolute inset-0 flex flex-col justify-center gap-3 opacity-70 sm:gap-5">
+    <section className="relative isolate -mt-px min-h-[500px] overflow-hidden bg-sage-deep py-8 [content-visibility:auto] [contain-intrinsic-size:auto_560px] sm:min-h-[560px] sm:py-10">
+      <div className="absolute inset-0 flex flex-col justify-center gap-3 opacity-70 [mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_100%)] sm:gap-5">
         <GalleryRow />
         <GalleryRow reverse offset />
         <GalleryRow />
@@ -79,6 +79,10 @@ export function FlavorGallerySection() {
       />
       <div
         className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(43,46,36,0.94)_0%,rgba(43,46,36,0.82)_28%,rgba(43,46,36,0.2)_68%)]"
+        aria-hidden
+      />
+      <div
+        className="absolute inset-x-0 top-0 z-[5] h-28 bg-gradient-to-b from-sage-deep via-sage-deep/80 to-transparent sm:h-36"
         aria-hidden
       />
 

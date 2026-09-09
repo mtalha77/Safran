@@ -85,9 +85,9 @@ export function AboutStorySection() {
             </div>
           </Reveal>
 
-          <Reveal className="reveal-right">
-            <div className="relative mx-auto min-h-[390px] w-full max-w-[640px] sm:min-h-[540px]">
-              <div className="absolute top-0 right-0 h-[88%] w-[78%] overflow-hidden rounded-[2rem] border border-white/15">
+          <div className="relative mx-auto min-h-[390px] w-full max-w-[640px] sm:min-h-[540px]">
+            <Reveal className="reveal-left absolute top-0 right-0 h-[88%] w-[78%]">
+              <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/15">
                 <Image
                   src={restaurantImage}
                   alt="Das Gebäude des Caffé Restaurant Safran in Romanshorn"
@@ -101,8 +101,13 @@ export function AboutStorySection() {
                   aria-hidden
                 />
               </div>
+            </Reveal>
 
-              <div className="absolute bottom-0 left-0 h-[46%] w-[48%] overflow-hidden rounded-2xl border-4 border-ink shadow-2xl">
+            <Reveal
+              delay={140}
+              className="reveal-right absolute bottom-0 left-0 h-[46%] w-[48%]"
+            >
+              <div className="relative h-full w-full overflow-hidden rounded-2xl border-4 border-ink shadow-2xl">
                 <Image
                   src={foodImage}
                   alt="Frisch zubereitete Tandoori-Spezialitäten bei Safran"
@@ -112,8 +117,13 @@ export function AboutStorySection() {
                   className="object-cover transition-transform duration-700 hover:scale-105"
                 />
               </div>
+            </Reveal>
 
-              <div className="absolute right-[6%] bottom-[3%] rounded-full border border-white/20 bg-ink/80 px-5 py-3 text-center">
+            <Reveal
+              delay={260}
+              className="reveal-right absolute right-[6%] bottom-[3%]"
+            >
+              <div className="rounded-full border border-white/20 bg-ink/80 px-5 py-3 text-center">
                 <span className="block font-serif text-2xl text-sage">
                   Romanshorn
                 </span>
@@ -121,8 +131,8 @@ export function AboutStorySection() {
                   Hafenstrasse 31
                 </span>
               </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
         </div>
 
         <Reveal delay={150}>
