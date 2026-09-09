@@ -28,8 +28,8 @@ export function SiteHeader() {
     <header
       className={`fixed inset-x-0 z-50 transition-[top,padding] duration-300 ${
         floating
-          ? "top-4 px-4"
-          : "top-0 px-0"
+          ? "top-[52px] px-4"
+          : "top-9 px-0"
       }`}
     >
       <div

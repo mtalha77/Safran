@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { RotatingHilal } from "@/components/rotating-hilal";
+import { MenuCategoriesSection } from "@/components/menu-categories-section";
 import heroImage from "../../public/images/hero-safran.jpg";
 
 function ArrowIcon() {
@@ -46,6 +47,7 @@ function TruckIcon() {
 
 export default function HomePage() {
   return (
+    <>
     <section className="relative isolate h-[100svh] overflow-hidden">
       <Image
         src={heroImage}
@@ -132,5 +134,8 @@ export default function HomePage() {
         </div>
       </div>
     </section>
+
+      <MenuCategoriesSection />
+    </>
   );
 }
