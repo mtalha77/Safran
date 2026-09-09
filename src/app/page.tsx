@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { RotatingHilal } from "@/components/rotating-hilal";
+import heroImage from "../../public/images/hero-safran.jpg";
 
 function ArrowIcon() {
   return (
@@ -47,10 +48,11 @@ export default function HomePage() {
   return (
     <section className="relative isolate h-[100svh] overflow-hidden">
       <Image
-        src="/images/hero-safran.jpg"
+        src={heroImage}
         alt="Caffé Restaurant Safran an der Bielstrasse 3 in Solothurn"
         fill
-        priority
+        preload
+        placeholder="blur"
         sizes="100vw"
         className="object-cover object-top"
       />
