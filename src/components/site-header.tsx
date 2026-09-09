@@ -35,7 +35,7 @@ export function SiteHeader() {
       <div
         className={`mx-auto flex max-w-[1440px] items-center justify-between px-5 transition-all duration-300 sm:px-8 lg:px-[54px] ${
           floating
-            ? "rounded-2xl bg-cream py-2 shadow-lg"
+            ? "rounded-2xl bg-ink py-2 shadow-lg"
             : "border-b border-white/20 bg-transparent py-4"
         }`}
       >
