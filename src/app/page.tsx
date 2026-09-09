@@ -117,18 +117,8 @@ export default function HomePage() {
           </div>
 
           <div
-            className="hero-reveal mt-4 sm:mt-5"
-            style={{ animationDelay: "460ms" }}
-          >
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-sage-deep/40 px-3 py-1.5 text-xs text-white/90">
-              <span className="h-2.5 w-2.5 rounded-full bg-[#6CD34E] shadow-[0_0_8px_rgba(108,211,78,0.65)]" />
-              Heute geöffnet · bis 22:30
-            </span>
-          </div>
-
-          <div
             className="hero-reveal mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-white/85 sm:mt-6 sm:gap-x-9 sm:gap-y-3 sm:text-xs"
-            style={{ animationDelay: "550ms" }}
+            style={{ animationDelay: "460ms" }}
           >
             <div className="flex items-center gap-3">
               <span className="text-sage">

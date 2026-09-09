@@ -73,28 +73,40 @@ export function MenuCatalog() {
         </div>
       </div>
 
-      {!query && (
-        <nav
-          aria-label="Menükategorien"
-          className="sticky top-[112px] z-30 border-b border-ink/10 bg-paper/95 shadow-sm backdrop-blur-md"
-        >
-          <div className="flex w-full gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] sm:px-8 lg:px-10 [&::-webkit-scrollbar]:hidden">
-            {menuCategories.map((category) => (
-              <a
-                key={category.id}
-                href={`#${category.id}`}
-                className="shrink-0 rounded-full border border-ink/10 bg-white px-4 py-2 text-xs font-semibold text-ink transition hover:border-sage hover:bg-sage hover:text-white"
-              >
-                {category.title}
-              </a>
-            ))}
-          </div>
-        </nav>
-      )}
-
       <div className="bg-paper px-5 py-14 sm:px-8 sm:py-20">
-        <div className="mx-auto max-w-7xl space-y-20">
-          {visibleCategories.map((category) => (
+        <div className="mx-auto grid max-w-[1600px] gap-12 lg:grid-cols-[240px_minmax(0,1fr)] lg:items-start xl:grid-cols-[270px_minmax(0,1fr)]">
+          <aside className="lg:sticky lg:top-[118px] lg:max-h-[calc(100vh-142px)] lg:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="overflow-hidden rounded-3xl bg-ink text-cream shadow-lg">
+              <div className="border-b border-white/10 px-5 py-5">
+                <p className="text-[10px] font-semibold tracking-[0.26em] text-sage uppercase">
+                  Speisekarte
+                </p>
+                <h2 className="mt-1 font-serif text-2xl text-white">
+                  Kategorien
+                </h2>
+              </div>
+              <nav
+                aria-label="Menükategorien"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:block"
+              >
+                {menuCategories.map((category, index) => (
+                  <a
+                    key={category.id}
+                    href={`#${category.id}`}
+                    className="group flex items-center gap-3 border-b border-white/8 px-4 py-3.5 text-xs text-cream/70 transition hover:bg-sage hover:text-white sm:px-5 lg:last:border-b-0"
+                  >
+                    <span className="font-serif text-sage transition group-hover:text-white/70">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span>{category.title}</span>
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </aside>
+
+          <div className="min-w-0 space-y-20">
+            {visibleCategories.map((category) => (
             <section
               key={category.id}
               id={category.id}
@@ -230,25 +242,26 @@ export function MenuCatalog() {
                 })}
               </div>
             </section>
-          ))}
+            ))}
 
-          {!visibleCategories.length && (
-            <div className="py-24 text-center">
-              <p className="font-serif text-3xl text-ink">
-                Kein Gericht gefunden
-              </p>
-              <p className="mt-3 text-sm text-muted">
-                Versuchen Sie einen anderen Suchbegriff.
-              </p>
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="mt-6 rounded-full bg-sage px-6 py-3 text-sm font-semibold text-white transition hover:bg-sage-dark"
-              >
-                Suche zurücksetzen
-              </button>
-            </div>
-          )}
+            {!visibleCategories.length && (
+              <div className="py-24 text-center">
+                <p className="font-serif text-3xl text-ink">
+                  Kein Gericht gefunden
+                </p>
+                <p className="mt-3 text-sm text-muted">
+                  Versuchen Sie einen anderen Suchbegriff.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="mt-6 rounded-full bg-sage px-6 py-3 text-sm font-semibold text-white transition hover:bg-sage-dark"
+                >
+                  Suche zurücksetzen
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
