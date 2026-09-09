@@ -19,7 +19,7 @@ function Star({ x, y }: { x: number; y: number }) {
 export function RotatingHilal() {
   return (
     <div
-      className="absolute right-4 bottom-6 z-20 h-24 w-24 rounded-full bg-white shadow-[0_8px_30px_rgba(0,0,0,0.28)] md:right-8 md:bottom-8 md:h-28 md:w-28"
+      className="absolute right-3 bottom-3 z-20 h-20 w-20 rounded-full bg-white shadow-[0_8px_30px_rgba(0,0,0,0.28)] sm:right-4 sm:bottom-6 sm:h-24 sm:w-24 md:right-8 md:bottom-8 md:h-28 md:w-28"
       aria-label="Halal und ohne Alkohol — Halal and without Alcohol"
     >
       <svg viewBox="0 0 200 200" className="absolute inset-0 h-full w-full">

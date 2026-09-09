@@ -7,6 +7,7 @@ import dessertsImage from "../../public/images/menu/desserts.webp";
 import tandooriImage from "../../public/images/menu/tandoori.webp";
 import vegetarischImage from "../../public/images/menu/vegetarisch.webp";
 import vorspeisenImage from "../../public/images/menu/vorspeisen.webp";
+import { Reveal } from "@/components/reveal";
 
 type Category = {
   name: string;
@@ -36,17 +37,20 @@ export function MenuCategoriesSection() {
   return (
     <section className="w-full bg-ink py-20 [content-visibility:auto] [contain-intrinsic-size:auto_1100px] sm:py-28">
       <div className="mx-auto max-w-7xl px-5 text-center sm:px-8">
-        <span className="inline-flex items-center gap-2 rounded-full bg-sage/15 px-4 py-1.5 text-xs font-semibold tracking-[0.28em] text-sage uppercase">
-          Entdecken Sie unsere Auswahl
-        </span>
-        <h2 className="mt-4 font-serif text-3xl text-cream sm:text-5xl">
-          Unsere Köstlichkeiten
-        </h2>
+        <Reveal>
+          <span className="inline-flex items-center gap-2 rounded-full bg-sage/15 px-4 py-1.5 text-xs font-semibold tracking-[0.28em] text-sage uppercase">
+            Entdecken Sie unsere Auswahl
+          </span>
+          <h2 className="mt-4 font-serif text-3xl text-cream sm:text-5xl">
+            Unsere Köstlichkeiten
+          </h2>
+        </Reveal>
       </div>
 
       <ul className="mx-auto mt-14 max-w-7xl divide-y divide-white/10 border-y border-white/10">
-        {categories.map((category) => (
+        {categories.map((category, index) => (
           <li key={category.name}>
+            <Reveal delay={index * 70}>
             <Link
               href={category.href}
               className="group relative flex h-28 items-center overflow-hidden rounded-2xl px-5 transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-72 sm:h-32 sm:px-10 sm:hover:h-80"
@@ -81,6 +85,7 @@ export function MenuCategoriesSection() {
                 <ArrowIcon />
               </span>
             </Link>
+            </Reveal>
           </li>
         ))}
       </ul>

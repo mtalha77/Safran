@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AboutStorySection } from "@/components/about-story-section";
 import { RotatingHilal } from "@/components/rotating-hilal";
 import { MenuCategoriesSection } from "@/components/menu-categories-section";
 import heroImage from "../../public/images/hero-safran.jpg";
@@ -66,27 +67,39 @@ export default function HomePage() {
 
       <RotatingHilal />
 
-      <div className="relative z-10 mx-auto flex h-full max-w-[1440px] items-center px-5 pt-16 sm:px-8 lg:px-[54px]">
-        <div className="w-full max-w-[640px] translate-y-5">
-          <div className="flex items-center gap-3">
+      <div className="relative z-10 mx-auto flex h-full max-w-[1440px] items-center px-5 pt-24 sm:px-8 lg:px-[54px]">
+        <div className="w-full max-w-[640px] sm:translate-y-5">
+          <div
+            className="hero-reveal flex items-center gap-3"
+            style={{ animationDelay: "100ms" }}
+          >
             <span className="h-px w-6 bg-sage" />
             <p className="text-[10px] font-medium tracking-[0.32em] text-cream uppercase sm:text-xs">
               Indische Küche in Solothurn
             </p>
           </div>
 
-          <h1 className="mt-5 font-serif text-[clamp(3rem,5.8vw,5.25rem)] leading-[1.02] tracking-[-0.025em] text-white">
+          <h1
+            className="hero-reveal mt-4 font-serif text-[clamp(2.75rem,5.8vw,5.25rem)] leading-[1.02] tracking-[-0.025em] text-white sm:mt-5"
+            style={{ animationDelay: "190ms" }}
+          >
             Echte indische Küche.
             <br />
             Frisch für Sie.
           </h1>
 
-          <p className="mt-5 max-w-[560px] text-base leading-7 text-white/80 sm:text-lg">
+          <p
+            className="hero-reveal mt-4 max-w-[560px] text-sm leading-6 text-white/80 sm:mt-5 sm:text-lg sm:leading-7"
+            style={{ animationDelay: "280ms" }}
+          >
             Authentische indische Spezialitäten zur Abholung oder Lieferung —
             schnell, frisch und ohne Anmeldung.
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
+          <div
+            className="hero-reveal mt-5 flex flex-wrap gap-3 sm:mt-6"
+            style={{ animationDelay: "370ms" }}
+          >
             <Link
               href="/speisekarte"
               className="inline-flex items-center gap-3 rounded-full bg-sage px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-sage-dark"
@@ -102,14 +115,20 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="mt-5">
+          <div
+            className="hero-reveal mt-4 sm:mt-5"
+            style={{ animationDelay: "460ms" }}
+          >
             <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-sage-deep/40 px-3 py-1.5 text-xs text-white/90">
               <span className="h-2.5 w-2.5 rounded-full bg-[#6CD34E] shadow-[0_0_8px_rgba(108,211,78,0.65)]" />
               Heute geöffnet · bis 22:30
             </span>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-x-7 gap-y-3 text-xs text-white/85 sm:gap-x-9">
+          <div
+            className="hero-reveal mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-white/85 sm:mt-6 sm:gap-x-9 sm:gap-y-3 sm:text-xs"
+            style={{ animationDelay: "550ms" }}
+          >
             <div className="flex items-center gap-3">
               <span className="text-sage">
                 <CrescentIcon />
@@ -136,6 +155,7 @@ export default function HomePage() {
     </section>
 
       <MenuCategoriesSection />
+      <AboutStorySection />
     </>
   );
 }
