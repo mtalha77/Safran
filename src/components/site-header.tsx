@@ -34,31 +34,29 @@ export function SiteHeader() {
       }`}
     >
       <div
-        className={`mx-auto flex max-w-6xl items-center justify-between px-5 py-3 transition-all duration-300 ${
-          floating
-            ? "rounded-2xl bg-white shadow-lg"
-            : "bg-transparent"
+        className={`mx-auto flex max-w-7xl items-center justify-between px-7 py-4 transition-all duration-300 ${
+          floating ? "rounded-2xl bg-cream shadow-lg" : "bg-transparent"
         }`}
       >
         <Link
           href="/"
           className={`font-serif text-2xl ${
-            floating ? "text-maroon" : "text-white"
+            floating ? "text-sage" : "text-white"
           }`}
         >
           Safran
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-7">
           <nav
-            className={`flex items-center gap-6 text-sm font-medium ${
-              floating ? "text-ink/80" : "text-white/90"
+            className={`flex items-center gap-7 text-sm font-medium ${
+              floating ? "text-sage" : "text-white/90"
             }`}
           >
             {nav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="transition hover:text-safran"
+                className="transition hover:text-sage-dark"
               >
                 {item.label}
               </Link>
@@ -66,7 +64,7 @@ export function SiteHeader() {
           </nav>
           <Link
             href="/speisekarte"
-            className="rounded-full bg-safran px-4 py-2 text-sm font-semibold text-white transition hover:bg-safran-dark"
+            className="rounded-full bg-sage px-5 py-2 text-sm font-semibold text-cream transition hover:bg-sage-dark"
           >
             Order now
           </Link>

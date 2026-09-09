@@ -1,26 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --safran: #c45c14;
-  --safran-dark: #8a3a0a;
-  --maroon: #6b1d1d;
-  --cream: #f6efe4;
-  --ink: #1c1410;
-  --paper: #fffaf3;
-  --muted: #6f6258;
+  --sage: #8b9a6e;
+  --sage-dark: #6e7c55;
+  --sage-deep: #4f5a3c;
+  --cream: #eae2d6;
+  --paper: #f7f2eb;
+  --ink: #2b2e24;
+  --muted: #77796b;
 }
 
 @theme inline {
-  --color-safran: var(--safran);
-  --color-safran-dark: var(--safran-dark);
-  --color-maroon: var(--maroon);
+  --color-sage: var(--sage);
+  --color-sage-dark: var(--sage-dark);
+  --color-sage-deep: var(--sage-deep);
   --color-cream: var(--cream);
-  --color-ink: var(--ink);
   --color-paper: var(--paper);
+  --color-ink: var(--ink);
   --color-muted: var(--muted);
   --font-sans: var(--font-dm-sans);
   --font-serif: var(--font-playfair);
-  --animate-spin-slow: spin 22s linear infinite;
 }
 
 html {
@@ -33,7 +32,7 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--safran) 35%, white);
+  background: color-mix(in srgb, var(--sage) 40%, white);
 }
 
 @keyframes spin {

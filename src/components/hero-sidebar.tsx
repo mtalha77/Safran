@@ -31,8 +31,8 @@ const socials = [
 export function HeroSidebar() {
   return (
     <aside className="pointer-events-none absolute inset-y-0 left-0 z-20 hidden w-[72px] md:flex">
-      <div className="pointer-events-auto flex h-full w-full flex-col items-center justify-between border-r border-white/20 bg-ink/25 py-28">
-        <span className="text-[10px] font-semibold tracking-[0.35em] text-white/80 uppercase [writing-mode:vertical-rl] rotate-180">
+      <div className="pointer-events-auto flex h-full w-full flex-col items-center justify-between border-r border-cream/20 bg-ink/25 py-28">
+        <span className="text-[10px] font-semibold tracking-[0.35em] text-cream/85 uppercase [writing-mode:vertical-rl] rotate-180">
           Solothurn
         </span>
         <div className="flex flex-col items-center gap-4">
@@ -41,13 +41,13 @@ export function HeroSidebar() {
               key={item.label}
               href={item.href}
               aria-label={item.label}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/25 text-white transition hover:border-safran hover:text-safran"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-cream/30 text-cream transition hover:border-sage hover:text-sage"
             >
               {item.icon}
             </a>
           ))}
         </div>
-        <span className="text-[10px] font-semibold tracking-[0.35em] text-white/80 uppercase [writing-mode:vertical-rl] rotate-180">
+        <span className="text-[10px] font-semibold tracking-[0.35em] text-cream/85 uppercase [writing-mode:vertical-rl] rotate-180">
           Safran
         </span>
       </div>
