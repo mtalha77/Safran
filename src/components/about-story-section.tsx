@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import restaurantImage from "../../public/images/hero-safran.jpg";
-import foodImage from "../../public/images/menu/vorspeisen.webp";
+import foodImage from "../../public/images/menu/tandoori.webp";
 import { Reveal } from "@/components/reveal";
 
 function FoodMark() {
@@ -28,115 +28,137 @@ function FoodMark() {
   );
 }
 
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 20 20" className="h-4 w-4 fill-none stroke-current">
-      <path
-        d="M4 10h12m-5-5 5 5-5 5"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+const values = [
+  { number: "01", title: "Authentische Küche", label: "Indische Tradition" },
+  { number: "02", title: "Frisch zubereitet", label: "Auf Bestellung" },
+  { number: "03", title: "Historisches Zuhause", label: "Erbaut um 1852" },
+  { number: "04", title: "Direkt am Hafen", label: "Romanshorn" },
+];
 
 export function AboutStorySection() {
   return (
     <section
       id="ueber-uns"
-      className="relative isolate overflow-hidden bg-paper px-5 py-24 sm:px-8 sm:py-32 lg:min-h-[680px] lg:py-36"
+      className="relative isolate overflow-hidden bg-gradient-to-b from-ink via-[#25271f] to-sage-deep px-5 py-24 text-cream sm:px-8 sm:py-32"
     >
-      <Reveal
-        className="absolute top-12 left-[4%] hidden h-52 w-36 lg:block xl:left-[6%] xl:h-60 xl:w-40"
-      >
-        <div className="relative h-full w-full rotate-[7deg] overflow-hidden rounded-2xl shadow-xl">
-          <Image
-            src={foodImage}
-            alt=""
-            fill
-            sizes="160px"
-            placeholder="blur"
-            className="object-cover"
-          />
-        </div>
-      </Reveal>
-
-      <Reveal
-        delay={120}
-        className="absolute right-[4%] bottom-20 hidden h-52 w-36 lg:block xl:right-[6%] xl:h-60 xl:w-40"
-      >
-        <div className="relative h-full w-full -rotate-[8deg] overflow-hidden rounded-2xl shadow-xl">
-          <Image
-            src={restaurantImage}
-            alt=""
-            fill
-            sizes="160px"
-            placeholder="blur"
-            className="object-cover object-center"
-          />
-        </div>
-      </Reveal>
-
-      <div className="relative z-10 mx-auto max-w-4xl text-center">
+      <div className="mx-auto max-w-7xl">
         <Reveal>
-          <div className="flex justify-center">
-            <FoodMark />
-          </div>
-        </Reveal>
-
-        <Reveal delay={100}>
-          <div className="mx-auto mt-7 max-w-3xl space-y-6 font-serif text-2xl leading-[1.45] text-ink sm:text-3xl sm:leading-[1.45]">
-            <p>
-              Bei <em className="font-medium text-sage">Safran</em> begann alles
-              mit einer einfachen Idee: authentische indische Küche mit frischen
-              Zutaten zu servieren und Menschen an einem Tisch
-              zusammenzubringen.
-            </p>
-            <p>
-              Unsere Gerichte verbinden traditionelle Rezepte mit herzlicher
-              Gastfreundschaft – sorgfältig zubereitet, ehrlich und voller
-              Geschmack.
+          <div className="text-center">
+            <h2 className="font-serif text-4xl leading-tight text-white sm:text-6xl">
+              Von bescheidenen Anfängen
+            </h2>
+            <div className="mt-5 flex items-center justify-center gap-4">
+              <span className="h-px w-12 bg-sage" />
+              <FoodMark />
+              <span className="h-px w-12 bg-sage" />
+            </div>
+            <p className="mt-2 text-xs font-semibold tracking-[0.3em] text-sage uppercase">
+              Unsere Geschichte
             </p>
           </div>
         </Reveal>
 
-        <Reveal delay={180}>
-          <Link
-            href="/speisekarte"
-            className="mt-10 inline-flex items-center gap-3 rounded-full bg-sage px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-sage-dark"
-          >
-            Unsere Küche entdecken
-            <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/55">
-              <ArrowIcon />
-            </span>
-          </Link>
-        </Reveal>
+        <div className="mt-14 grid items-center gap-12 lg:mt-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+          <Reveal className="reveal-left">
+            <div className="max-w-xl text-base leading-8 text-cream/78 sm:text-lg">
+              <p>
+                Unsere Geschichte verbindet die Vergangenheit des Romanshorner
+                Hafens mit der Wärme indischer Gastfreundschaft.
+              </p>
+              <p className="mt-6">
+                Das Haus an der Hafenstrasse 31 wurde um 1852 vom Kanton
+                Thurgau als Korn- und Zollhaus erbaut – noch vor der
+                Eisenbahnzeit. Es gilt als das älteste Gebäude direkt am
+                Hafenbecken.
+              </p>
+              <p className="mt-6">
+                Wo einst Korn gelagert und Handel betrieben wurde, treffen heute
+                gelebte Geschichte, traditionelle indische Rezepte und frisch
+                zubereitete Gerichte aufeinander.
+              </p>
+              <Link
+                href="/speisekarte"
+                className="mt-8 inline-flex border-b border-sage pb-1 text-sm font-semibold text-sage transition hover:text-cream"
+              >
+                Unsere Küche entdecken
+              </Link>
+            </div>
+          </Reveal>
 
-        <Reveal delay={240}>
-          <div className="mx-auto mt-12 grid max-w-md grid-cols-2 gap-4 lg:hidden">
-            <div className="relative aspect-[4/3] rotate-[-3deg] overflow-hidden rounded-xl shadow-lg">
-              <Image
-                src={foodImage}
-                alt="Indische Vorspeisen bei Safran"
-                fill
-                sizes="(max-width: 1024px) 45vw, 200px"
-                placeholder="blur"
-                className="object-cover"
-              />
+          <Reveal className="reveal-right">
+            <div className="relative mx-auto min-h-[390px] w-full max-w-[640px] sm:min-h-[540px]">
+              <div className="absolute top-0 right-0 h-[88%] w-[78%] overflow-hidden rounded-[2rem] border border-white/15">
+                <Image
+                  src={restaurantImage}
+                  alt="Das Gebäude des Caffé Restaurant Safran in Romanshorn"
+                  fill
+                  sizes="(max-width: 1024px) 78vw, 500px"
+                  placeholder="blur"
+                  className="object-cover object-center transition-transform duration-700 hover:scale-[1.03]"
+                />
+                <span
+                  className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"
+                  aria-hidden
+                />
+              </div>
+
+              <div className="absolute bottom-0 left-0 h-[46%] w-[48%] overflow-hidden rounded-2xl border-4 border-ink shadow-2xl">
+                <Image
+                  src={foodImage}
+                  alt="Frisch zubereitete Tandoori-Spezialitäten bei Safran"
+                  fill
+                  sizes="(max-width: 1024px) 48vw, 300px"
+                  placeholder="blur"
+                  className="object-cover transition-transform duration-700 hover:scale-105"
+                />
+              </div>
+
+              <div className="absolute right-[6%] bottom-[3%] rounded-full border border-white/20 bg-ink/80 px-5 py-3 text-center">
+                <span className="block font-serif text-2xl text-sage">
+                  Romanshorn
+                </span>
+                <span className="text-[10px] tracking-[0.22em] text-cream/65 uppercase">
+                  Hafenstrasse 31
+                </span>
+              </div>
             </div>
-            <div className="relative aspect-[4/3] rotate-[3deg] overflow-hidden rounded-xl shadow-lg">
-              <Image
-                src={restaurantImage}
-                alt="Caffé Restaurant Safran in Solothurn"
-                fill
-                sizes="(max-width: 1024px) 45vw, 200px"
-                placeholder="blur"
-                className="object-cover"
-              />
-            </div>
+          </Reveal>
+        </div>
+
+        <Reveal delay={150}>
+          <div className="mt-16 grid grid-cols-2 border-y border-white/12 sm:mt-24 lg:grid-cols-4">
+            {values.map((value, index) => (
+              <div
+                key={value.number}
+                className={`px-4 py-8 text-center sm:px-6 sm:py-10 ${
+                  index % 2 ? "border-l border-white/12" : ""
+                } ${index > 1 ? "border-t border-white/12 lg:border-t-0" : ""} ${
+                  index > 0 && index % 2 === 0
+                    ? "lg:border-l lg:border-white/12"
+                    : ""
+                }`}
+              >
+                <span className="font-serif text-2xl text-sage">
+                  {value.number}
+                </span>
+                <h3 className="mt-3 font-serif text-xl text-white">
+                  {value.title}
+                </h3>
+                <p className="mt-1 text-[10px] font-semibold tracking-[0.2em] text-cream/55 uppercase">
+                  {value.label}
+                </p>
+              </div>
+            ))}
           </div>
         </Reveal>
+      </div>
+
+      <div
+        className="pointer-events-none absolute -right-24 -bottom-24 h-72 w-72 rounded-full border border-sage/15"
+        aria-hidden
+      >
+        <div className="absolute inset-8 rounded-full border border-sage/10" />
+        <div className="absolute inset-16 rounded-full border border-sage/10" />
       </div>
     </section>
   );

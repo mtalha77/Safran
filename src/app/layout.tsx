@@ -26,15 +26,12 @@ const amiri = Amiri({
 
 export const metadata: Metadata = {
   title: {
-    default: "Safran Solothurn — Indische Küche online bestellen",
-    template: "%s | Safran Solothurn",
+    default: "Safran Romanshorn — Indische Küche online bestellen",
+    template: "%s | Safran Romanshorn",
   },
   description:
-    "Indische Küche in Solothurn. Bestellen Sie zur Abholung oder Lieferung — ohne Anmeldung.",
-  applicationName: "Safran Solothurn",
-  icons: {
-    icon: "/favicon.svg",
-  },
+    "Indische Küche in Romanshorn. Bestellen Sie zur Abholung oder Lieferung — ohne Anmeldung.",
+  applicationName: "Safran Romanshorn",
 };
 
 export default function RootLayout({

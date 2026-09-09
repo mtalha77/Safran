@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AboutStorySection } from "@/components/about-story-section";
+import { FlavorGallerySection } from "@/components/flavor-gallery-section";
 import { RotatingHilal } from "@/components/rotating-hilal";
 import { MenuCategoriesSection } from "@/components/menu-categories-section";
 import heroImage from "../../public/images/hero-safran.jpg";
@@ -52,7 +53,7 @@ export default function HomePage() {
     <section className="relative isolate h-[100svh] overflow-hidden">
       <Image
         src={heroImage}
-        alt="Caffé Restaurant Safran an der Bielstrasse 3 in Solothurn"
+        alt="Caffé Restaurant Safran in Romanshorn"
         fill
         preload
         placeholder="blur"
@@ -75,7 +76,7 @@ export default function HomePage() {
           >
             <span className="h-px w-6 bg-sage" />
             <p className="text-[10px] font-medium tracking-[0.32em] text-cream uppercase sm:text-xs">
-              Indische Küche in Solothurn
+              Indische Küche in Romanshorn
             </p>
           </div>
 
@@ -156,6 +157,7 @@ export default function HomePage() {
 
       <MenuCategoriesSection />
       <AboutStorySection />
+      <FlavorGallerySection />
     </>
   );
 }
