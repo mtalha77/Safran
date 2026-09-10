@@ -73,14 +73,16 @@ export function getStoreStatus(
     ([start, end]) =>
       minute >= timeToMinutes(start) && minute < timeToMinutes(end),
   );
-  const today = formatOpeningRanges(ranges);
+  // Name the Zurich weekday so "Heute" is not confused with the viewer's local day.
+  const dayName = openingDay?.label ?? "Heute";
+  const schedule = formatOpeningRanges(ranges);
 
   return {
     open,
     label: open
-      ? `Heute geöffnet · ${today}`
+      ? `Geöffnet · ${dayName} ${schedule}`
       : ranges.length
-        ? `Momentan geschlossen · Heute ${today}`
-        : "Heute geschlossen",
+        ? `Momentan geschlossen · ${dayName} ${schedule}`
+        : `${dayName} geschlossen`,
   };
 }

@@ -26,7 +26,6 @@ function isTerminal(status: string) {
 
 function formatEventTime(value: string) {
   return new Intl.DateTimeFormat("de-CH", {
-    dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
 }
@@ -110,7 +109,7 @@ export function OrderStatusLive({
   }, [token, initialStatus]);
 
   return (
-    <>
+    <div className="space-y-4">
       <OrderStatusExperience
         status={status}
         orderNumber={orderNumber}
@@ -119,25 +118,32 @@ export function OrderStatusLive({
         connectionState={isTerminal(status) ? "idle" : connectionState}
       />
 
-      <div className="mt-8">
-        <h2 className="font-serif text-2xl text-ink">Verlauf</h2>
+      <div className="rounded-xl border border-ink/10 px-4 py-3">
+        <h2 className="text-[11px] font-semibold tracking-wider text-muted uppercase">
+          Verlauf
+        </h2>
         {events.length ? (
-          <ol className="mt-4 space-y-4">
+          <ol className="mt-2 space-y-1.5">
             {events.map((event, index) => (
-              <li key={`${event.createdAt}-${index}`} className="text-sm">
-                <p className="font-semibold text-ink">{eventLabel(event)}</p>
-                <time className="mt-1 block text-xs text-muted">
+              <li
+                key={`${event.createdAt}-${index}`}
+                className="flex items-baseline justify-between gap-3 text-sm"
+              >
+                <span className="min-w-0 font-medium text-ink">
+                  {eventLabel(event)}
+                </span>
+                <time className="shrink-0 text-[11px] text-muted tabular-nums">
                   {formatEventTime(event.createdAt)}
                 </time>
               </li>
             ))}
           </ol>
         ) : (
-          <p className="mt-4 text-sm text-muted">
+          <p className="mt-2 text-sm text-muted">
             Die Bestellung ist bei uns eingegangen.
           </p>
         )}
       </div>
-    </>
+    </div>
   );
 }

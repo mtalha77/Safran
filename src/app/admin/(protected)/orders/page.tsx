@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { listOrdersForBackOffice } from "@/backend/services/order.service";
 import { formatDate, formatMoney, getAdminContext, orderStatusLabels, statusClass } from "@/components/admin/data";
-import { Card, EmptyState, Notice, PageHeader, buttonClass, fieldClass, secondaryButtonClass } from "@/components/admin/ui";
+import { Card, EmptyState, Notice, PageHeader, fieldClass, secondaryButtonClass } from "@/components/admin/ui";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 type OrdersPageProps = {
   searchParams: Promise<{ status?: string; q?: string; message?: string; error?: string; page?: string }>;
@@ -45,7 +46,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
             </select>
           </label>
           <div className="flex items-end gap-2">
-            <button className={buttonClass}>Filtern</button>
+            <PendingSubmitButton pendingLabel="Wird gefiltert...">Filtern</PendingSubmitButton>
             <Link className={secondaryButtonClass} href="/admin/orders">Zurücksetzen</Link>
           </div>
         </form>

@@ -10,7 +10,8 @@ import {
   statusActionLabels,
   statusClass,
 } from "@/components/admin/data";
-import { Card, Notice, PageHeader, buttonClass, secondaryButtonClass } from "@/components/admin/ui";
+import { Card, Notice, PageHeader, secondaryButtonClass } from "@/components/admin/ui";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 type OrderDetailProps = {
   params: Promise<{ id: string }>;
@@ -57,9 +58,12 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
                     <form action={updateOrderStatusAction} key={status}>
                       <input type="hidden" name="id" value={order.id} />
                       <input type="hidden" name="status" value={status} />
-                      <button className={status === "cancelled" ? "min-h-10 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" : buttonClass}>
+                      <PendingSubmitButton
+                        variant={status === "cancelled" ? "danger" : "primary"}
+                        pendingLabel="Wird aktualisiert…"
+                      >
                         {statusActionLabels[status] ?? orderStatusLabels[status] ?? status}
-                      </button>
+                      </PendingSubmitButton>
                     </form>
                   ))}
                 </div>

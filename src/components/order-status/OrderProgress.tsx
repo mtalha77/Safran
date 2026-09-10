@@ -19,7 +19,7 @@ export function OrderProgress({
 
   return (
     <ol
-      className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-2"
+      className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-2"
       aria-label="Bestellfortschritt"
     >
       {steps.map((step, index) => {
@@ -54,7 +54,7 @@ export function OrderProgress({
               {isDone ? "✓" : index + 1}
             </span>
             <span
-              className={`min-w-0 text-sm leading-snug ${
+              className={`min-w-0 text-xs leading-snug sm:text-[13px] ${
                 isCurrent
                   ? "font-semibold text-ink"
                   : isUpcoming

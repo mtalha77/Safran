@@ -39,15 +39,15 @@ export const STAGE_COPY: Record<CustomerOrderStage, StageCopy> = {
     message: "Ihr Essen ist fertig und wartet auf Abholung oder den Fahrer.",
     ariaLabel: "Essen ist verpackt und versiegelt",
     ariaDescription:
-      "Eine Speisebox wird in eine Papiertüte gelegt und mit einem Siegel versehen.",
+      "Teller und Töpfe gleiten in eine Safran-Papiertüte; die Tüte wird versiegelt.",
     progressLabel: "Bereit",
   },
   delivering: {
     title: "Ihre Bestellung ist unterwegs",
     message: "Der Fahrer ist mit Ihrer Bestellung auf dem Weg zu Ihnen.",
-    ariaLabel: "Fahrer mit Speisebox unterwegs",
+    ariaLabel: "Liefer-Scooter unterwegs",
     ariaDescription:
-      "Ein Rollerfahrer transportiert eine gesicherte Speisebox entlang der Strasse.",
+      "Ein Safran-Lieferscooter macht ein Wheelie; die Box hinten zeigt das Restaurant-Motiv.",
     progressLabel: "Unterwegs",
   },
   completed: {
@@ -55,7 +55,7 @@ export const STAGE_COPY: Record<CustomerOrderStage, StageCopy> = {
     message: "Ihre Bestellung ist angekommen. Geniessen Sie Ihre Mahlzeit.",
     ariaLabel: "Bestellung zugestellt",
     ariaDescription:
-      "Die versiegelte Tüte wird übergeben, ein Häkchen bestätigt die Zustellung.",
+      "Die Safran-Tüte fährt zur Haustür; die Tür öffnet sich, die Tüte verschwindet hinein, die Tür schliesst sich.",
     progressLabel: "Abgeschlossen",
   },
   cancelled: {

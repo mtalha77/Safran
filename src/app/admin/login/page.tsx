@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import { loginAction } from "@/app/admin/actions";
 import { getAdminContext } from "@/components/admin/data";
-import { Card, Notice, SetupState, buttonClass, fieldClass } from "@/components/admin/ui";
+import { Card, Notice, SetupState, fieldClass } from "@/components/admin/ui";
+import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 type LoginPageProps = {
   searchParams: Promise<{ error?: string; next?: string }>;
@@ -51,9 +52,9 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
                 required
               />
             </label>
-            <button className={`${buttonClass} w-full`} type="submit">
+            <PendingSubmitButton className="w-full" pendingLabel="Anmeldung läuft…">
               Sicher anmelden
-            </button>
+            </PendingSubmitButton>
           </form>
         </Card>
         <p className="mt-5 text-center text-xs text-muted">

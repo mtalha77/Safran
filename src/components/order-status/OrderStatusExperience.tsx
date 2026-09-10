@@ -95,15 +95,15 @@ export function OrderStatusExperience({
   const updatedLabel = updatedAt ? formatUpdatedAt(updatedAt) : null;
 
   return (
-    <div className={`${styles.root} mt-6`}>
-      <div className="rounded-2xl bg-sage/10 p-5">
+    <div className={styles.root}>
+      <div className="rounded-xl bg-sage/10 px-4 py-3.5 sm:px-5">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold tracking-wider text-sage uppercase">
+            <p className="text-[11px] font-semibold tracking-wider text-sage uppercase">
               Aktueller Status
               {orderNumber ? ` · ${orderNumber}` : null}
             </p>
-            <h2 className="mt-1 font-serif text-2xl text-ink sm:text-3xl">
+            <h2 className="mt-0.5 font-serif text-xl text-ink sm:text-2xl">
               {copy.title}
             </h2>
           </div>
@@ -124,20 +124,20 @@ export function OrderStatusExperience({
             </span>
           ) : null}
         </div>
-        <p className="mt-2 text-sm leading-6 text-muted">{copy.message}</p>
+        <p className="mt-1 text-sm leading-5 text-muted">{copy.message}</p>
         {estimatedArrival ? (
-          <p className="mt-2 text-sm font-semibold text-ink">
+          <p className="mt-1.5 text-sm font-semibold text-ink">
             Voraussichtliche Ankunft: {estimatedArrival}
           </p>
         ) : null}
         {updatedLabel ? (
-          <p className="mt-2 text-[11px] text-muted/80">
+          <p className="mt-1 text-[11px] text-muted/80">
             Zuletzt aktualisiert {updatedLabel}
           </p>
         ) : null}
       </div>
 
-      <div className="mt-5" key={stage}>
+      <div className="mt-3" key={stage}>
         <Scene />
       </div>
 

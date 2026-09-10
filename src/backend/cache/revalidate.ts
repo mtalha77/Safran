@@ -27,4 +27,8 @@ export function refreshSettings() {
   updateTag(CACHE_TAGS.chrome);
   updateTag(CACHE_TAGS.status);
   revalidatePath("/", "layout");
+  revalidatePath("/kasse");
+  revalidatePath("/speisekarte");
+  revalidatePath("/admin/settings");
+  revalidatePath("/admin", "layout");
 }

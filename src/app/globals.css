@@ -241,11 +241,16 @@ select:-webkit-autofill:focus {
 }
 
 .btn-cart-face > span {
-  transform: translateX(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: none;
   transition: 0.5s;
   white-space: nowrap;
   font-size: 13px;
   font-weight: 800;
+  line-height: 1;
+  text-align: center;
 }
 
 .btn-cart svg {
