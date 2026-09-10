@@ -1,36 +1,34 @@
-import { createClient } from "@/lib/supabase/server";
+import "server-only";
+
+import { getSessionContext, hasSupabaseEnvironment } from "@/backend/auth/session";
+import { isBackOfficeRole } from "@/backend/domain/roles";
+import type { AppRole } from "@/backend/types";
 
 export type AdminContext =
   | { state: "setup" }
   | { state: "anonymous" }
   | { state: "forbidden" }
-  | { state: "ready"; email?: string; supabase: Awaited<ReturnType<typeof createClient>> };
+  | { state: "ready"; email?: string; role: AppRole };
 
-export function hasSupabaseEnvironment() {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  );
-}
+export { hasSupabaseEnvironment };
 
+/**
+ * Render gate for the admin area. It reports why access is denied so the layout
+ * can show the setup screen or bounce to login, while pages can bail out
+ * quietly during the parallel render.
+ *
+ * This is not the security boundary: every privileged read and write goes
+ * through `requireCapability` in the backend layer and through RLS.
+ */
 export async function getAdminContext(): Promise<AdminContext> {
   if (!hasSupabaseEnvironment()) return { state: "setup" };
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { state: "anonymous" };
+    const { actor } = await getSessionContext();
+    if (!actor) return { state: "anonymous" };
+    if (!isBackOfficeRole(actor.role)) return { state: "forbidden" };
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (profile?.role !== "admin") return { state: "forbidden" };
-    return { state: "ready", email: user.email, supabase };
+    return { state: "ready", email: actor.email, role: actor.role };
   } catch {
     return { state: "setup" };
   }
@@ -60,6 +58,16 @@ export const orderStatusLabels: Record<string, string> = {
   out_for_delivery: "Unterwegs",
   completed: "Abgeschlossen",
   cancelled: "Storniert",
+};
+
+/** Button label shown for the transition into each status. */
+export const statusActionLabels: Record<string, string> = {
+  confirmed: "Bestätigen",
+  preparing: "Zubereitung starten",
+  ready: "Als bereit markieren",
+  out_for_delivery: "An Lieferung übergeben",
+  completed: "Abschliessen",
+  cancelled: "Stornieren",
 };
 
 export function statusClass(status: string) {

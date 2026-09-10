@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test \"src/backend/**/*.test.ts\" \"src/components/order-status/**/*.test.ts\"",
     "supabase:seed": "tsx scripts/seed-supabase.ts",
     "supabase:seed:no-storage": "tsx scripts/seed-supabase.ts --skip-storage"
   },

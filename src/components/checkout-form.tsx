@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 import { useCart } from "@/components/cart-provider";
+import { fetchLiveStoreAvailability } from "@/lib/live-store-status";
 
 type Fulfillment = "delivery" | "pickup";
 
@@ -34,7 +35,13 @@ function BagIcon() {
   );
 }
 
-export function CheckoutForm() {
+export function CheckoutForm({
+  storeOpen = true,
+  closedMessage,
+}: {
+  storeOpen?: boolean;
+  closedMessage?: string;
+}) {
   const router = useRouter();
   const {
     items,
@@ -49,13 +56,28 @@ export function CheckoutForm() {
   const [notice, setNotice] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState("");
+  const closedLabel =
+    closedMessage || "Das Restaurant nimmt derzeit keine Bestellungen an.";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    // `event.currentTarget` is only valid while the handler runs synchronously;
+    // React clears it once we await. Snapshot the field values up front so the
+    // availability check below cannot invalidate them.
+    const formData = new FormData(event.currentTarget);
+
+    if (!storeOpen) {
+      setNotice(closedLabel);
+      return;
+    }
+    const live = await fetchLiveStoreAvailability();
+    if (live?.closed) {
+      setNotice(live.message || closedLabel);
+      return;
+    }
     if (!items.length || !acceptedPolicy || submitting) return;
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
     const key =
       idempotencyKey ||
       (typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -129,6 +151,15 @@ export function CheckoutForm() {
       onSubmit={handleSubmit}
       className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start"
     >
+      {!storeOpen ? (
+        <div
+          role="status"
+          className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-800 lg:col-span-2"
+        >
+          <p className="font-semibold">Derzeit geschlossen</p>
+          <p className="mt-1">{closedLabel}</p>
+        </div>
+      ) : null}
       <div className="space-y-6">
         <fieldset className="rounded-3xl border border-ink/10 bg-white p-5 shadow-sm sm:p-7">
           <legend className="sr-only">
@@ -451,10 +482,14 @@ export function CheckoutForm() {
 
         <button
           type="submit"
-          disabled={!items.length || !acceptedPolicy || submitting}
-          className="mt-6 w-full rounded-full bg-sage px-6 py-4 text-sm font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-40"
+          disabled={!storeOpen || !items.length || !acceptedPolicy || submitting}
+          className="mt-6 w-full rounded-full bg-gold px-6 py-4 text-sm font-semibold text-ink transition hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {submitting ? "Bestellung wird gesendet…" : "Zahlungspflichtig bestellen"}
+          {!storeOpen
+            ? "Derzeit geschlossen"
+            : submitting
+              ? "Bestellung wird gesendet…"
+              : "Zahlungspflichtig bestellen"}
         </button>
 
         {notice && (

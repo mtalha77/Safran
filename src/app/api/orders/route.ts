@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
-import {
-  createCashOrder,
-  OrderError,
-  parseOrderRequest,
-} from "@/lib/orders";
+import { AppError, isAppError, ValidationError } from "@/backend/errors";
+import { createCashOrder } from "@/backend/services/order.service";
+import { parseOrderRequest } from "@/backend/validation/order";
 
 export const runtime = "nodejs";
 
+/**
+ * Thin transport adapter: it parses the HTTP envelope, delegates to the order
+ * service and maps `AppError` onto a status code. All rules live in the backend
+ * layer so the customer app can reuse them through a different transport.
+ */
 export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.includes("application/json")) {
-      throw new OrderError(
+      throw new AppError(
         415,
         "unsupported_media_type",
         "Bestelldaten müssen als JSON gesendet werden.",
@@ -22,7 +25,7 @@ export async function POST(request: Request) {
     try {
       body = await request.json();
     } catch {
-      throw new OrderError(400, "invalid_json", "Ungültige Bestelldaten.");
+      throw new ValidationError("invalid_json", "Ungültige Bestelldaten.");
     }
 
     const orderRequest = parseOrderRequest(
@@ -36,14 +39,13 @@ export async function POST(request: Request) {
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    const known =
-      error instanceof OrderError
-        ? error
-        : new OrderError(
-            503,
-            "ordering_unavailable",
-            "Bestellungen sind vorübergehend nicht verfügbar.",
-          );
+    const known = isAppError(error)
+      ? error
+      : new AppError(
+          503,
+          "ordering_unavailable",
+          "Bestellungen sind vorübergehend nicht verfügbar.",
+        );
 
     return NextResponse.json(
       { error: known.code, message: known.message },

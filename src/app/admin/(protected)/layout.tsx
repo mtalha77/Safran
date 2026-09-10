@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { getStoreOpen } from "@/backend/services/settings.service";
 import { getAdminContext } from "@/components/admin/data";
 import { AdminShell, SetupState } from "@/components/admin/ui";
 
@@ -12,5 +13,9 @@ export default async function ProtectedAdminLayout({
   if (context.state === "anonymous") redirect("/admin/login");
   if (context.state === "forbidden") redirect("/admin/login?error=Admin-Berechtigung%20erforderlich");
 
-  return <AdminShell email={context.email}>{children}</AdminShell>;
+  return (
+    <AdminShell email={context.email} storeOpen={await getStoreOpen()}>
+      {children}
+    </AdminShell>
+  );
 }

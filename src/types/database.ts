@@ -6,7 +6,14 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type AppRole = "customer" | "admin";
+/** `admin` is the legacy value; the application maps it to `restaurant_admin`. */
+export type AppRole =
+  | "customer"
+  | "admin"
+  | "restaurant_staff"
+  | "restaurant_admin"
+  | "rider"
+  | "platform_admin";
 export type OrderStatus =
   | "pending"
   | "confirmed"
@@ -352,7 +359,25 @@ export interface Database {
           changed_by?: string | null;
           note?: string | null;
           created_at?: string;
-        }
+        },
+        Partial<{
+          id: number;
+          order_id: string;
+          from_status: OrderStatus | null;
+          to_status: OrderStatus;
+          changed_by: string | null;
+          note: string | null;
+          created_at: string;
+        }>,
+        [
+          {
+            foreignKeyName: "order_status_events_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ]
       >;
     };
     Views: {
@@ -370,6 +395,10 @@ export interface Database {
         Returns: Json;
       };
       is_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      can_manage_orders: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };

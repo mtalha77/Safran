@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/checkout-form";
+import { getStoreStatus } from "@/lib/store-status";
+import { getStorefrontChrome } from "@/backend/services/storefront.service";
 
 export const metadata: Metadata = {
   title: "Kasse",
@@ -7,7 +9,10 @@ export const metadata: Metadata = {
     "Bestellen Sie indische Spezialitäten bei Safran Romanshorn zur Lieferung oder Abholung.",
 };
 
-export default function KassePage() {
+export default async function KassePage() {
+  const chrome = await getStorefrontChrome();
+  const status = getStoreStatus(chrome.statusConfig);
+
   return (
     <section className="bg-paper px-5 pt-40 pb-24 sm:px-8 sm:pt-44 sm:pb-32">
       <div className="mx-auto max-w-7xl">
@@ -27,7 +32,7 @@ export default function KassePage() {
           </p>
         </div>
 
-        <CheckoutForm />
+        <CheckoutForm storeOpen={status.open} closedMessage={status.label} />
       </div>
     </section>
   );

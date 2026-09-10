@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { logoutAction } from "@/app/admin/actions";
+import { AdminStoreToggle } from "@/components/admin/store-toggle";
 
 export const fieldClass =
   "w-full rounded-xl border border-sage/30 bg-white px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-sage-deep focus:ring-2 focus:ring-sage/20";
@@ -20,15 +21,40 @@ const navigation = [
 export function AdminShell({
   children,
   email,
+  storeOpen,
 }: {
   children: React.ReactNode;
   email?: string;
+  storeOpen: boolean;
 }) {
   return (
-    <div className="min-h-screen bg-[#f3ede4] pt-28 lg:pt-32">
+    <div className="min-h-screen bg-[#f3ede4] pt-20">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-ink text-white">
+        <div className="mx-auto flex h-16 max-w-[1500px] items-center justify-between gap-4 px-3 sm:px-5 lg:px-8">
+          <div>
+            <p className="font-serif text-2xl leading-none">Safran</p>
+            <p className="mt-1 hidden text-[10px] tracking-[0.22em] text-cream/55 uppercase sm:block">
+              Administration
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <AdminStoreToggle open={storeOpen} />
+            {email ? (
+              <p className="hidden max-w-[180px] truncate text-xs text-cream/55 lg:block">
+                {email}
+              </p>
+            ) : null}
+            <form action={logoutAction}>
+              <button className="rounded-full border border-white/15 px-3 py-1.5 text-xs font-semibold text-cream/80 hover:bg-white/10">
+                Abmelden
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
       <div className="mx-auto flex max-w-[1500px] gap-5 px-3 pb-10 sm:px-5 lg:px-8">
         <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-28 overflow-hidden rounded-3xl bg-ink text-white shadow-sm">
+          <div className="sticky top-24 overflow-hidden rounded-3xl bg-ink text-white shadow-sm">
             <div className="border-b border-white/10 px-6 py-6">
               <p className="font-serif text-2xl">Safran</p>
               <p className="mt-1 text-xs uppercase tracking-[0.24em] text-cream/60">Administration</p>

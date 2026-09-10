@@ -1,7 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateOrderStatusAction } from "@/app/admin/actions";
-import { formatDate, formatMoney, getAdminContext, orderStatusLabels, statusClass } from "@/components/admin/data";
+import { getOrderForBackOffice } from "@/backend/services/order.service";
+import {
+  formatDate,
+  formatMoney,
+  getAdminContext,
+  orderStatusLabels,
+  statusActionLabels,
+  statusClass,
+} from "@/components/admin/data";
 import { Card, Notice, PageHeader, buttonClass, secondaryButtonClass } from "@/components/admin/ui";
 
 type OrderDetailProps = {
@@ -9,28 +17,15 @@ type OrderDetailProps = {
   searchParams: Promise<{ message?: string; error?: string }>;
 };
 
-const nextStatuses: Record<string, Array<{ value: string; label: string }>> = {
-  pending: [{ value: "confirmed", label: "Bestätigen" }, { value: "cancelled", label: "Stornieren" }],
-  confirmed: [{ value: "preparing", label: "Zubereitung starten" }, { value: "cancelled", label: "Stornieren" }],
-  preparing: [{ value: "ready", label: "Als bereit markieren" }, { value: "cancelled", label: "Stornieren" }],
-  ready: [{ value: "completed", label: "Abschliessen" }],
-};
-
 export default async function OrderDetailPage({ params, searchParams }: OrderDetailProps) {
   const [{ id }, query, context] = await Promise.all([params, searchParams, getAdminContext()]);
   if (context.state !== "ready") return null;
-  const { data: order, error } = await context.supabase
-    .from("orders")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+
+  // Which buttons appear comes from the shared lifecycle rules, and the same
+  // rules are re-checked in the service when the form is submitted.
+  const { order, items, transitions, error } = await getOrderForBackOffice(id);
   if (!order && !error) notFound();
 
-  const { data: items, error: itemsError } = await context.supabase
-    .from("order_items")
-    .select("*")
-    .eq("order_id", id)
-    .order("id");
   const addressData = order?.delivery_address;
   const address = addressData && typeof addressData === "object" && !Array.isArray(addressData)
     ? Object.values(addressData).filter((value) => typeof value === "string").join(", ")
@@ -44,7 +39,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
         description={`Eingegangen am ${formatDate(order?.created_at)}`}
         action={<Link href="/admin/orders" className={secondaryButtonClass}>← Zur Liste</Link>}
       />
-      <Notice message={query.message} error={query.error ?? error?.message ?? itemsError?.message} />
+      <Notice message={query.message} error={query.error ?? error ?? undefined} />
 
       {order ? (
         <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
@@ -58,12 +53,12 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {(nextStatuses[order.status] ?? []).map((status) => (
-                    <form action={updateOrderStatusAction} key={status.value}>
+                  {transitions.map((status) => (
+                    <form action={updateOrderStatusAction} key={status}>
                       <input type="hidden" name="id" value={order.id} />
-                      <input type="hidden" name="status" value={status.value} />
-                      <button className={status.value === "cancelled" ? "min-h-10 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" : buttonClass}>
-                        {status.label}
+                      <input type="hidden" name="status" value={status} />
+                      <button className={status === "cancelled" ? "min-h-10 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-100" : buttonClass}>
+                        {statusActionLabels[status] ?? orderStatusLabels[status] ?? status}
                       </button>
                     </form>
                   ))}
@@ -74,7 +69,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
             <Card>
               <h2 className="font-serif text-2xl">Positionen</h2>
               <div className="mt-4 divide-y divide-sage/15">
-                {(items ?? []).map((item) => (
+                {items.map((item) => (
                   <div key={String(item.id)} className="grid grid-cols-[auto_1fr_auto] gap-3 py-4 text-sm">
                     <span className="font-bold text-sage-deep">{item.quantity}×</span>
                     <div>

@@ -41,7 +41,7 @@ export function MenuCategoriesSection({
             <Reveal delay={(index % 4) * 60}>
             <Link
               href={category.href}
-              className="group relative flex h-28 items-center overflow-hidden rounded-2xl px-5 transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-72 sm:h-32 sm:px-10 sm:hover:h-80"
+              className="group relative flex h-32 items-center overflow-hidden rounded-2xl px-5 transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-72 sm:h-36 sm:px-10 sm:hover:h-80"
             >
               <div
                 className="absolute inset-y-4 left-0 w-28 overflow-hidden rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:inset-0 group-hover:w-full sm:w-40"
@@ -61,14 +61,20 @@ export function MenuCategoriesSection({
                 aria-hidden
               />
 
-              <span className="relative z-10 ml-32 font-serif text-xl text-cream transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:ml-0 group-hover:pl-8 group-hover:text-3xl group-hover:text-white sm:ml-48 sm:text-2xl sm:group-hover:pl-10 sm:group-hover:text-4xl">
+              {/*
+                Fluid size instead of breakpoint steps: the longest category name
+                ("Gerichte mit Fisch & Crevetten") has to stay on one line next to
+                the thumbnail, so the size tracks the space actually left over
+                rather than jumping at fixed widths.
+              */}
+              <span className="relative z-10 ml-32 font-serif text-2xl leading-tight tracking-[0.06em] text-cream uppercase transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:ml-0 group-hover:pl-8 group-hover:text-3xl group-hover:text-white sm:ml-48 sm:shrink-0 sm:whitespace-nowrap sm:text-[clamp(1.15rem,calc(4.5vw-16px),2.5rem)] sm:group-hover:pl-10 sm:group-hover:text-[clamp(1.3rem,calc(5vw-16px),3rem)]">
                 {category.name}
               </span>
-              <span className="relative z-10 ml-6 hidden text-xs tracking-wide text-white/0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80 sm:block">
+              <span className="relative z-10 ml-6 hidden min-w-0 truncate text-xs tracking-wide text-white/0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80 sm:block">
                 {category.subtitle}
               </span>
 
-              <span className="relative z-10 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream/50 text-cream transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-sage group-hover:bg-sage group-hover:text-white sm:h-12 sm:w-12">
+              <span className="relative z-10 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream/50 text-cream transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-gold group-hover:bg-gold group-hover:text-ink sm:h-14 sm:w-14">
                 <ArrowIcon />
               </span>
             </Link>

@@ -1,4 +1,5 @@
 import { updateOpeningHoursAction, updateSettingsAction } from "@/app/admin/actions";
+import { getRestaurantSettings } from "@/backend/services/settings.service";
 import { getAdminContext } from "@/components/admin/data";
 import { Card, Notice, PageHeader, buttonClass, fieldClass } from "@/components/admin/ui";
 
@@ -11,17 +12,8 @@ const days = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freita
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const [params, context] = await Promise.all([searchParams, getAdminContext()]);
   if (context.state !== "ready") return null;
-  const [
-    { data: settingsRows, error: settingsError },
-    { data: availability, error: availabilityError },
-    { data: hours, error: hoursError },
-  ] = await Promise.all([
-    context.supabase.from("site_settings").select("key, value").in("key", ["restaurant_name", "contact_email", "contact_phone", "address", "delivery_minimum", "pickup_minimum", "delivery_fee"]),
-    context.supabase.from("store_availability").select("*").eq("id", true).maybeSingle(),
-    context.supabase.from("opening_hours").select("*").order("weekday"),
-  ]);
-  const settings = Object.fromEntries((settingsRows ?? []).map((row) => [row.key, row.value]));
-  const hoursByDay = new Map(hours?.map((row) => [row.weekday, row]));
+  const { settings, availability, hours, error } = await getRestaurantSettings();
+  const hoursByDay = new Map(hours.map((row) => [row.weekday, row]));
 
   return (
     <>
@@ -30,7 +22,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         title="Einstellungen"
         description="Kontaktdaten, Bestellarten, Gebühren und reguläre Öffnungszeiten verwalten."
       />
-      <Notice message={params.message} error={params.error ?? settingsError?.message ?? availabilityError?.message ?? hoursError?.message} />
+      <Notice message={params.message} error={params.error ?? error ?? undefined} />
 
       <div className="space-y-5">
         <Card>

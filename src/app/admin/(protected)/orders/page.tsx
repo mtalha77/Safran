@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { listOrdersForBackOffice } from "@/backend/services/order.service";
 import { formatDate, formatMoney, getAdminContext, orderStatusLabels, statusClass } from "@/components/admin/data";
 import { Card, EmptyState, Notice, PageHeader, buttonClass, fieldClass, secondaryButtonClass } from "@/components/admin/ui";
-import type { OrderStatus } from "@/types/database";
 
 type OrdersPageProps = {
   searchParams: Promise<{ status?: string; q?: string; message?: string; error?: string; page?: string }>;
@@ -13,25 +13,13 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const [params, context] = await Promise.all([searchParams, getAdminContext()]);
   if (context.state !== "ready") return null;
   const page = Math.max(1, Number(params.page) || 1);
-  const from = (page - 1) * PAGE_SIZE;
 
-  let query = context.supabase
-    .from("orders")
-    .select("id, order_number, customer_name, fulfillment_type, total, status, created_at", { count: "exact" })
-    .order("created_at", { ascending: false })
-    .range(from, from + PAGE_SIZE - 1);
-  if (params.status) query = query.eq("status", params.status as OrderStatus);
-  if (params.q) {
-    const safeQuery = params.q.replace(/[%_,()]/g, "");
-    const number = Number(safeQuery);
-    query = query.or(
-      Number.isInteger(number)
-        ? `customer_name.ilike.%${safeQuery}%,order_number.eq.${number}`
-        : `customer_name.ilike.%${safeQuery}%`,
-    );
-  }
-
-  const { data: orders, count, error } = await query;
+  const { data: orders, count, error } = await listOrdersForBackOffice({
+    status: params.status,
+    search: params.q,
+    page,
+    pageSize: PAGE_SIZE,
+  });
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
   return (

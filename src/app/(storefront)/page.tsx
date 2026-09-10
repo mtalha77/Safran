@@ -4,7 +4,7 @@ import { AboutStorySection } from "@/components/about-story-section";
 import { FlavorGallerySection } from "@/components/flavor-gallery-section";
 import { MenuCategoriesSection } from "@/components/menu-categories-section";
 import { RotatingHilal } from "@/components/rotating-hilal";
-import { getHomepageCategories } from "@/lib/storefront-data";
+import { getHomepageCategories } from "@/backend/services/storefront.service";
 import heroImage from "../../../public/images/hero-safran.jpg";
 
 function ArrowIcon() {

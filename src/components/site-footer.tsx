@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { StorefrontSettings } from "@/lib/storefront-data";
+import type { StorefrontSettings } from "@/backend/services/storefront.service";
 import {
   formatOpeningRanges,
   type OpeningDay,

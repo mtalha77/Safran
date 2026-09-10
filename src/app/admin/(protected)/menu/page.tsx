@@ -10,6 +10,7 @@ import {
   updateCategoryAction,
   updateMenuItemAction,
 } from "@/app/admin/actions";
+import { listMenu } from "@/backend/services/menu.service";
 import { formatMoney, getAdminContext } from "@/components/admin/data";
 import {
   Card,
@@ -29,10 +30,7 @@ type MenuPageProps = {
 export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
   const [params, context] = await Promise.all([searchParams, getAdminContext()]);
   if (context.state !== "ready") return null;
-  const [{ data: categories, error: categoryError }, { data: items, error: itemError }] = await Promise.all([
-    context.supabase.from("menu_categories").select("*").order("sort_order"),
-    context.supabase.from("menu_items").select("*").order("sort_order"),
-  ]);
+  const { categories, items, error } = await listMenu();
 
   return (
     <>
@@ -41,7 +39,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
         title="Speisekarte"
         description="Kategorien und Gerichte bearbeiten, sortieren oder vorübergehend ausblenden."
       />
-      <Notice message={params.message} error={params.error ?? categoryError?.message ?? itemError?.message} />
+      <Notice message={params.message} error={params.error ?? error ?? undefined} />
 
       <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
         <div className="space-y-5">
@@ -145,7 +143,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                           <span
                             aria-hidden="true"
                             className="h-14 w-14 shrink-0 rounded-lg bg-cream bg-cover bg-center"
-                            style={item.image_path ? { backgroundImage: `url("${context.supabase.storage.from("menu-images").getPublicUrl(item.image_path).data.publicUrl.replace(/"/g, "%22")}")` } : undefined}
+                            style={item.imageUrl ? { backgroundImage: `url("${item.imageUrl.replace(/"/g, "%22")}")` } : undefined}
                           />
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-semibold">{item.item_number}. {item.name}</span>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { MenuCatalog } from "@/components/menu-catalog";
-import { getMenuCategories } from "@/lib/storefront-data";
+import { getMenuCategories } from "@/backend/services/storefront.service";
 import menuHeroImage from "../../../../public/images/menu/tandoori.webp";
 
 export const metadata: Metadata = {
