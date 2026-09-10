@@ -3,10 +3,10 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireCapability } from "@/backend/auth/authorize";
 import { ConflictError, UnavailableError, ValidationError } from "@/backend/errors";
+import { compressMenuImage } from "@/backend/media/compress-menu-image";
 import * as menuRepository from "@/backend/repositories/menu.repository";
 import type { CategoryInput, MenuItemInput } from "@/backend/types";
 import {
-  assertMenuImage,
   parseCategoryId,
   parseCategoryInput,
   parseMenuItemId,
@@ -176,12 +176,14 @@ export async function deleteMenuItem(input: Record<string, unknown>) {
 }
 
 async function storeImage(db: Db, file: File, itemId: number): Promise<string> {
-  assertMenuImage(file);
-
-  const extension =
-    file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "webp";
-  const path = `items/${itemId}-${Date.now()}.${extension}`;
-  const { error } = await menuRepository.uploadMenuImage(db, path, file);
+  const compressed = await compressMenuImage(file);
+  const path = `items/${itemId}-${Date.now()}.${compressed.extension}`;
+  const { error } = await menuRepository.uploadMenuImage(
+    db,
+    path,
+    compressed.buffer,
+    compressed.contentType,
+  );
   if (error) {
     throw new UnavailableError("image_upload_failed", error.message);
   }

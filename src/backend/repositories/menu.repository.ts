@@ -113,10 +113,24 @@ export function deleteItem(db: Db, id: number) {
   return db.from("menu_items").delete().eq("id", id);
 }
 
-export function uploadMenuImage(db: Db, path: string, file: File) {
-  return db.storage
-    .from(MENU_BUCKET)
-    .upload(path, file, { contentType: file.type, upsert: false });
+export function uploadMenuImage(
+  db: Db,
+  path: string,
+  body: File | Blob | Buffer,
+  contentType?: string,
+) {
+  const type =
+    contentType ??
+    (body instanceof File
+      ? body.type
+      : body instanceof Blob
+        ? body.type
+        : "application/octet-stream");
+
+  return db.storage.from(MENU_BUCKET).upload(path, body, {
+    contentType: type,
+    upsert: false,
+  });
 }
 
 export function removeMenuImages(db: Db, paths: string[]) {

@@ -35,7 +35,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
       <PageHeader
         eyebrow="Sortiment"
         title="Speisekarte"
-        description="Kategorien und Gerichte bearbeiten, sortieren oder vorübergehend ausblenden."
+        description="Kategorien und Gerichte bearbeiten, sortieren oder vorÃ¼bergehend ausblenden."
       />
       <Notice message={params.message} error={params.error ?? error ?? undefined} />
 
@@ -157,9 +157,9 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                           <PendingSubmitButton
                             variant="danger"
                             className="w-full"
-                            pendingLabel="Wird gelöscht..."
+                            pendingLabel="Wird gelÃ¶scht..."
                           >
-                            Leere Kategorie löschen
+                            Leere Kategorie lÃ¶schen
                           </PendingSubmitButton>
                         </form>
                       </div>
@@ -178,7 +178,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                 <span className="flex items-center justify-between">
                   <span className="font-serif text-xl">Neues Gericht</span>
                   <span className="inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white">
-                    + Hinzufügen
+                    + HinzufÃ¼gen
                   </span>
                 </span>
               </summary>
@@ -193,7 +193,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                     name="category_id"
                     required
                   >
-                    <option value="">Auswählen</option>
+                    <option value="">AuswÃ¤hlen</option>
                     {categories?.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.title}
@@ -251,17 +251,17 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                   />
                 </label>
                 <label className="text-sm font-semibold sm:col-span-2">
-                  Bild (max. 5 MB)
+                  Bild (max. 5 MB, wird automatisch komprimiert)
                   <input
                     className={`${fieldClass} mt-1`}
                     name="image"
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/avif"
                   />
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                   <input name="is_available" type="checkbox" defaultChecked />{" "}
-                  Verfügbar
+                  VerfÃ¼gbar
                 </label>
                 <PendingSubmitButton
                   className="sm:col-span-2"
@@ -332,7 +332,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 {item.item_number}. {item.name}
                               </span>
                               <span className="mt-1 block text-xs text-muted">
-                                {formatMoney(item.price)} · Position{" "}
+                                {formatMoney(item.price)} Â· Position{" "}
                                 {item.sort_order}
                               </span>
                             </span>
@@ -343,7 +343,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
-                              {item.is_active ? "verfügbar" : "ausverkauft"}
+                              {item.is_active ? "verfÃ¼gbar" : "ausverkauft"}
                             </span>
                           </span>
                         </summary>
@@ -364,7 +364,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                             >
                               {item.is_active
                                 ? "Als ausverkauft markieren"
-                                : "Wieder verfügbar machen"}
+                                : "Wieder verfÃ¼gbar machen"}
                             </PendingSubmitButton>
                           </form>
                           <form
@@ -448,10 +448,10 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 type="checkbox"
                                 defaultChecked={item.is_active}
                               />{" "}
-                              Verfügbar
+                              VerfÃ¼gbar
                             </label>
                             <PendingSubmitButton className="sm:col-span-2">
-                              Änderungen speichern
+                              Ãnderungen speichern
                             </PendingSubmitButton>
                           </form>
                           <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -464,12 +464,12 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 className={fieldClass}
                                 name="image"
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp,image/avif"
                                 required
                               />
                               <PendingSubmitButton
                                 variant="secondary"
-                                pendingLabel="Bild wird hochgeladen..."
+                                pendingLabel="Bild wird komprimiert..."
                               >
                                 Bild ersetzen
                               </PendingSubmitButton>
@@ -479,9 +479,9 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                               <PendingSubmitButton
                                 variant="danger"
                                 className="w-full"
-                                pendingLabel="Wird gelöscht..."
+                                pendingLabel="Wird gelÃ¶scht..."
                               >
-                                Löschen
+                                LÃ¶schen
                               </PendingSubmitButton>
                             </form>
                           </div>

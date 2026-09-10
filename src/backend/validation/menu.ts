@@ -1,4 +1,5 @@
 import { ValidationError } from "@/backend/errors";
+import { MAX_MENU_IMAGE_UPLOAD_BYTES } from "@/backend/media/compress-menu-image";
 import {
   boolean,
   integerInRange,
@@ -95,9 +96,8 @@ export function parseOrderedIds(value: unknown): string[] {
 }
 
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-/** Mirrors the storage bucket's own limits so bad uploads fail before the request. */
+/** Lightweight pre-check; compression re-validates and rewrites to WebP. */
 export function assertMenuImage(file: File): void {
   if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     throw new ValidationError(
@@ -105,7 +105,7 @@ export function assertMenuImage(file: File): void {
       "Erlaubt sind JPEG-, PNG-, WebP- oder AVIF-Bilder.",
     );
   }
-  if (file.size > MAX_IMAGE_BYTES) {
+  if (file.size > MAX_MENU_IMAGE_UPLOAD_BYTES) {
     throw new ValidationError(
       "image_too_large",
       "Das Bild darf höchstens 5 MB gross sein.",
