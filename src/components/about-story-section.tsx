@@ -90,7 +90,7 @@ export function AboutStorySection() {
               <div className="relative h-full w-full overflow-hidden rounded-[2rem] border border-white/15">
                 <Image
                   src={restaurantImage}
-                  alt="Das Gebäude des Caffé Restaurant Safran in Romanshorn"
+                  alt="Das Gebäude von Safran in Romanshorn"
                   fill
                   sizes="(max-width: 1024px) 78vw, 500px"
                   placeholder="blur"

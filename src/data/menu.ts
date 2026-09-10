@@ -28,7 +28,7 @@ export const menuCategories: MenuCategory[] = [
       { number: 5, name: "Poulet Pakora / Chicken Pakora", descriptionDe: "Knochenlose Hühnerstücke mit Chutney und Joghurt", descriptionEn: "Boneless chicken pieces with chutney and yogurt", price: 11.9 },
       { number: 6, name: "Fish Pakora", descriptionDe: "Kleine Fischstücke frittiert in Kichererbsenmehl", descriptionEn: "Small pieces of fish deep-fried in chickpea flour", price: 11.9 },
       { number: 7, name: "Crevetten-Pakora / Shrimp Pakora", descriptionDe: "Zubereitet nach nordindischer Art", descriptionEn: "Prepared in the North Indian style", price: 14.9 },
-      { number: 8, name: "Safran Mixed Vorspeisen / Saffron Mixed Appetizers", descriptionDe: "Fisch, Poulet, Crevetten, Gemüse und Paneer in Kichererbsenmehl", descriptionEn: "Fish, chicken, shrimp, vegetables, and paneer in chickpea flour", price: 20.9 },
+      { number: 8, name: "Safran Mixed Vorspeisen / Safran Mixed Appetizers", descriptionDe: "Fisch, Poulet, Crevetten, Gemüse und Paneer in Kichererbsenmehl", descriptionEn: "Fish, chicken, shrimp, vegetables, and paneer in chickpea flour", price: 20.9 },
       { number: 9, name: "Samosa Chaat", descriptionDe: "Zubereitet mit Kichererbsen, Zwiebeln, Tomaten, Gurken, Karotten, Kartoffeln und 2 Veggie-Samosas mit mild gewürzter Sauce.", descriptionEn: "Prepared with chickpeas, onions, tomatoes, cucumbers, carrots, and potatoes, 2 veg samosas with a mild spiced sauce", price: 9.9 },
       { number: 10, name: "Pappadom (3 Stück)", descriptionDe: "Mit Minzsauce", descriptionEn: "With mint sauce", price: 5.9 },
     ],

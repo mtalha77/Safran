@@ -84,7 +84,7 @@ async function upsertContent() {
     {
       key: "restaurant",
       value: {
-        name: "Caffé Restaurant Safran",
+        name: "Safran",
         phone: "+41326235959",
         email: "info@safran-solothurn.ch",
         address: {
@@ -107,7 +107,7 @@ async function upsertContent() {
       description: "Public checkout defaults.",
       is_public: true,
     },
-    { key: "restaurant_name", value: "Caffé Restaurant Safran", is_public: true },
+    { key: "restaurant_name", value: "Safran", is_public: true },
     { key: "contact_email", value: "info@safran-solothurn.ch", is_public: true },
     { key: "contact_phone", value: "+41326235959", is_public: true },
     {

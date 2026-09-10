@@ -56,7 +56,7 @@ export default async function HomePage() {
       <section className="relative isolate h-[100svh] overflow-hidden">
         <Image
           src={heroImage}
-          alt="Caffé Restaurant Safran in Romanshorn"
+          alt="Safran in Romanshorn"
           fill
           preload
           placeholder="blur"
