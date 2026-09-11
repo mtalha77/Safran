@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { updateOrderStatusAction } from "@/app/admin/actions";
+import { reprintOrderBillAction, updateOrderStatusAction } from "@/app/admin/actions";
 import { getOrderForBackOffice } from "@/backend/services/order.service";
 import {
   formatDate,
   formatMoney,
   getAdminContext,
   orderStatusLabels,
+  printJobStatusLabels,
+  printStatusClass,
   statusActionLabels,
   statusClass,
 } from "@/components/admin/data";
@@ -24,13 +26,13 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
 
   // Which buttons appear comes from the shared lifecycle rules, and the same
   // rules are re-checked in the service when the form is submitted.
-  const { order, items, transitions, error } = await getOrderForBackOffice(id);
+  const { order, items, transitions, printJob, error } = await getOrderForBackOffice(id);
   if (!order && !error) notFound();
 
   const addressData = order?.delivery_address;
   const address = addressData && typeof addressData === "object" && !Array.isArray(addressData)
     ? Object.values(addressData).filter((value) => typeof value === "string").join(", ")
-    : "";
+    : [order?.address_line1, order?.postal_code, order?.city].filter(Boolean).join(", ");
 
   return (
     <>
@@ -68,6 +70,62 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
                   ))}
                 </div>
               </div>
+            </Card>
+
+            <Card>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 className="font-serif text-2xl">Rechnung / Bon</h2>
+                  <p className="mt-1 text-sm text-muted">
+                    Jede Bestellung wird gespeichert und dann an den Drucker gesendet. Bei Fehlern wird automatisch erneut versucht.
+                  </p>
+                </div>
+                <form action={reprintOrderBillAction}>
+                  <input type="hidden" name="id" value={order.id} />
+                  <input type="hidden" name="next" value={`/admin/orders/${order.id}`} />
+                  <PendingSubmitButton variant="secondary" pendingLabel="Wird gedruckt…">
+                    Rechnung drucken
+                  </PendingSubmitButton>
+                </form>
+              </div>
+              <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted">Druckstatus</dt>
+                  <dd className="mt-1">
+                    {printJob ? (
+                      <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${printStatusClass(printJob.status)}`}>
+                        {printJobStatusLabels[printJob.status] ?? printJob.status}
+                      </span>
+                    ) : (
+                      <span className="text-muted">Noch kein Druckauftrag</span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted">Versuche</dt>
+                  <dd className="mt-1 font-semibold">
+                    {printJob ? `${printJob.attempts} / ${printJob.max_attempts}` : "–"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted">Zuletzt gedruckt</dt>
+                  <dd className="mt-1">{formatDate(printJob?.printed_at)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wider text-muted">Nächster Versuch</dt>
+                  <dd className="mt-1">
+                    {printJob && (printJob.status === "pending" || printJob.status === "failed")
+                      ? formatDate(printJob.next_attempt_at)
+                      : "–"}
+                  </dd>
+                </div>
+                {printJob?.last_error ? (
+                  <div className="sm:col-span-2">
+                    <dt className="text-xs uppercase tracking-wider text-muted">Letzter Fehler</dt>
+                    <dd className="mt-1 rounded-xl bg-red-50 p-3 text-red-700">{printJob.last_error}</dd>
+                  </div>
+                ) : null}
+              </dl>
             </Card>
 
             <Card>

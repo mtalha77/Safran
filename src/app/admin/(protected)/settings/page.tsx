@@ -1,12 +1,20 @@
 import {
+  clearOrderAlertSoundAction,
+  setOrderAlertEnabledAction,
   updateOpeningHoursAction,
   updateSettingsAction,
+  uploadOrderAlertSoundAction,
 } from "@/app/admin/actions";
 import { getRestaurantSettings } from "@/backend/services/settings.service";
 import { HoursDayFields } from "@/components/admin/hours-day-fields";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { getAdminContext } from "@/components/admin/data";
-import { Card, Notice, PageHeader, fieldClass } from "@/components/admin/ui";
+import {
+  Card,
+  Notice,
+  PageHeader,
+  fieldClass,
+} from "@/components/admin/ui";
 
 type SettingsPageProps = {
   searchParams: Promise<{ message?: string; error?: string }>;
@@ -29,7 +37,8 @@ function timeValue(value: string | null | undefined) {
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const [params, context] = await Promise.all([searchParams, getAdminContext()]);
   if (context.state !== "ready") return null;
-  const { settings, availability, hours, error } = await getRestaurantSettings();
+  const { settings, availability, hours, orderAlert, error } =
+    await getRestaurantSettings();
   const hoursByDay = new Map(hours.map((row) => [row.weekday, row]));
   // Remount forms after each save so defaultValue fields pick up DB values.
   const formKey = params.message ?? params.error ?? "settings";
@@ -39,11 +48,82 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       <PageHeader
         eyebrow="Konfiguration"
         title="Einstellungen"
-        description="Kontaktdaten, Bestellarten, Gebühren und reguläre Öffnungszeiten verwalten."
+        description="Kontaktdaten, Bestellarten, Gebühren, Alarmton und reguläre Öffnungszeiten verwalten."
       />
       <Notice message={params.message} error={params.error ?? error ?? undefined} />
 
       <div className="space-y-5">
+        <Card>
+          <h2 className="font-serif text-2xl">Bestellalarm</h2>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            Bei einer neuen Bestellung wird im Admin automatisch ein Ton abgespielt.
+            Einmal «Bestellalarm aktivieren» tippen (Browser-Regel), dann läuft der Alarm.
+          </p>
+          <form
+            key={`alert-enabled-${formKey}`}
+            action={setOrderAlertEnabledAction}
+            className="mt-5 flex flex-wrap items-end gap-3"
+          >
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                name="enabled"
+                value="on"
+                defaultChecked={orderAlert.enabled}
+                className="size-4 rounded border-sage/40"
+              />
+              Alarm aktiv
+            </label>
+            <PendingSubmitButton pendingLabel="Speichern…">Speichern</PendingSubmitButton>
+          </form>
+
+          <div className="mt-6 border-t border-sage/15 pt-5">
+            <p className="text-sm font-semibold">Eigener Alarmton</p>
+            <p className="mt-1 text-xs text-muted">
+              MP3, WAV, OGG oder M4A · max. 3 MB. Ohne Upload wird ein Standard-Piepton verwendet.
+            </p>
+            {orderAlert.soundUrl ? (
+              <audio
+                key={orderAlert.soundUrl}
+                className="mt-3 w-full max-w-md"
+                controls
+                preload="metadata"
+                src={orderAlert.soundUrl}
+              />
+            ) : (
+              <p className="mt-3 text-sm text-muted">Kein eigener Ton hinterlegt.</p>
+            )}
+            <form
+              key={`alert-upload-${formKey}`}
+              action={uploadOrderAlertSoundAction}
+              encType="multipart/form-data"
+              className="mt-4 flex flex-wrap items-end gap-3"
+            >
+              <label className="text-sm font-semibold">
+                Audiodatei
+                <input
+                  className={`${fieldClass} mt-1.5`}
+                  name="sound"
+                  type="file"
+                  accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/mp4,audio/x-m4a,.mp3,.wav,.ogg,.m4a"
+                  required
+                />
+              </label>
+              <PendingSubmitButton pendingLabel="Hochladen…">Hochladen</PendingSubmitButton>
+            </form>
+            {orderAlert.soundUrl ? (
+              <form action={clearOrderAlertSoundAction} className="mt-3">
+                <PendingSubmitButton
+                  variant="secondary"
+                  pendingLabel="Entfernen…"
+                >
+                  Eigenen Ton entfernen
+                </PendingSubmitButton>
+              </form>
+            ) : null}
+          </div>
+        </Card>
+
         <Card>
           <h2 className="font-serif text-2xl">Restaurant</h2>
           <form

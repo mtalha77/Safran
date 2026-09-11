@@ -38,3 +38,5 @@ next-env.d.ts
 # local data
 /data/*.db
 /data/*.db-journal
+
+.tmp-menu-pdf/

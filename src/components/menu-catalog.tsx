@@ -137,7 +137,7 @@ export function MenuCatalog({
               id={category.id}
               className="scroll-mt-44 [content-visibility:auto] [contain-intrinsic-size:auto_700px]"
             >
-              <div className="mb-8 border-b border-sage/30 pb-6">
+              <div className="mb-8 border-b border-sage/30 pb-6 text-center">
                     <p
                       translate="no"
                       className="notranslate text-[10px] font-semibold tracking-[0.28em] text-sage uppercase"
@@ -153,7 +153,7 @@ export function MenuCatalog({
                       </p>
                     )}
                 {(category.noteDe || category.noteEn) && (
-                  <div className="mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-xs leading-5 text-sage-deep">
+                  <div className="mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-left text-xs leading-5 text-sage-deep sm:mx-auto sm:max-w-2xl">
                     {category.noteDe && <p>{category.noteDe}</p>}
                     {category.noteEn && (
                       <p className="text-muted">{category.noteEn}</p>

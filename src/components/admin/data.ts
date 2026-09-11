@@ -77,3 +77,19 @@ export function statusClass(status: string) {
   if (status === "preparing") return "bg-amber-100 text-amber-800";
   return "bg-sage/15 text-sage-deep";
 }
+
+export const printJobStatusLabels: Record<string, string> = {
+  pending: "Warteschlange",
+  printing: "Druckt…",
+  printed: "Gedruckt",
+  failed: "Fehlgeschlagen",
+  cancelled: "Abgebrochen",
+};
+
+export function printStatusClass(status: string) {
+  if (status === "printed") return "bg-emerald-100 text-emerald-800";
+  if (status === "failed") return "bg-red-100 text-red-700";
+  if (status === "printing") return "bg-amber-100 text-amber-800";
+  if (status === "pending") return "bg-sky-100 text-sky-800";
+  return "bg-slate-100 text-slate-700";
+}

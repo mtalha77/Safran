@@ -16,6 +16,13 @@ export const PUBLIC_SETTING_KEYS = [
   "delivery_fee",
 ] as const;
 
+export const ORDER_ALERT_SETTING_KEYS = [
+  "order_alert_enabled",
+  "order_alert_sound_path",
+] as const;
+
+export const ORDER_ALERT_BUCKET = "order-alerts";
+
 /** Flattened checkout rules, exposed by the `store_settings` view. */
 export function findStoreSettings(db: Db) {
   return db
@@ -32,6 +39,49 @@ export function findSiteSettings(db: Db) {
     .from("site_settings")
     .select("key, value")
     .in("key", [...PUBLIC_SETTING_KEYS]);
+}
+
+export function findOrderAlertSettings(db: Db) {
+  return db
+    .from("site_settings")
+    .select("key, value")
+    .in("key", [...ORDER_ALERT_SETTING_KEYS]);
+}
+
+export function upsertOrderAlertSettings(
+  db: Db,
+  input: { enabled: boolean; soundPath: string | null },
+) {
+  const rows: Array<{ key: string; value: Json; is_public: boolean }> = [
+    {
+      key: "order_alert_enabled",
+      value: input.enabled,
+      is_public: true,
+    },
+    {
+      key: "order_alert_sound_path",
+      value: input.soundPath,
+      is_public: true,
+    },
+  ];
+  return db.from("site_settings").upsert(rows, { onConflict: "key" });
+}
+
+export function uploadOrderAlertSound(
+  db: Db,
+  path: string,
+  body: Buffer,
+  contentType: string,
+) {
+  return db.storage.from(ORDER_ALERT_BUCKET).upload(path, body, {
+    contentType,
+    upsert: true,
+  });
+}
+
+export function removeOrderAlertSounds(db: Db, paths: string[]) {
+  if (!paths.length) return Promise.resolve({ data: null, error: null });
+  return db.storage.from(ORDER_ALERT_BUCKET).remove(paths);
 }
 
 export function findAvailability(db: Db) {

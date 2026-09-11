@@ -7,10 +7,11 @@ import {
   refreshSettings,
   refreshStoreStatus,
 } from "@/backend/cache/revalidate";
-import { AuthorizationError, isAppError } from "@/backend/errors";
+import { AuthorizationError, ConflictError, isAppError } from "@/backend/errors";
 import { signInToBackOffice, signOut } from "@/backend/services/auth.service";
 import * as menuService from "@/backend/services/menu.service";
 import * as orderService from "@/backend/services/order.service";
+import * as printService from "@/backend/services/print.service";
 import * as settingsService from "@/backend/services/settings.service";
 
 /**
@@ -136,6 +137,34 @@ export async function updateOrderStatusAction(formData: FormData) {
         .then(() => undefined),
     "Bestellstatus wurde aktualisiert.",
     () => revalidatePath("/admin/orders"),
+  );
+}
+
+export async function reprintOrderBillAction(formData: FormData) {
+  const id = text(formData, "id");
+  const returnTo = safeAdminPath(
+    text(formData, "next") || `/admin/orders/${encodeURIComponent(id)}`,
+    `/admin/orders/${encodeURIComponent(id)}`,
+  );
+
+  await handle(
+    returnTo,
+    async () => {
+      const job = await printService.reprintOrderBill(id);
+      if (job?.status === "failed") {
+        throw new ConflictError(
+          "print_failed",
+          job.last_error
+            ? `Druck fehlgeschlagen: ${job.last_error}`
+            : "Druck fehlgeschlagen.",
+        );
+      }
+    },
+    "Rechnung wurde an den Drucker gesendet.",
+    () => {
+      revalidatePath("/admin/orders");
+      revalidatePath(returnTo);
+    },
   );
 }
 
@@ -303,6 +332,37 @@ export async function updateOpeningHoursAction(formData: FormData) {
     SETTINGS_PATH,
     () => settingsService.updateOpeningHours(days),
     "Öffnungszeiten wurden gespeichert.",
+    refreshSettings,
+  );
+}
+
+export async function setOrderAlertEnabledAction(formData: FormData) {
+  await handle(
+    SETTINGS_PATH,
+    () => settingsService.setOrderAlertEnabled(checked(formData, "enabled")),
+    "Bestellalarm wurde gespeichert.",
+    refreshSettings,
+  );
+}
+
+export async function uploadOrderAlertSoundAction(formData: FormData) {
+  const audio = file(formData, "sound");
+  if (!audio) {
+    destination(SETTINGS_PATH, "error", "Bitte eine Audiodatei auswählen.");
+  }
+  await handle(
+    SETTINGS_PATH,
+    () => settingsService.uploadOrderAlertSound(audio),
+    "Alarmton wurde hochgeladen.",
+    refreshSettings,
+  );
+}
+
+export async function clearOrderAlertSoundAction(_formData?: FormData) {
+  await handle(
+    SETTINGS_PATH,
+    () => settingsService.clearOrderAlertSound(),
+    "Alarmton wurde entfernt (Standardton wird verwendet).",
     refreshSettings,
   );
 }

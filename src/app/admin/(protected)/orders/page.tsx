@@ -1,6 +1,15 @@
 import Link from "next/link";
+import { reprintOrderBillAction } from "@/app/admin/actions";
 import { listOrdersForBackOffice } from "@/backend/services/order.service";
-import { formatDate, formatMoney, getAdminContext, orderStatusLabels, statusClass } from "@/components/admin/data";
+import {
+  formatDate,
+  formatMoney,
+  getAdminContext,
+  orderStatusLabels,
+  printJobStatusLabels,
+  printStatusClass,
+  statusClass,
+} from "@/components/admin/data";
 import { Card, EmptyState, Notice, PageHeader, fieldClass, secondaryButtonClass } from "@/components/admin/ui";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
@@ -15,7 +24,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   if (context.state !== "ready") return null;
   const page = Math.max(1, Number(params.page) || 1);
 
-  const { data: orders, count, error } = await listOrdersForBackOffice({
+  const { data: orders, count, error, printJobsByOrderId } = await listOrdersForBackOffice({
     status: params.status,
     search: params.q,
     page,
@@ -28,7 +37,7 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       <PageHeader
         eyebrow="Bestellmanagement"
         title="Bestellungen"
-        description={`${count ?? 0} Bestellungen gefunden. Öffne einen Eintrag für Details und Statuswechsel.`}
+        description={`${count ?? 0} Bestellungen gefunden. Öffne einen Eintrag für Details, Statuswechsel und Rechnungsdruck.`}
       />
       <Notice message={params.message} error={params.error ?? error?.message} />
 
@@ -57,21 +66,63 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
           <EmptyState title="Keine Bestellungen gefunden">Passe die Filter an oder warte auf eine neue Bestellung.</EmptyState>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-left text-sm">
+            <table className="w-full min-w-[920px] text-left text-sm">
               <thead className="border-b border-sage/15 text-xs uppercase tracking-wider text-muted">
-                <tr><th className="pb-3">Bestellung</th><th className="pb-3">Kunde</th><th className="pb-3">Art</th><th className="pb-3">Eingang</th><th className="pb-3">Status</th><th className="pb-3 text-right">Total</th></tr>
+                <tr>
+                  <th className="pb-3">Bestellung</th>
+                  <th className="pb-3">Kunde</th>
+                  <th className="pb-3">Art</th>
+                  <th className="pb-3">Eingang</th>
+                  <th className="pb-3">Status</th>
+                  <th className="pb-3">Druck</th>
+                  <th className="pb-3 text-right">Total</th>
+                  <th className="pb-3 text-right">Aktion</th>
+                </tr>
               </thead>
               <tbody className="divide-y divide-sage/10">
-                {orders.map((order) => (
-                  <tr key={order.id} className="transition hover:bg-cream/35">
-                    <td className="py-4 font-semibold"><Link href={`/admin/orders/${order.id}`} className="hover:text-sage-deep hover:underline">#{order.order_number ?? String(order.id).slice(0, 8)}</Link></td>
-                    <td className="py-4">{order.customer_name ?? "Gast"}</td>
-                    <td className="py-4 text-muted">{order.fulfillment_type === "delivery" ? "Lieferung" : "Abholung"}</td>
-                    <td className="py-4 text-muted">{formatDate(order.created_at)}</td>
-                    <td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(order.status)}`}>{orderStatusLabels[order.status] ?? order.status}</span></td>
-                    <td className="py-4 text-right font-semibold">{formatMoney(order.total)}</td>
-                  </tr>
-                ))}
+                {orders.map((order) => {
+                  const printJob = printJobsByOrderId.get(order.id);
+                  return (
+                    <tr key={order.id} className="transition hover:bg-cream/35">
+                      <td className="py-4 font-semibold">
+                        <Link href={`/admin/orders/${order.id}`} className="hover:text-sage-deep hover:underline">
+                          #{order.order_number ?? String(order.id).slice(0, 8)}
+                        </Link>
+                      </td>
+                      <td className="py-4">{order.customer_name ?? "Gast"}</td>
+                      <td className="py-4 text-muted">{order.fulfillment_type === "delivery" ? "Lieferung" : "Abholung"}</td>
+                      <td className="py-4 text-muted">{formatDate(order.created_at)}</td>
+                      <td className="py-4">
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(order.status)}`}>
+                          {orderStatusLabels[order.status] ?? order.status}
+                        </span>
+                      </td>
+                      <td className="py-4">
+                        {printJob ? (
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${printStatusClass(printJob.status)}`}>
+                            {printJobStatusLabels[printJob.status] ?? printJob.status}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted">–</span>
+                        )}
+                      </td>
+                      <td className="py-4 text-right font-semibold">{formatMoney(order.total)}</td>
+                      <td className="py-4 text-right">
+                        <form action={reprintOrderBillAction} className="inline">
+                          <input type="hidden" name="id" value={order.id} />
+                          <input type="hidden" name="next" value="/admin/orders" />
+                          <PendingSubmitButton
+                            variant="secondary"
+                            className="!px-3 !py-1.5 !text-xs"
+                            pendingLabel="…"
+                          >
+                            Drucken
+                          </PendingSubmitButton>
+                        </form>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

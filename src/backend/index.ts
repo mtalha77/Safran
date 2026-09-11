@@ -48,6 +48,7 @@ export { parseOrderRequest } from "@/backend/validation/order";
 export * as authService from "@/backend/services/auth.service";
 export * as menuService from "@/backend/services/menu.service";
 export * as orderService from "@/backend/services/order.service";
+export * as printService from "@/backend/services/print.service";
 export * as settingsService from "@/backend/services/settings.service";
 export {
   getFlavorGalleryImages,

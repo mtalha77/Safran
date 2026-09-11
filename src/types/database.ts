@@ -24,6 +24,13 @@ export type OrderStatus =
   | "cancelled";
 export type FulfillmentType = "pickup" | "delivery";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
+export type PrintJobStatus =
+  | "pending"
+  | "printing"
+  | "printed"
+  | "failed"
+  | "cancelled";
+export type PrintTriggerSource = "order_created" | "manual_reprint" | "retry";
 
 type TableDefinition<Row, Insert, Update = Partial<Insert>, Relationships = []> = {
   Row: Row;
@@ -168,6 +175,21 @@ export type OrderStatusEvent = {
   changed_by: string | null;
   note: string | null;
   created_at: string;
+};
+
+export type PrintJob = {
+  id: string;
+  order_id: string;
+  status: PrintJobStatus;
+  trigger_source: PrintTriggerSource;
+  attempts: number;
+  max_attempts: number;
+  next_attempt_at: string;
+  last_error: string | null;
+  printed_at: string | null;
+  payload: Json;
+  created_at: string;
+  updated_at: string;
 };
 
 export type StoreSettings = {
@@ -379,6 +401,46 @@ export interface Database {
           },
         ]
       >;
+      print_jobs: TableDefinition<
+        PrintJob,
+        {
+          id?: string;
+          order_id: string;
+          status?: PrintJobStatus;
+          trigger_source?: PrintTriggerSource;
+          attempts?: number;
+          max_attempts?: number;
+          next_attempt_at?: string;
+          last_error?: string | null;
+          printed_at?: string | null;
+          payload?: Json;
+          created_at?: string;
+          updated_at?: string;
+        },
+        Partial<{
+          id: string;
+          order_id: string;
+          status: PrintJobStatus;
+          trigger_source: PrintTriggerSource;
+          attempts: number;
+          max_attempts: number;
+          next_attempt_at: string;
+          last_error: string | null;
+          printed_at: string | null;
+          payload: Json;
+          created_at: string;
+          updated_at: string;
+        }>,
+        [
+          {
+            foreignKeyName: "print_jobs_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ]
+      >;
     };
     Views: {
       store_settings: {
@@ -408,6 +470,7 @@ export interface Database {
       order_status: OrderStatus;
       fulfillment_type: FulfillmentType;
       payment_status: PaymentStatus;
+      print_job_status: PrintJobStatus;
     };
     CompositeTypes: Record<never, never>;
   };

@@ -12,6 +12,7 @@ export type NewOrderItemRow = Omit<
 >;
 
 export type PersistedOrder = {
+  id: string;
   order_number: string;
   confirmation_token: string;
   total: number;
@@ -24,7 +25,7 @@ export const ORDER_LIST_COLUMNS =
 export function findByIdempotencyKey(db: Db, key: string) {
   return db
     .from("orders")
-    .select("order_number, confirmation_token, total, status")
+    .select("id, order_number, confirmation_token, total, status")
     .eq("idempotency_key", key)
     .maybeSingle();
 }
@@ -92,6 +93,16 @@ export function listRecentOrders(db: Db, limit: number) {
     .select("id, order_number, customer_name, total, status, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
+}
+
+/** Newest order id for kitchen alert polling. */
+export function findLatestOrderId(db: Db) {
+  return db
+    .from("orders")
+    .select("id, created_at, order_number")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 }
 
 export function countOrdersSince(db: Db, since: string) {
@@ -173,6 +184,7 @@ export async function insertOrder(
     >;
     return {
       order: {
+        id: String(row.id ?? ""),
         order_number: String(row.order_number ?? order.order_number),
         confirmation_token: String(
           row.confirmation_token ?? order.confirmation_token,
@@ -187,8 +199,17 @@ export async function insertOrder(
   const inserted = await db.from("orders").insert(order).select("id").single();
   if (inserted.error) {
     const raced = await findByIdempotencyKey(db, String(order.idempotency_key));
-    if (raced.data) {
-      return { order: raced.data as PersistedOrder, failed: false };
+    if (raced.data?.id) {
+      return {
+        order: {
+          id: String(raced.data.id),
+          order_number: String(raced.data.order_number),
+          confirmation_token: String(raced.data.confirmation_token),
+          total: Number(raced.data.total),
+          status: String(raced.data.status || "pending"),
+        },
+        failed: false,
+      };
     }
     return { order: null, failed: true };
   }
@@ -214,6 +235,7 @@ export async function insertOrder(
 
   return {
     order: {
+      id: orderId,
       order_number: String(order.order_number),
       confirmation_token: String(order.confirmation_token),
       total: Number(order.total),

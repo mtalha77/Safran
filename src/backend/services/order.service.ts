@@ -26,12 +26,14 @@ import {
 } from "@/backend/errors";
 import * as menuRepository from "@/backend/repositories/menu.repository";
 import * as orderRepository from "@/backend/repositories/order.repository";
+import * as printJobRepository from "@/backend/repositories/print-job.repository";
 import * as settingsRepository from "@/backend/repositories/settings.repository";
+import { enqueueOrderPrintJob } from "@/backend/services/print.service";
 import { createServiceClient } from "@/backend/supabase/clients";
 import type { CreatedOrder, OrderRequest } from "@/backend/types";
 import { menuItemNumber } from "@/backend/validation/order";
 import { isUuid } from "@/backend/validation/primitives";
-import type { Database, OrderStatus } from "@/types/database";
+import type { Database, OrderStatus, PrintJob } from "@/types/database";
 
 type Db = SupabaseClient<Database>;
 
@@ -208,6 +210,16 @@ export async function createCashOrder(
     );
   }
 
+  // Bill print: save a print_jobs row first, then trigger the printer. Failures
+  // stay queued for retry and never block checkout.
+  if (result.order.id) {
+    void enqueueOrderPrintJob({
+      orderId: result.order.id,
+      triggerSource: "order_created",
+      db,
+    });
+  }
+
   return {
     orderNumber: result.order.order_number,
     confirmationToken: result.order.confirmation_token,
@@ -290,26 +302,49 @@ export async function listOrdersForBackOffice(query: {
   pageSize: number;
 }) {
   const { supabase } = await requireCapability("orders:read");
+  const db = supabase as unknown as Db;
   const from = Math.max(0, (query.page - 1) * query.pageSize);
 
-  return orderRepository.listOrders(supabase as unknown as Db, {
+  const result = await orderRepository.listOrders(db, {
     status: isOrderStatus(query.status) ? query.status : undefined,
     search: query.search,
     from,
     to: from + query.pageSize - 1,
   });
+
+  const orderIds = (result.data ?? []).map((order) => order.id);
+  const printResult = orderIds.length
+    ? await printJobRepository.findLatestPrintJobsForOrders(db, orderIds)
+    : { data: [], error: null };
+
+  const latestPrint = new Map<string, PrintJob>();
+  for (const job of printResult.data ?? []) {
+    if (!latestPrint.has(job.order_id)) latestPrint.set(job.order_id, job);
+  }
+
+  return {
+    ...result,
+    printJobsByOrderId: latestPrint,
+  };
 }
 
 export async function getOrderForBackOffice(orderId: string) {
   const { supabase, actor } = await requireCapability("orders:read");
   if (!isUuid(orderId)) {
-    return { order: null, items: [], transitions: [], error: null as string | null };
+    return {
+      order: null,
+      items: [],
+      transitions: [],
+      printJob: null,
+      error: null as string | null,
+    };
   }
 
   const db = supabase as unknown as Db;
-  const [orderResult, itemsResult] = await Promise.all([
+  const [orderResult, itemsResult, printResult] = await Promise.all([
     orderRepository.findOrderById(db, orderId),
     orderRepository.findOrderItems(db, orderId),
+    printJobRepository.findLatestPrintJobForOrder(db, orderId),
   ]);
 
   const status = orderResult.data?.status;
@@ -317,10 +352,15 @@ export async function getOrderForBackOffice(orderId: string) {
   return {
     order: orderResult.data ?? null,
     items: itemsResult.data ?? [],
+    printJob: printResult.data ?? null,
     transitions: isOrderStatus(status)
       ? allowedTransitionsFor(actor.role as AppRole, status)
       : [],
-    error: orderResult.error?.message ?? itemsResult.error?.message ?? null,
+    error:
+      orderResult.error?.message ??
+      itemsResult.error?.message ??
+      printResult.error?.message ??
+      null,
   };
 }
 
@@ -385,6 +425,16 @@ export type OverviewKpis = {
   /** Orders still in the kitchen / handoff pipeline today. */
   inProgress: number;
 };
+
+export async function getLatestOrderForAlert() {
+  const { supabase } = await requireCapability("orders:read");
+  const db = supabase as unknown as Db;
+  const { data, error } = await orderRepository.findLatestOrderId(db);
+  if (error) throw new UnavailableError("orders_read_failed", error.message);
+  return data
+    ? { id: data.id, createdAt: data.created_at, orderNumber: data.order_number }
+    : null;
+}
 
 export async function getBackOfficeOverview() {
   const { supabase } = await requireCapability("orders:read");

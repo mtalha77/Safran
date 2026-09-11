@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { logoutAction } from "@/app/admin/actions";
+import { OrderAlertWatcher } from "@/components/admin/order-alert-watcher";
 import { AdminStoreToggle } from "@/components/admin/store-toggle";
 
 export const fieldClass =
@@ -101,6 +102,7 @@ export function AdminShell({
           {children}
         </div>
       </div>
+      <OrderAlertWatcher />
     </div>
   );
 }

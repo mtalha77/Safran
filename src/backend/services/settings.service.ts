@@ -3,13 +3,30 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireCapability } from "@/backend/auth/authorize";
 import { UnavailableError } from "@/backend/errors";
+import {
+  orderAlertSoundPublicUrl,
+  validateOrderAlertAudio,
+} from "@/backend/media/order-alert-audio";
 import * as settingsRepository from "@/backend/repositories/settings.repository";
 import { parseOpeningHours, parseRestaurantSettings } from "@/backend/validation/settings";
-import type { Database } from "@/types/database";
+import type { Database, Json } from "@/types/database";
 
 type Db = SupabaseClient<Database>;
 
 const CLOSED_REASON = "Online-Bestellungen sind derzeit geschlossen.";
+
+function jsonString(value: Json | undefined): string | null {
+  if (typeof value === "string") return value;
+  if (value == null) return null;
+  return String(value);
+}
+
+function jsonBool(value: Json | undefined, fallback: boolean): boolean {
+  if (typeof value === "boolean") return value;
+  if (value === "true") return true;
+  if (value === "false") return false;
+  return fallback;
+}
 
 async function settingsContext() {
   const { supabase } = await requireCapability("settings:manage");
@@ -44,11 +61,16 @@ export async function getRestaurantSettings() {
   const { supabase } = await requireCapability("settings:manage");
   const db = supabase as unknown as Db;
 
-  const [settings, availability, hours] = await Promise.all([
+  const [settings, availability, hours, alerts] = await Promise.all([
     settingsRepository.findSiteSettings(db),
     settingsRepository.findAvailability(db),
     settingsRepository.findOpeningHours(db),
+    settingsRepository.findOrderAlertSettings(db),
   ]);
+
+  const alertMap = Object.fromEntries(
+    (alerts.data ?? []).map((row) => [row.key, row.value]),
+  );
 
   return {
     settings: Object.fromEntries(
@@ -56,12 +78,98 @@ export async function getRestaurantSettings() {
     ),
     availability: availability.data ?? null,
     hours: hours.data ?? [],
+    orderAlert: {
+      enabled: jsonBool(alertMap.order_alert_enabled, true),
+      soundPath: jsonString(alertMap.order_alert_sound_path),
+      soundUrl: orderAlertSoundPublicUrl(
+        jsonString(alertMap.order_alert_sound_path),
+      ),
+    },
     error:
       settings.error?.message ??
       availability.error?.message ??
       hours.error?.message ??
+      alerts.error?.message ??
       null,
   };
+}
+
+/** Readable by kitchen staff — used by the admin alert poller. */
+export async function getOrderAlertConfig() {
+  const { supabase } = await requireCapability("orders:read");
+  const db = supabase as unknown as Db;
+  const { data, error } = await settingsRepository.findOrderAlertSettings(db);
+  if (error) throw new UnavailableError("order_alert_read_failed", error.message);
+
+  const map = Object.fromEntries((data ?? []).map((row) => [row.key, row.value]));
+  const soundPath = jsonString(map.order_alert_sound_path);
+  return {
+    enabled: jsonBool(map.order_alert_enabled, true),
+    soundPath,
+    soundUrl: orderAlertSoundPublicUrl(soundPath),
+  };
+}
+
+export async function setOrderAlertEnabled(enabled: boolean) {
+  const db = await settingsContext();
+  const current = await settingsRepository.findOrderAlertSettings(db);
+  const map = Object.fromEntries(
+    (current.data ?? []).map((row) => [row.key, row.value]),
+  );
+  const { error } = await settingsRepository.upsertOrderAlertSettings(db, {
+    enabled,
+    soundPath: jsonString(map.order_alert_sound_path),
+  });
+  if (error) throw new UnavailableError("order_alert_save_failed", error.message);
+}
+
+export async function uploadOrderAlertSound(file: File) {
+  const db = await settingsContext();
+  const audio = await validateOrderAlertAudio(file);
+  const path = `new-order.${audio.extension}`;
+
+  const current = await settingsRepository.findOrderAlertSettings(db);
+  const map = Object.fromEntries(
+    (current.data ?? []).map((row) => [row.key, row.value]),
+  );
+  const previousPath = jsonString(map.order_alert_sound_path);
+
+  const { error: uploadError } = await settingsRepository.uploadOrderAlertSound(
+    db,
+    path,
+    audio.buffer,
+    audio.contentType,
+  );
+  if (uploadError) {
+    throw new UnavailableError("order_alert_upload_failed", uploadError.message);
+  }
+
+  if (previousPath && previousPath !== path) {
+    await settingsRepository.removeOrderAlertSounds(db, [previousPath]);
+  }
+
+  const { error } = await settingsRepository.upsertOrderAlertSettings(db, {
+    enabled: jsonBool(map.order_alert_enabled, true),
+    soundPath: path,
+  });
+  if (error) throw new UnavailableError("order_alert_save_failed", error.message);
+}
+
+export async function clearOrderAlertSound() {
+  const db = await settingsContext();
+  const current = await settingsRepository.findOrderAlertSettings(db);
+  const map = Object.fromEntries(
+    (current.data ?? []).map((row) => [row.key, row.value]),
+  );
+  const previousPath = jsonString(map.order_alert_sound_path);
+  if (previousPath) {
+    await settingsRepository.removeOrderAlertSounds(db, [previousPath]);
+  }
+  const { error } = await settingsRepository.upsertOrderAlertSettings(db, {
+    enabled: jsonBool(map.order_alert_enabled, true),
+    soundPath: null,
+  });
+  if (error) throw new UnavailableError("order_alert_save_failed", error.message);
 }
 
 export async function updateRestaurantSettings(input: Record<string, unknown>) {
