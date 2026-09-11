@@ -39,45 +39,51 @@ export function MenuCategoriesSection({
         {categories.map((category, index) => (
           <li key={category.name}>
             <Reveal delay={(index % 4) * 60}>
-            <Link
-              href={category.href}
-              className="group relative flex h-32 items-center overflow-hidden rounded-2xl px-4 transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-72 sm:h-36 sm:px-10 sm:hover:h-80"
-            >
-              <div
-                className="absolute inset-y-4 left-4 w-28 overflow-hidden rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:inset-0 group-hover:left-0 group-hover:w-full sm:left-10 sm:w-40"
-                aria-hidden
+              <Link
+                href={category.href}
+                className="group relative flex h-32 items-center gap-3 overflow-hidden rounded-2xl px-3 transition-[height] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:h-72 sm:h-36 sm:gap-0 sm:px-10 sm:hover:h-80"
               >
-                <Image
-                  src={category.image}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 100vw, (hover: hover) 1280px, 160px"
-                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                {/* Mobile: in-flow thumbnail so title/arrow stay in frame */}
+                <div className="relative z-10 h-20 w-20 shrink-0 overflow-hidden rounded-2xl sm:hidden">
+                  <Image
+                    src={category.image}
+                    alt=""
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
+
+                {/* Desktop: absolute thumbnail that expands on hover */}
+                <div
+                  className="pointer-events-none absolute inset-y-4 left-10 hidden w-40 overflow-hidden rounded-2xl transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:inset-0 group-hover:left-0 group-hover:w-full sm:block"
+                  aria-hidden
+                >
+                  <Image
+                    src={category.image}
+                    alt=""
+                    fill
+                    sizes="(hover: hover) 1280px, 160px"
+                    className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                  />
+                  <span className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-black/20" />
+                </div>
+                <span
+                  className="absolute inset-0 hidden bg-black/0 transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-black/30 sm:block"
+                  aria-hidden
                 />
-                <span className="absolute inset-0 bg-gradient-to-r from-black/45 via-black/10 to-black/20" />
-              </div>
-              <span
-                className="absolute inset-0 bg-black/0 transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:bg-black/30"
-                aria-hidden
-              />
 
-              {/*
-                Fluid size instead of breakpoint steps: the longest category name
-                ("Gerichte mit Fisch & Crevetten") has to stay on one line next to
-                the thumbnail, so the size tracks the space actually left over
-                rather than jumping at fixed widths.
-              */}
-              <span className="relative z-10 ml-36 font-serif text-2xl leading-tight tracking-[0.06em] text-cream uppercase transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:ml-0 group-hover:pl-8 group-hover:text-3xl group-hover:text-white sm:ml-48 sm:shrink-0 sm:whitespace-nowrap sm:text-[clamp(1.15rem,calc(4.5vw-16px),2.5rem)] sm:group-hover:pl-10 sm:group-hover:text-[clamp(1.3rem,calc(5vw-16px),3rem)]">
-                {category.name}
-              </span>
-              <span className="relative z-10 ml-6 hidden min-w-0 truncate text-xs tracking-wide text-white/0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80 sm:block">
-                {category.subtitle}
-              </span>
+                <span className="relative z-10 min-w-0 flex-1 font-serif text-lg leading-tight tracking-[0.04em] text-cream uppercase transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:pl-8 group-hover:text-3xl group-hover:text-white sm:ml-48 sm:flex-none sm:shrink-0 sm:whitespace-nowrap sm:text-[clamp(1.15rem,calc(4.5vw-16px),2.5rem)] sm:group-hover:ml-0 sm:group-hover:pl-10 sm:group-hover:text-[clamp(1.3rem,calc(5vw-16px),3rem)]">
+                  {category.name}
+                </span>
+                <span className="relative z-10 ml-6 hidden min-w-0 truncate text-xs tracking-wide text-white/0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80 sm:block">
+                  {category.subtitle}
+                </span>
 
-              <span className="relative z-10 ml-auto flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-cream/50 text-cream transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-gold group-hover:bg-gold group-hover:text-ink sm:h-14 sm:w-14">
-                <ArrowIcon />
-              </span>
-            </Link>
+                <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/50 text-cream transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-gold group-hover:bg-gold group-hover:text-ink sm:ml-auto sm:h-14 sm:w-14">
+                  <ArrowIcon />
+                </span>
+              </Link>
             </Reveal>
           </li>
         ))}
