@@ -61,7 +61,8 @@ export function SiteHeader() {
       >
         <Link
           href="/"
-          className={`font-serif text-[34px] leading-none ${
+          translate="no"
+          className={`notranslate font-serif text-[34px] leading-none ${
             floating ? "text-sage" : "text-white"
           }`}
         >

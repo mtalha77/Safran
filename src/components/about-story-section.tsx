@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import restaurantImage from "../../public/images/hero-safran.jpg";
-import foodImage from "../../public/images/menu/tandoori.webp";
+import foodImage from "../../public/brand/safran-parcel.jpg";
 import { Reveal } from "@/components/reveal";
 
 function FoodMark() {
@@ -105,16 +105,16 @@ export function AboutStorySection() {
 
             <Reveal
               delay={140}
-              className="reveal-right absolute bottom-0 left-0 h-[46%] w-[48%]"
+              className="reveal-right absolute bottom-[8%] left-0 w-[58%] sm:bottom-[6%] sm:w-[54%]"
             >
-              <div className="relative h-full w-full overflow-hidden rounded-2xl border-4 border-ink shadow-2xl">
+              <div className="relative aspect-[1024/546] w-full overflow-hidden rounded-2xl border-4 border-ink shadow-2xl">
                 <Image
                   src={foodImage}
-                  alt="Frisch zubereitete Tandoori-Spezialitäten bei Safran"
+                  alt="Safran — Indisches Restaurant"
                   fill
-                  sizes="(max-width: 1024px) 48vw, 300px"
+                  sizes="(max-width: 1024px) 58vw, 340px"
                   placeholder="blur"
-                  className="object-cover transition-transform duration-700 hover:scale-105"
+                  className="object-cover object-center"
                 />
               </div>
             </Reveal>

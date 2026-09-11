@@ -14,7 +14,7 @@ export type { Row };
 const CATEGORY_QUERY =
   "select=id,title,subtitle,sort_order,is_active,image_path,note_de,note_en&is_active=eq.true&order=sort_order";
 const ITEM_QUERY =
-  "select=id,category_id,item_number,name,description_de,description_en,price,is_active,sort_order&is_active=eq.true&order=sort_order";
+  "select=id,category_id,item_number,name,description_de,description_en,price,is_active,sort_order,image_path&is_active=eq.true&order=sort_order";
 
 export const readCategories = cache(() =>
   readRows("menu_categories", CATEGORY_QUERY, [CACHE_TAGS.menu], CACHE_SECONDS.menu),

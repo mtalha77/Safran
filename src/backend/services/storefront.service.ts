@@ -2,6 +2,11 @@ import "server-only";
 
 import { cache } from "react";
 import {
+  fallbackMenuItemImage,
+  menuImagePublicUrl,
+  resolveMenuItemImage,
+} from "@/backend/media/menu-image-url";
+import {
   readCategories,
   readContentBlocks,
   readItems,
@@ -191,6 +196,7 @@ function normalizeMenu(categoryRows: Row[] | null, itemRows: Row[] | null): Menu
               descriptionDe: text(item.description_de),
               descriptionEn: text(item.description_en),
               price,
+              imageUrl: resolveMenuItemImage(text(item.image_path), itemNumber),
             },
           ];
         });
@@ -209,29 +215,45 @@ function normalizeMenu(categoryRows: Row[] | null, itemRows: Row[] | null): Menu
   return categories.length ? categories : fallbackMenuCategories;
 }
 
-function categoryImage(row: Row | undefined, fallbackNumber: number) {
-  const imagePath = text(row?.image_path);
-  if (!imagePath) {
-    return `/images/menu/items/${String(fallbackNumber).padStart(3, "0")}.webp`;
-  }
-  return imagePath.startsWith("/") || imagePath.startsWith("http")
-    ? imagePath
-    : `/images/menu/${imagePath}`;
+function firstItemInCategory(categoryId: string, itemRows: Row[] | null): Row | undefined {
+  if (!itemRows?.length) return undefined;
+  return [...itemRows]
+    .filter((item) => String(item.category_id ?? "") === categoryId)
+    .filter((item) => boolean(item.is_active))
+    .sort(
+      (a, b) =>
+        (number(a.sort_order ?? a.item_number) ?? 0) -
+        (number(b.sort_order ?? b.item_number) ?? 0),
+    )[0];
 }
 
-function homepageCategoriesFromRows(rows: Row[]): HomepageCategory[] {
+/** Category tiles use the first menu item's image (admin uploads), then static fallback. */
+function categoryTileImage(categoryId: string, itemRows: Row[] | null, fallbackNumber: number) {
+  const first = firstItemInCategory(categoryId, itemRows);
+  const itemNumber = number(first?.item_number) ?? fallbackNumber;
+  if (first) {
+    return resolveMenuItemImage(text(first.image_path), itemNumber);
+  }
+  return fallbackMenuItemImage(fallbackNumber);
+}
+
+function homepageCategoriesFromRows(
+  rows: Row[],
+  itemRows: Row[] | null,
+): HomepageCategory[] {
   return [...rows]
     .filter((row) => boolean(row.is_active))
     .sort((a, b) => (number(a.sort_order) ?? 0) - (number(b.sort_order) ?? 0))
     .flatMap((row) => {
       const id = text(row.slug) ?? text(row.id);
       if (!id) return [];
+      const databaseId = String(row.id ?? "");
       return [
         {
           name: text(row.title) ?? id,
           subtitle: text(row.subtitle) ?? "",
           href: `/speisekarte#${id}`,
-          image: categoryImage(row, number(row.sort_order) ?? 1),
+          image: categoryTileImage(databaseId, itemRows, number(row.sort_order) ?? 1),
         },
       ];
     });
@@ -242,7 +264,7 @@ function homepageFromFallback(): HomepageCategory[] {
     name: category.title,
     subtitle: category.subtitle ?? "",
     href: `/speisekarte#${category.id}`,
-    image: categoryImage(undefined, category.items[0]?.number ?? 1),
+    image: fallbackMenuItemImage(category.items[0]?.number ?? 1),
   }));
 }
 
@@ -278,8 +300,10 @@ export const getStorefrontChrome = cache(async (): Promise<StorefrontChrome> => 
 });
 
 export const getHomepageCategories = cache(async (): Promise<HomepageCategory[]> => {
-  const categoryRows = await readCategories();
-  const fromRows = categoryRows?.length ? homepageCategoriesFromRows(categoryRows) : [];
+  const [categoryRows, itemRows] = await Promise.all([readCategories(), readItems()]);
+  const fromRows = categoryRows?.length
+    ? homepageCategoriesFromRows(categoryRows, itemRows)
+    : [];
   return fromRows.length ? fromRows : homepageFromFallback();
 });
 
@@ -287,6 +311,60 @@ export const getMenuCategories = cache(async (): Promise<MenuCategory[]> => {
   const [categoryRows, itemRows] = await Promise.all([readCategories(), readItems()]);
   return normalizeMenu(categoryRows, itemRows);
 });
+
+/** Uploaded menu photos for homepage gallery (skips drinks/sides when possible). */
+export const getFlavorGalleryImages = cache(
+  async (limit = 8): Promise<Array<{ src: string; alt: string }>> => {
+    const itemRows = await readItems();
+    if (!itemRows?.length) return [];
+
+    const skipName =
+      /\b(wasser|water|cola|fanta|sprite|getr[aä]nk|drink|pommes|fries|papadam|pappadom|chutney|raita|joghurt|lassi|limo|softdrink)\b/i;
+
+    const activeItems = itemRows
+      .filter((item) => boolean(item.is_active) && text(item.image_path))
+      .sort(
+        (a, b) =>
+          (number(a.sort_order ?? a.item_number) ?? 0) -
+          (number(b.sort_order ?? b.item_number) ?? 0),
+      );
+
+    const score = (name: string) => (skipName.test(name) ? 1 : 0);
+
+    const ranked = [...activeItems].sort((a, b) => {
+      const nameA = text(a.name) ?? "";
+      const nameB = text(b.name) ?? "";
+      return score(nameA) - score(nameB);
+    });
+
+    const picked: Array<{ src: string; alt: string }> = [];
+    const seenCategories = new Set<string>();
+
+    for (const item of ranked) {
+      const name = text(item.name);
+      if (!name || skipName.test(name)) continue;
+      const categoryId = String(item.category_id ?? "");
+      if (!categoryId || seenCategories.has(categoryId)) continue;
+      const src = menuImagePublicUrl(text(item.image_path));
+      if (!src) continue;
+      seenCategories.add(categoryId);
+      picked.push({ src, alt: name });
+      if (picked.length >= limit) return picked;
+    }
+
+    for (const item of ranked) {
+      const name = text(item.name);
+      if (!name || skipName.test(name)) continue;
+      const src = menuImagePublicUrl(text(item.image_path));
+      if (!src) continue;
+      if (picked.some((entry) => entry.src === src)) continue;
+      picked.push({ src, alt: name });
+      if (picked.length >= limit) break;
+    }
+
+    return picked;
+  },
+);
 
 export const getStorefrontData = cache(async (): Promise<StorefrontData> => {
   const [chrome, menuCategories, homepageCategories] = await Promise.all([

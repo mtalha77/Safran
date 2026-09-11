@@ -49,7 +49,8 @@ export function SiteFooter({
           <div>
             <Link
               href="/"
-              className="font-serif text-5xl leading-none text-cream"
+              translate="no"
+              className="notranslate font-serif text-5xl leading-none text-cream"
             >
               {settings.restaurantName}
             </Link>
@@ -120,8 +121,11 @@ export function SiteFooter({
 
         <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-7 text-[11px] text-cream/45 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} Safran. Alle Rechte
-              vorbehalten.
+            © {new Date().getFullYear()}{" "}
+            <span translate="no" className="notranslate">
+              Safran
+            </span>
+            . Alle Rechte vorbehalten.
           </p>
           <p>100% Halal · Ohne Alkohol · Abholung &amp; Lieferung</p>
         </div>

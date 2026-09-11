@@ -1,16 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { config as loadEnv } from "dotenv";
-import { existsSync } from "node:fs";
-import { readFile, readdir } from "node:fs/promises";
-import path from "node:path";
 
 import { menuCategories } from "../src/data/menu";
 import type { Database, Json } from "../src/types/database";
 
 loadEnv({ path: [".env.local", ".env"], quiet: true });
 
-const projectRoot = path.resolve(import.meta.dirname, "..");
-const imageRoot = path.join(projectRoot, "public", "images", "menu");
 const skipStorage = process.argv.includes("--skip-storage");
 
 const url =
@@ -33,11 +28,6 @@ const supabase = createClient<Database>(url, serviceRoleKey, {
   },
 });
 
-function categoryImagePath(categoryId: string): string | null {
-  const fileName = `${categoryId}.webp`;
-  return existsSync(path.join(imageRoot, fileName)) ? fileName : null;
-}
-
 async function upsertContent() {
   const categories = menuCategories.map((category, categoryIndex) => ({
     id: category.id,
@@ -45,7 +35,7 @@ async function upsertContent() {
     subtitle: category.subtitle ?? null,
     note_de: category.noteDe ?? null,
     note_en: category.noteEn ?? null,
-    image_path: categoryImagePath(category.id),
+    image_path: null,
     sort_order: categoryIndex,
     is_active: true,
   }));
@@ -58,7 +48,7 @@ async function upsertContent() {
       description_de: item.descriptionDe ?? null,
       description_en: item.descriptionEn ?? null,
       price: item.price,
-      image_path: `items/${String(item.number).padStart(3, "0")}.webp`,
+      image_path: null,
       sort_order: itemIndex,
       is_active: true,
     })),
@@ -202,44 +192,8 @@ async function uploadMenuImages() {
     return;
   }
 
-  const itemsDirectory = path.join(imageRoot, "items");
-  const entries = await readdir(itemsDirectory, { withFileTypes: true });
-  const files = entries
-    .filter((entry) => entry.isFile())
-    .map((entry) => entry.name)
-    .filter((name) => /\.(?:avif|jpe?g|png|webp)$/i.test(name))
-    .sort();
-
-  const contentTypes: Record<string, string> = {
-    ".avif": "image/avif",
-    ".jpeg": "image/jpeg",
-    ".jpg": "image/jpeg",
-    ".png": "image/png",
-    ".webp": "image/webp",
-  };
-
-  for (let index = 0; index < files.length; index += 8) {
-    const batch = files.slice(index, index + 8);
-    await Promise.all(
-      batch.map(async (fileName) => {
-        const body = await readFile(path.join(itemsDirectory, fileName));
-        const extension = path.extname(fileName).toLowerCase();
-        const { error } = await supabase.storage
-          .from("menu-images")
-          .upload(`items/${fileName}`, body, {
-            contentType: contentTypes[extension],
-            cacheControl: "31536000",
-            upsert: true,
-          });
-
-        if (error) {
-          throw new Error(`Could not upload ${fileName}: ${error.message}`);
-        }
-      }),
-    );
-  }
-
-  console.log(`Uploaded ${files.length} menu item images.`);
+  // Local AI menu assets were removed; item photos come from the admin upload flow.
+  console.log("Skipped Storage upload (no local menu image pack).");
 }
 
 async function promoteConfiguredAdmin() {

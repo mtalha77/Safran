@@ -138,7 +138,10 @@ export function MenuCatalog({
               className="scroll-mt-44 [content-visibility:auto] [contain-intrinsic-size:auto_700px]"
             >
               <div className="mb-8 border-b border-sage/30 pb-6">
-                    <p className="text-[10px] font-semibold tracking-[0.28em] text-sage uppercase">
+                    <p
+                      translate="no"
+                      className="notranslate text-[10px] font-semibold tracking-[0.28em] text-sage uppercase"
+                    >
                       Safran Speisekarte
                     </p>
                     <h2 className="mt-2 font-serif text-4xl text-ink sm:text-5xl">
@@ -171,7 +174,7 @@ export function MenuCatalog({
                     >
                       <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-2xl bg-sage/10 sm:w-44">
                         <Image
-                          src={`/images/menu/items/${String(item.number).padStart(3, "0")}.webp`}
+                          src={item.imageUrl ?? "/brand/safran-parcel.jpg"}
                           alt={item.name}
                           fill
                           sizes="(max-width: 640px) calc(100vw - 64px), 176px"

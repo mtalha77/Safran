@@ -1,20 +1,20 @@
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
-import biryaniImage from "../../public/images/menu/biryani.webp";
-import curryImage from "../../public/images/menu/curry.webp";
-import dessertsImage from "../../public/images/menu/desserts.webp";
-import tandooriImage from "../../public/images/menu/tandoori.webp";
-import vegetarischImage from "../../public/images/menu/vegetarisch.webp";
-import vorspeisenImage from "../../public/images/menu/vorspeisen.webp";
+import parcelImage from "../../public/brand/safran-parcel.jpg";
 import { Reveal } from "@/components/reveal";
 
-const galleryImages: { image: StaticImageData; alt: string }[] = [
-  { image: vorspeisenImage, alt: "Samosas und Pakoras" },
-  { image: vegetarischImage, alt: "Vegetarische indische Gerichte" },
-  { image: tandooriImage, alt: "Tandoori Spezialitäten" },
-  { image: curryImage, alt: "Indische Curry-Spezialitäten" },
-  { image: biryaniImage, alt: "Aromatisches Biryani" },
-  { image: dessertsImage, alt: "Indische Desserts und Getränke" },
+export type GalleryImage = {
+  src: string | StaticImageData;
+  alt: string;
+};
+
+const fallbackGallery: GalleryImage[] = [
+  { src: parcelImage, alt: "Safran Takeaway" },
+  { src: parcelImage, alt: "Frisch zubereitete Gerichte von Safran" },
+  { src: parcelImage, alt: "Indische Küche zum Mitnehmen" },
+  { src: parcelImage, alt: "Safran Romanshorn" },
+  { src: parcelImage, alt: "Aromatische Spezialitäten" },
+  { src: parcelImage, alt: "Safran Lieferung" },
 ];
 
 function ArrowIcon() {
@@ -31,13 +31,15 @@ function ArrowIcon() {
 }
 
 function GalleryRow({
+  images,
   reverse = false,
   offset = false,
 }: {
+  images: GalleryImage[];
   reverse?: boolean;
   offset?: boolean;
 }) {
-  const items = [...galleryImages, ...galleryImages];
+  const items = [...images, ...images];
 
   return (
     <div
@@ -51,10 +53,9 @@ function GalleryRow({
           className="relative h-28 w-44 shrink-0 overflow-hidden rounded-xl border-2 border-white/80 bg-ink shadow-2xl sm:h-40 sm:w-64"
         >
           <Image
-            src={item.image}
-            alt={index < galleryImages.length ? item.alt : ""}
+            src={item.src}
+            alt={index < images.length ? item.alt : ""}
             fill
-            placeholder="blur"
             sizes="(max-width: 640px) 176px, 256px"
             className="object-cover"
           />
@@ -64,19 +65,23 @@ function GalleryRow({
   );
 }
 
-export function FlavorGallerySection() {
+export function FlavorGallerySection({
+  images,
+}: {
+  images?: GalleryImage[];
+}) {
+  const galleryImages =
+    images && images.length > 0 ? images : fallbackGallery;
+
   return (
     <section className="relative isolate -mt-px min-h-[500px] overflow-hidden bg-sage-deep py-8 [content-visibility:auto] [contain-intrinsic-size:auto_560px] sm:min-h-[560px] sm:py-10">
       <div className="absolute inset-0 flex flex-col justify-center gap-3 opacity-70 [mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_100%)] sm:gap-5">
-        <GalleryRow />
-        <GalleryRow reverse offset />
-        <GalleryRow />
+        <GalleryRow images={galleryImages} />
+        <GalleryRow images={galleryImages} reverse offset />
+        <GalleryRow images={galleryImages} />
       </div>
 
-      <div
-        className="absolute inset-0 bg-ink/40"
-        aria-hidden
-      />
+      <div className="absolute inset-0 bg-ink/40" aria-hidden />
       <div
         className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(47,13,41,0.94)_0%,rgba(47,13,41,0.82)_28%,rgba(47,13,41,0.2)_68%)]"
         aria-hidden

@@ -5,8 +5,6 @@ import {
   deleteMenuItemAction,
   replaceMenuItemImageAction,
   setMenuItemAvailabilityAction,
-  sortCategoriesAction,
-  sortMenuItemsAction,
   updateCategoryAction,
   updateMenuItemAction,
 } from "@/app/admin/actions";
@@ -35,7 +33,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
       <PageHeader
         eyebrow="Sortiment"
         title="Speisekarte"
-        description="Kategorien und Gerichte bearbeiten, sortieren oder vorÃ¼bergehend ausblenden."
+        description="Kategorien und Gerichte bearbeiten, sortieren oder vorÃÂ¼bergehend ausblenden."
       />
       <Notice message={params.message} error={params.error ?? error ?? undefined} />
 
@@ -80,22 +78,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                 </EmptyState>
               </div>
             ) : (
-              <>
-                <form action={sortCategoriesAction} className="mt-3">
-                  <input
-                    type="hidden"
-                    name="ordered_ids"
-                    value={categories.map((category) => category.id).join(",")}
-                  />
-                  <PendingSubmitButton
-                    variant="secondary"
-                    className="w-full"
-                    pendingLabel="Wird gespeichert..."
-                  >
-                    Angezeigte Reihenfolge speichern
-                  </PendingSubmitButton>
-                </form>
-                <div className="mt-3 space-y-2">
+              <div className="mt-3 space-y-2">
                   {categories.map((category) => (
                     <details
                       key={category.id}
@@ -157,16 +140,15 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                           <PendingSubmitButton
                             variant="danger"
                             className="w-full"
-                            pendingLabel="Wird gelÃ¶scht..."
+                            pendingLabel="Wird gelÃÂ¶scht..."
                           >
-                            Leere Kategorie lÃ¶schen
+                            Leere Kategorie lÃÂ¶schen
                           </PendingSubmitButton>
                         </form>
                       </div>
                     </details>
                   ))}
                 </div>
-              </>
             )}
           </Card>
         </div>
@@ -178,7 +160,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                 <span className="flex items-center justify-between">
                   <span className="font-serif text-xl">Neues Gericht</span>
                   <span className="inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white">
-                    + HinzufÃ¼gen
+                    + HinzufÃÂ¼gen
                   </span>
                 </span>
               </summary>
@@ -193,7 +175,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                     name="category_id"
                     required
                   >
-                    <option value="">AuswÃ¤hlen</option>
+                    <option value="">AuswÃÂ¤hlen</option>
                     {categories?.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.title}
@@ -261,7 +243,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                   <input name="is_available" type="checkbox" defaultChecked />{" "}
-                  VerfÃ¼gbar
+                  VerfÃÂ¼gbar
                 </label>
                 <PendingSubmitButton
                   className="sm:col-span-2"
@@ -287,26 +269,11 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
               if (!categoryItems.length) return null;
               return (
                 <Card key={category.id}>
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div>
-                      <h2 className="font-serif text-2xl">{category.title}</h2>
-                      <p className="text-sm text-muted">
-                        {categoryItems.length} Gerichte
-                      </p>
-                    </div>
-                    <form action={sortMenuItemsAction}>
-                      <input
-                        type="hidden"
-                        name="ordered_ids"
-                        value={categoryItems.map((item) => item.id).join(",")}
-                      />
-                      <PendingSubmitButton
-                        variant="secondary"
-                        pendingLabel="Wird gespeichert..."
-                      >
-                        Reihenfolge speichern
-                      </PendingSubmitButton>
-                    </form>
+                  <div className="mb-4">
+                    <h2 className="font-serif text-2xl">{category.title}</h2>
+                    <p className="text-sm text-muted">
+                      {categoryItems.length} Gerichte
+                    </p>
                   </div>
                   <div className="space-y-3">
                     {categoryItems.map((item) => (
@@ -332,7 +299,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 {item.item_number}. {item.name}
                               </span>
                               <span className="mt-1 block text-xs text-muted">
-                                {formatMoney(item.price)} Â· Position{" "}
+                                {formatMoney(item.price)} ÃÂ· Position{" "}
                                 {item.sort_order}
                               </span>
                             </span>
@@ -343,7 +310,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
-                              {item.is_active ? "verfÃ¼gbar" : "ausverkauft"}
+                              {item.is_active ? "verfÃÂ¼gbar" : "ausverkauft"}
                             </span>
                           </span>
                         </summary>
@@ -364,7 +331,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                             >
                               {item.is_active
                                 ? "Als ausverkauft markieren"
-                                : "Wieder verfÃ¼gbar machen"}
+                                : "Wieder verfÃÂ¼gbar machen"}
                             </PendingSubmitButton>
                           </form>
                           <form
@@ -448,10 +415,10 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 type="checkbox"
                                 defaultChecked={item.is_active}
                               />{" "}
-                              VerfÃ¼gbar
+                              VerfÃÂ¼gbar
                             </label>
                             <PendingSubmitButton className="sm:col-span-2">
-                              Ãnderungen speichern
+                              ÃÂnderungen speichern
                             </PendingSubmitButton>
                           </form>
                           <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -479,9 +446,9 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                               <PendingSubmitButton
                                 variant="danger"
                                 className="w-full"
-                                pendingLabel="Wird gelÃ¶scht..."
+                                pendingLabel="Wird gelÃÂ¶scht..."
                               >
-                                LÃ¶schen
+                                LÃÂ¶schen
                               </PendingSubmitButton>
                             </form>
                           </div>

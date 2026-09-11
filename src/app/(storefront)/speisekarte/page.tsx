@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { MenuCatalog } from "@/components/menu-catalog";
 import { getMenuCategories } from "@/backend/services/storefront.service";
-import menuHeroImage from "../../../../public/images/menu/tandoori.webp";
+import menuHeroImage from "../../../../public/images/hero-safran.jpg";
 
 export const metadata: Metadata = {
   title: "Speisekarte",
@@ -19,7 +19,7 @@ export default async function SpeisekartePage() {
       <section className="relative overflow-hidden bg-ink px-5 pt-40 pb-20 text-cream sm:px-8 sm:pt-48 sm:pb-28">
         <Image
           src={menuHeroImage}
-          alt="Tandoori-Spezialitäten von Safran"
+          alt="Safran Romanshorn"
           fill
           priority
           placeholder="blur"

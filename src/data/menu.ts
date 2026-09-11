@@ -4,6 +4,8 @@ export type MenuItem = {
   descriptionDe?: string;
   descriptionEn?: string;
   price: number;
+  /** Public image URL (Storage or local fallback). */
+  imageUrl?: string;
 };
 
 export type MenuCategory = {

@@ -19,6 +19,7 @@ export function refreshStoreStatus() {
 
 export function refreshMenu() {
   updateTag(CACHE_TAGS.menu);
+  revalidatePath("/", "layout");
   revalidatePath("/speisekarte");
   revalidatePath("/admin/menu");
 }

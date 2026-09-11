@@ -4,7 +4,10 @@ import { AboutStorySection } from "@/components/about-story-section";
 import { FlavorGallerySection } from "@/components/flavor-gallery-section";
 import { MenuCategoriesSection } from "@/components/menu-categories-section";
 import { RotatingHilal } from "@/components/rotating-hilal";
-import { getHomepageCategories } from "@/backend/services/storefront.service";
+import {
+  getFlavorGalleryImages,
+  getHomepageCategories,
+} from "@/backend/services/storefront.service";
 import heroImage from "../../../public/images/hero-safran.jpg";
 
 function ArrowIcon() {
@@ -49,7 +52,10 @@ function TruckIcon() {
 }
 
 export default async function HomePage() {
-  const homepageCategories = await getHomepageCategories();
+  const [homepageCategories, galleryImages] = await Promise.all([
+    getHomepageCategories(),
+    getFlavorGalleryImages(8),
+  ]);
 
   return (
     <>
@@ -145,7 +151,7 @@ export default async function HomePage() {
 
       <MenuCategoriesSection categories={homepageCategories} />
       <AboutStorySection />
-      <FlavorGallerySection />
+      <FlavorGallerySection images={galleryImages} />
     </>
   );
 }

@@ -50,6 +50,7 @@ export * as menuService from "@/backend/services/menu.service";
 export * as orderService from "@/backend/services/order.service";
 export * as settingsService from "@/backend/services/settings.service";
 export {
+  getFlavorGalleryImages,
   getHomepageCategories,
   getMenuCategories,
   getStorefrontChrome,
