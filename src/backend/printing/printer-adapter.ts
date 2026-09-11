@@ -1,12 +1,13 @@
 import "server-only";
 
 /**
- * Printer adapters for Epson network thermals (TM-T20IV / TM-T88VII).
+ * Brother (and other Windows) printers cannot be reached directly from a cloud
+ * Next.js server. PrintNode runs a small client on the restaurant PC and exposes
+ * an API so Safran can send an A4 PDF job to that PC's installed printer.
  *
  * Providers:
- * - `log` (default): records success without hardware — safe for local/dev
- * - `epson_epos`: HTTP ePOS-Print XML to the printer's LAN/WAN URL
- * - `raw_tcp`: raw ESC/POS to host:9100 (needs network path to the printer)
+ * - `log` (default): no hardware — marks success for local/dev
+ * - `printnode`: send PDF to Brother via PrintNode Cloud API
  */
 
 export type PrintSendResult =
@@ -17,116 +18,75 @@ function provider() {
   return (process.env.PRINTER_PROVIDER ?? "log").trim().toLowerCase();
 }
 
-function eposUrl() {
-  return (process.env.EPSON_EPOS_URL ?? "").trim();
+function printNodeApiKey() {
+  return (process.env.PRINTNODE_API_KEY ?? "").trim();
 }
 
-function rawHost() {
-  return (process.env.EPSON_PRINTER_HOST ?? "").trim();
+function printNodePrinterId() {
+  const id = Number(process.env.PRINTNODE_PRINTER_ID ?? "");
+  return Number.isFinite(id) && id > 0 ? id : null;
 }
 
-function rawPort() {
-  const port = Number(process.env.EPSON_PRINTER_PORT ?? "9100");
-  return Number.isFinite(port) && port > 0 ? port : 9100;
-}
-
-function toBase64(bytes: Uint8Array) {
-  return Buffer.from(bytes).toString("base64");
-}
-
-async function sendEpsonEpos(bytes: Uint8Array): Promise<PrintSendResult> {
-  const url = eposUrl();
-  if (!url) {
-    return {
-      ok: false,
-      error: "EPSON_EPOS_URL is not configured.",
-    };
+async function sendPrintNodePdf(
+  pdfBytes: Uint8Array,
+  title: string,
+): Promise<PrintSendResult> {
+  const apiKey = printNodeApiKey();
+  const printerId = printNodePrinterId();
+  if (!apiKey) {
+    return { ok: false, error: "PRINTNODE_API_KEY is not configured." };
+  }
+  if (!printerId) {
+    return { ok: false, error: "PRINTNODE_PRINTER_ID is not configured." };
   }
 
-  const body = `<?xml version="1.0" encoding="utf-8"?>
-<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
-  <s:Body>
-    <epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">
-      <raw>${toBase64(bytes)}</raw>
-    </epos-print>
-  </s:Body>
-</s:Envelope>`;
+  const content = Buffer.from(pdfBytes).toString("base64");
+  const auth = Buffer.from(`${apiKey}:`).toString("base64");
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch("https://api.printnode.com/printjobs", {
       method: "POST",
       headers: {
-        "Content-Type": "text/xml; charset=utf-8",
-        SOAPAction: '""',
+        Authorization: `Basic ${auth}`,
+        "Content-Type": "application/json",
       },
-      body,
-      signal: AbortSignal.timeout(12_000),
+      body: JSON.stringify({
+        printerId,
+        title: title.slice(0, 100),
+        contentType: "pdf_base64",
+        content,
+        source: "Safran",
+      }),
+      signal: AbortSignal.timeout(20_000),
     });
 
-    const text = await response.text();
     if (!response.ok) {
+      const text = await response.text();
       return {
         ok: false,
-        error: `ePOS HTTP ${response.status}: ${text.slice(0, 200)}`,
-      };
-    }
-    if (/success\s*=\s*"false"/i.test(text) || /<errorcode>/i.test(text)) {
-      return {
-        ok: false,
-        error: `ePOS rejected job: ${text.slice(0, 200)}`,
+        error: `PrintNode HTTP ${response.status}: ${text.slice(0, 200)}`,
       };
     }
     return { ok: true };
   } catch (error) {
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "ePOS request failed",
+      error: error instanceof Error ? error.message : "PrintNode request failed",
     };
   }
 }
 
-async function sendRawTcp(bytes: Uint8Array): Promise<PrintSendResult> {
-  const host = rawHost();
-  if (!host) {
-    return { ok: false, error: "EPSON_PRINTER_HOST is not configured." };
-  }
-
-  const net = await import("node:net");
-
-  return new Promise((resolve) => {
-    const socket = net.createConnection({ host, port: rawPort() }, () => {
-      socket.write(Buffer.from(bytes), (writeError) => {
-        if (writeError) {
-          socket.destroy();
-          resolve({ ok: false, error: writeError.message });
-          return;
-        }
-        socket.end();
-        resolve({ ok: true });
-      });
-    });
-
-    socket.setTimeout(10_000);
-    socket.on("timeout", () => {
-      socket.destroy();
-      resolve({ ok: false, error: "Printer TCP timeout" });
-    });
-    socket.on("error", (error) => {
-      resolve({ ok: false, error: error.message });
-    });
-  });
-}
-
-export async function sendToPrinter(bytes: Uint8Array): Promise<PrintSendResult> {
+export async function sendPdfToPrinter(input: {
+  pdfBytes: Uint8Array;
+  title: string;
+}): Promise<PrintSendResult> {
   switch (provider()) {
-    case "epson_epos":
-      return sendEpsonEpos(bytes);
-    case "raw_tcp":
-      return sendRawTcp(bytes);
+    case "printnode":
+      return sendPrintNodePdf(input.pdfBytes, input.title);
     case "log":
     default:
       console.info(
-        `[print] provider=log bytes=${bytes.byteLength} (set PRINTER_PROVIDER=epson_epos|raw_tcp for hardware)`,
+        `[print] provider=log pdfBytes=${input.pdfBytes.byteLength} title=${input.title} (set PRINTER_PROVIDER=printnode for Brother)`,
       );
       return { ok: true };
   }
@@ -135,7 +95,8 @@ export async function sendToPrinter(bytes: Uint8Array): Promise<PrintSendResult>
 export function isPrinterConfigured() {
   const mode = provider();
   if (mode === "log") return true;
-  if (mode === "epson_epos") return Boolean(eposUrl());
-  if (mode === "raw_tcp") return Boolean(rawHost());
+  if (mode === "printnode") {
+    return Boolean(printNodeApiKey() && printNodePrinterId());
+  }
   return false;
 }

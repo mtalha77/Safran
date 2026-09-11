@@ -21,7 +21,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           <p className="mt-2 text-xs font-bold uppercase tracking-[0.24em] text-muted">Administration</p>
         </div>
         <Card>
-          <h1 className="font-serif text-2xl">Willkommen zurück</h1>
+          <h1 className="font-sans text-2xl font-semibold tracking-tight">Willkommen zurück</h1>
           <p className="mt-2 text-sm leading-6 text-muted">
             Melde dich mit deinem freigeschalteten Admin-Konto an.
           </p>

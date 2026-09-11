@@ -75,7 +75,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="font-serif text-2xl">Rechnung / Bon</h2>
+                  <h2 className="font-sans text-2xl font-semibold tracking-tight">Rechnung / Bon</h2>
                   <p className="mt-1 text-sm text-muted">
                     Jede Bestellung wird gespeichert und dann an den Drucker gesendet. Bei Fehlern wird automatisch erneut versucht.
                   </p>
@@ -129,7 +129,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
             </Card>
 
             <Card>
-              <h2 className="font-serif text-2xl">Positionen</h2>
+              <h2 className="font-sans text-2xl font-semibold tracking-tight">Positionen</h2>
               <div className="mt-4 divide-y divide-sage/15">
                 {items.map((item) => (
                   <div key={String(item.id)} className="grid grid-cols-[auto_1fr_auto] gap-3 py-4 text-sm">
@@ -152,7 +152,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
 
           <div className="space-y-5">
             <Card>
-              <h2 className="font-serif text-xl">Kundendaten</h2>
+              <h2 className="font-sans text-xl font-semibold tracking-tight">Kundendaten</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div><dt className="text-xs uppercase tracking-wider text-muted">Name</dt><dd className="mt-1 font-semibold">{order.customer_name ?? "–"}</dd></div>
                 <div><dt className="text-xs uppercase tracking-wider text-muted">E-Mail</dt><dd className="mt-1 break-all">{order.customer_email ?? "–"}</dd></div>
@@ -163,7 +163,7 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
               </dl>
             </Card>
             <Card>
-              <h2 className="font-serif text-xl">Zahlung</h2>
+              <h2 className="font-sans text-xl font-semibold tracking-tight">Zahlung</h2>
               <dl className="mt-4 space-y-3 text-sm">
                 <div className="flex justify-between"><dt className="text-muted">Methode</dt><dd className="font-semibold">{order.payment_method ?? "cash"}</dd></div>
                 <div className="flex justify-between"><dt className="text-muted">Status</dt><dd className="font-semibold">{order.payment_status ?? "Offen"}</dd></div>

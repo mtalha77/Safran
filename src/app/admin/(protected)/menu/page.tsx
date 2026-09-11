@@ -39,7 +39,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
       <Notice message={params.message} error={params.error ?? error ?? undefined} />
 
       <Card className="mb-5">
-        <h2 className="font-serif text-xl">Speisekarte als PDF</h2>
+        <h2 className="font-sans text-xl font-semibold tracking-tight">Speisekarte als PDF</h2>
         <p className="mt-1 text-sm text-muted">
           Aktuelle Preise, Texte und Bilder aus der Datenbank — Sprache wählen und
           herunterladen.
@@ -52,7 +52,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
       <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
         <div className="space-y-5">
           <Card>
-            <h2 className="font-serif text-xl">Neue Kategorie</h2>
+            <h2 className="font-sans text-xl font-semibold tracking-tight">Neue Kategorie</h2>
             <form action={createCategoryAction} className="mt-4 space-y-3">
               <label className="block text-sm font-semibold">
                 Name
@@ -82,7 +82,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
           </Card>
 
           <Card>
-            <h2 className="font-serif text-xl">Kategorien</h2>
+            <h2 className="font-sans text-xl font-semibold tracking-tight">Kategorien</h2>
             {!categories?.length ? (
               <div className="mt-4">
                 <EmptyState title="Keine Kategorien">
@@ -170,7 +170,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
             <details>
               <summary className="cursor-pointer list-none">
                 <span className="flex items-center justify-between">
-                  <span className="font-serif text-xl">Neues Gericht</span>
+                  <span className="font-sans text-xl font-semibold tracking-tight">Neues Gericht</span>
                   <span className="inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white">
                     + HinzufÃÂÃÂ¼gen
                   </span>
@@ -282,7 +282,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
               return (
                 <Card key={category.id}>
                   <div className="mb-4">
-                    <h2 className="font-serif text-2xl">{category.title}</h2>
+                    <h2 className="font-sans text-2xl font-semibold tracking-tight">{category.title}</h2>
                     <p className="text-sm text-muted">
                       {categoryItems.length} Gerichte
                     </p>

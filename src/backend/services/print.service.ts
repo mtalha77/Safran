@@ -7,11 +7,11 @@ import {
   UnavailableError,
 } from "@/backend/errors";
 import {
-  buildEscPosReceipt,
+  buildBillPdf,
   receiptPayloadFromJson,
   type ReceiptPayload,
-} from "@/backend/printing/escpos-receipt";
-import { sendToPrinter } from "@/backend/printing/printer-adapter";
+} from "@/backend/printing/bill-pdf";
+import { sendPdfToPrinter } from "@/backend/printing/printer-adapter";
 import * as orderRepository from "@/backend/repositories/order.repository";
 import * as printJobRepository from "@/backend/repositories/print-job.repository";
 import * as settingsRepository from "@/backend/repositories/settings.repository";
@@ -183,8 +183,11 @@ export async function processPrintQueue(options?: {
       continue;
     }
 
-    const bytes = buildEscPosReceipt(payload);
-    const result = await sendToPrinter(bytes);
+    const pdfBytes = await buildBillPdf(payload);
+    const result = await sendPdfToPrinter({
+      pdfBytes,
+      title: `Safran #${payload.orderNumber}`,
+    });
 
     if (result.ok) {
       await printJobRepository.markPrintJobPrinted(db, job.id);

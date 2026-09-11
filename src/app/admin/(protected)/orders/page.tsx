@@ -10,7 +10,8 @@ import {
   printStatusClass,
   statusClass,
 } from "@/components/admin/data";
-import { Card, EmptyState, Notice, PageHeader, fieldClass, secondaryButtonClass } from "@/components/admin/ui";
+import { OrdersToolbar } from "@/components/admin/orders-toolbar";
+import { Card, EmptyState, Notice, PageHeader, secondaryButtonClass } from "@/components/admin/ui";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 type OrdersPageProps = {
@@ -31,35 +32,25 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
     pageSize: PAGE_SIZE,
   });
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+  const statusOptions = Object.entries(orderStatusLabels).map(([value, label]) => ({
+    value,
+    label,
+  }));
 
   return (
     <>
+      <OrdersToolbar
+        q={params.q}
+        status={params.status}
+        statusOptions={statusOptions}
+      />
+
       <PageHeader
         eyebrow="Bestellmanagement"
         title="Bestellungen"
         description={`${count ?? 0} Bestellungen gefunden. Öffne einen Eintrag für Details, Statuswechsel und Rechnungsdruck.`}
       />
       <Notice message={params.message} error={params.error ?? error?.message} />
-
-      <Card className="mb-5">
-        <form className="grid gap-3 sm:grid-cols-[1fr_220px_auto]" method="get">
-          <label className="text-sm font-semibold">
-            Suche
-            <input className={`${fieldClass} mt-1.5`} name="q" defaultValue={params.q} placeholder="Name oder Bestellnummer" />
-          </label>
-          <label className="text-sm font-semibold">
-            Status
-            <select className={`${fieldClass} mt-1.5`} name="status" defaultValue={params.status}>
-              <option value="">Alle Status</option>
-              {Object.entries(orderStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-            </select>
-          </label>
-          <div className="flex items-end gap-2">
-            <PendingSubmitButton pendingLabel="Wird gefiltert...">Filtern</PendingSubmitButton>
-            <Link className={secondaryButtonClass} href="/admin/orders">Zurücksetzen</Link>
-          </div>
-        </form>
-      </Card>
 
       <Card>
         {!orders?.length ? (

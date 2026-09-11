@@ -54,7 +54,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
       <div className="space-y-5">
         <Card>
-          <h2 className="font-serif text-2xl">Bestellalarm</h2>
+          <h2 className="font-sans text-2xl font-semibold tracking-tight">Bestellalarm</h2>
           <p className="mt-2 text-sm leading-6 text-muted">
             Bei einer neuen Bestellung wird im Admin automatisch ein Ton abgespielt.
             Einmal «Bestellalarm aktivieren» tippen (Browser-Regel), dann läuft der Alarm.
@@ -125,7 +125,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </Card>
 
         <Card>
-          <h2 className="font-serif text-2xl">Restaurant</h2>
+          <h2 className="font-sans text-2xl font-semibold tracking-tight">Restaurant</h2>
           <form
             key={`restaurant-${formKey}`}
             action={updateSettingsAction}
@@ -235,7 +235,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         </Card>
 
         <Card>
-          <h2 className="font-serif text-2xl">Öffnungszeiten</h2>
+          <h2 className="font-sans text-2xl font-semibold tracking-tight">Öffnungszeiten</h2>
           <p className="mt-1 text-sm text-muted">
             Pro Tag können zwei Zeitfenster, zum Beispiel Mittag und Abend,
             gepflegt werden. Gespeicherte Zeiten gelten sofort für Website,
