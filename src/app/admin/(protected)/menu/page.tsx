@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/actions";
 import { listMenu } from "@/backend/services/menu.service";
 import { MenuPdfDownload } from "@/components/admin/menu-pdf-download";
+import { AdminFileInput } from "@/components/admin/admin-file-input";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { formatMoney, getAdminContext } from "@/components/admin/data";
 import {
@@ -56,16 +57,16 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
             <form action={createCategoryAction} className="mt-4 space-y-3">
               <label className="block text-sm font-semibold">
                 Name
-                <input className={`${fieldClass} mt-1`} name="name" required />
+                <input className={fieldClass} name="name" required />
               </label>
               <label className="block text-sm font-semibold">
                 Beschreibung
-                <input className={`${fieldClass} mt-1`} name="description" />
+                <input className={fieldClass} name="description" />
               </label>
               <label className="block text-sm font-semibold">
                 Position
                 <input
-                  className={`${fieldClass} mt-1`}
+                  className={fieldClass}
                   name="sort_order"
                   type="number"
                   defaultValue={categories?.length ?? 0}
@@ -152,9 +153,9 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                           <PendingSubmitButton
                             variant="danger"
                             className="w-full"
-                            pendingLabel="Wird gelÃÂÃÂ¶scht..."
+                            pendingLabel="Wird gelöscht…"
                           >
-                            Leere Kategorie lÃÂÃÂ¶schen
+                            Leere Kategorie löschen
                           </PendingSubmitButton>
                         </form>
                       </div>
@@ -172,7 +173,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                 <span className="flex items-center justify-between">
                   <span className="font-sans text-xl font-semibold tracking-tight">Neues Gericht</span>
                   <span className="inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white">
-                    + HinzufÃÂÃÂ¼gen
+                    + Hinzufügen
                   </span>
                 </span>
               </summary>
@@ -180,14 +181,14 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                 action={createMenuItemAction}
                 className="mt-5 grid gap-3 sm:grid-cols-2"
               >
-                <label className="text-sm font-semibold">
+                <label className="flex flex-col gap-0 text-sm font-semibold">
                   Kategorie
                   <select
-                    className={`${fieldClass} mt-1`}
+                    className={fieldClass}
                     name="category_id"
                     required
                   >
-                    <option value="">AuswÃÂÃÂ¤hlen</option>
+                    <option value="">Auswählen</option>
                     {categories?.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.title}
@@ -195,39 +196,39 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                     ))}
                   </select>
                 </label>
-                <label className="text-sm font-semibold">
+                <label className="flex flex-col gap-0 text-sm font-semibold">
                   Nummer
                   <input
-                    className={`${fieldClass} mt-1`}
+                    className={fieldClass}
                     name="number"
                     type="number"
                     required
                   />
                 </label>
-                <label className="text-sm font-semibold sm:col-span-2">
+                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
                   Name
-                  <input className={`${fieldClass} mt-1`} name="name" required />
+                  <input className={fieldClass} name="name" required />
                 </label>
-                <label className="text-sm font-semibold sm:col-span-2">
+                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
                   Beschreibung DE
                   <textarea
-                    className={`${fieldClass} mt-1`}
+                    className={fieldClass}
                     name="description_de"
                     rows={2}
                   />
                 </label>
-                <label className="text-sm font-semibold sm:col-span-2">
+                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
                   Beschreibung EN
                   <textarea
-                    className={`${fieldClass} mt-1`}
+                    className={fieldClass}
                     name="description_en"
                     rows={2}
                   />
                 </label>
-                <label className="text-sm font-semibold">
+                <label className="flex flex-col gap-0 text-sm font-semibold">
                   Preis (CHF)
                   <input
-                    className={`${fieldClass} mt-1`}
+                    className={fieldClass}
                     name="price"
                     type="number"
                     min="0"
@@ -235,27 +236,26 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                     required
                   />
                 </label>
-                <label className="text-sm font-semibold">
+                <label className="flex flex-col gap-0 text-sm font-semibold">
                   Position
                   <input
-                    className={`${fieldClass} mt-1`}
+                    className={fieldClass}
                     name="sort_order"
                     type="number"
                     defaultValue={items?.length ?? 0}
                   />
                 </label>
-                <label className="text-sm font-semibold sm:col-span-2">
+                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
                   Bild (max. 5 MB, wird automatisch komprimiert)
-                  <input
-                    className={`${fieldClass} mt-1`}
+                  <AdminFileInput
+                    className="mt-1.5"
                     name="image"
-                    type="file"
                     accept="image/jpeg,image/png,image/webp,image/avif"
                   />
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                   <input name="is_available" type="checkbox" defaultChecked />{" "}
-                  VerfÃÂÃÂ¼gbar
+                  Verfügbar
                 </label>
                 <PendingSubmitButton
                   className="sm:col-span-2"
@@ -311,7 +311,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 {item.item_number}. {item.name}
                               </span>
                               <span className="mt-1 block text-xs text-muted">
-                                {formatMoney(item.price)} ÃÂÃÂ· Position{" "}
+                                {formatMoney(item.price)} · Position{" "}
                                 {item.sort_order}
                               </span>
                             </span>
@@ -322,7 +322,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
-                              {item.is_active ? "verfÃÂÃÂ¼gbar" : "ausverkauft"}
+                              {item.is_active ? "verfügbar" : "ausverkauft"}
                             </span>
                           </span>
                         </summary>
@@ -343,7 +343,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                             >
                               {item.is_active
                                 ? "Als ausverkauft markieren"
-                                : "Wieder verfÃÂÃÂ¼gbar machen"}
+                                : "Wieder verfügbar machen"}
                             </PendingSubmitButton>
                           </form>
                           <form
@@ -351,10 +351,10 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                             className="grid gap-3 sm:grid-cols-2"
                           >
                             <input type="hidden" name="id" value={item.id} />
-                            <label className="text-xs font-semibold">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted">
                               Kategorie
                               <select
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="category_id"
                                 defaultValue={item.category_id}
                               >
@@ -365,46 +365,46 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 ))}
                               </select>
                             </label>
-                            <label className="text-xs font-semibold">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted">
                               Nummer
                               <input
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="number"
                                 type="number"
                                 defaultValue={item.item_number}
                               />
                             </label>
-                            <label className="text-xs font-semibold sm:col-span-2">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted sm:col-span-2">
                               Name
                               <input
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="name"
                                 defaultValue={item.name}
                                 required
                               />
                             </label>
-                            <label className="text-xs font-semibold sm:col-span-2">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted sm:col-span-2">
                               Beschreibung DE
                               <textarea
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="description_de"
                                 defaultValue={item.description_de ?? ""}
                                 rows={2}
                               />
                             </label>
-                            <label className="text-xs font-semibold sm:col-span-2">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted sm:col-span-2">
                               Beschreibung EN
                               <textarea
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="description_en"
                                 defaultValue={item.description_en ?? ""}
                                 rows={2}
                               />
                             </label>
-                            <label className="text-xs font-semibold">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted">
                               Preis
                               <input
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="price"
                                 type="number"
                                 min="0"
@@ -412,10 +412,10 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 defaultValue={item.price}
                               />
                             </label>
-                            <label className="text-xs font-semibold">
+                            <label className="flex flex-col gap-0 text-xs font-semibold text-muted">
                               Position
                               <input
-                                className={`${fieldClass} mt-1`}
+                                className={fieldClass}
                                 name="sort_order"
                                 type="number"
                                 defaultValue={item.sort_order}
@@ -427,40 +427,39 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
                                 type="checkbox"
                                 defaultChecked={item.is_active}
                               />{" "}
-                              VerfÃÂÃÂ¼gbar
+                              Verfügbar
                             </label>
                             <PendingSubmitButton className="sm:col-span-2">
-                              ÃÂÃÂnderungen speichern
+                              Änderungen speichern
                             </PendingSubmitButton>
                           </form>
-                          <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto]">
+                          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
                             <form
                               action={replaceMenuItemImageAction}
-                              className="flex flex-col gap-2 sm:flex-row"
+                              className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center"
                             >
                               <input type="hidden" name="id" value={item.id} />
-                              <input
-                                className={fieldClass}
+                              <AdminFileInput
                                 name="image"
-                                type="file"
                                 accept="image/jpeg,image/png,image/webp,image/avif"
                                 required
                               />
                               <PendingSubmitButton
                                 variant="secondary"
-                                pendingLabel="Bild wird komprimiert..."
+                                className="shrink-0 whitespace-nowrap"
+                                pendingLabel="Wird komprimiert…"
                               >
                                 Bild ersetzen
                               </PendingSubmitButton>
                             </form>
-                            <form action={deleteMenuItemAction}>
+                            <form action={deleteMenuItemAction} className="shrink-0">
                               <input type="hidden" name="id" value={item.id} />
                               <PendingSubmitButton
                                 variant="danger"
-                                className="w-full"
-                                pendingLabel="Wird gelÃÂÃÂ¶scht..."
+                                className="w-full whitespace-nowrap sm:w-auto"
+                                pendingLabel="Wird gelöscht…"
                               >
-                                LÃÂÃÂ¶schen
+                                Löschen
                               </PendingSubmitButton>
                             </form>
                           </div>

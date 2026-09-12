@@ -7,7 +7,7 @@ import { OrderAlertWatcher } from "@/components/admin/order-alert-watcher";
 import { AdminStoreToggle } from "@/components/admin/store-toggle";
 
 export const fieldClass =
-  "w-full rounded-xl border border-sage/30 bg-white px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-sage-deep focus:ring-2 focus:ring-sage/20";
+  "mt-1.5 block w-full rounded-xl border border-sage/30 bg-white px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-sage-deep focus:ring-2 focus:ring-sage/20";
 export const buttonClass =
   "inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-sage focus:ring-offset-2 disabled:opacity-50";
 export const secondaryButtonClass =
