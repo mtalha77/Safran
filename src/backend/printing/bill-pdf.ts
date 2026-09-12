@@ -17,8 +17,13 @@ export type ReceiptPayload = {
   fulfillmentType: "pickup" | "delivery";
   customerName: string;
   customerPhone: string;
+  customerEmail?: string | null;
   customerNotes?: string | null;
   address?: string | null;
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  postalCode?: string | null;
+  city?: string | null;
   items: ReceiptLine[];
   subtotal: number;
   deliveryFee: number;
@@ -158,17 +163,73 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
   write(`TOTAL: ${money(payload.total, payload.currency)}`, 14, { bold: true });
   y -= 16;
   write(`Zahlung: ${payload.paymentMethod}`, 10, { color: muted });
-  y -= 24;
-  write(`Kunde: ${payload.customerName}`, 11);
-  y -= 16;
+  y -= 22;
+
+  page.drawLine({
+    start: { x: left, y },
+    end: { x: 547, y },
+    thickness: 1,
+    color: rgb(0.75, 0.75, 0.75),
+  });
+  y -= 22;
+
+  write("KUNDENDATEN", 12, { bold: true });
+  y -= 18;
+  write(`Name: ${payload.customerName}`, 11);
+  y -= 15;
   write(`Tel: ${payload.customerPhone}`, 11);
-  y -= 16;
-  if (payload.address) {
-    write(payload.address.slice(0, 80), 10, { color: muted });
-    y -= 16;
+  y -= 15;
+  if (payload.customerEmail) {
+    write(`E-Mail: ${payload.customerEmail}`.slice(0, 70), 11);
+    y -= 15;
   }
+
+  if (payload.fulfillmentType === "delivery") {
+    y -= 6;
+    write("LIEFERADRESSE", 12, { bold: true });
+    y -= 18;
+
+    const street =
+      payload.addressLine1?.trim() ||
+      (payload.address ? payload.address.split(",")[0]?.trim() : "");
+    const line2 = payload.addressLine2?.trim();
+    const cityLine = [payload.postalCode, payload.city]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    if (street) {
+      write(street.slice(0, 70), 11);
+      y -= 15;
+    }
+    if (line2) {
+      write(line2.slice(0, 70), 11);
+      y -= 15;
+    }
+    if (cityLine) {
+      write(cityLine.slice(0, 70), 11);
+      y -= 15;
+    } else if (payload.address && !street) {
+      write(payload.address.slice(0, 70), 11);
+      y -= 15;
+    }
+    if (!street && !line2 && !cityLine && !payload.address) {
+      write("Keine Adresse hinterlegt", 11, { color: muted });
+      y -= 15;
+    }
+  } else {
+    y -= 6;
+    write("ABHOLUNG", 12, { bold: true });
+    y -= 18;
+    write("Kunde holt die Bestellung ab", 11, { color: muted });
+    y -= 15;
+  }
+
   if (payload.customerNotes) {
-    write(`Hinweis: ${payload.customerNotes}`.slice(0, 90), 10, { color: muted });
+    y -= 6;
+    write("HINWEIS", 12, { bold: true });
+    y -= 18;
+    write(payload.customerNotes.slice(0, 90), 11);
   }
 
   return doc.save();

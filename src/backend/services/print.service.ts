@@ -47,12 +47,34 @@ function formatCreatedAt(iso: string) {
 }
 
 function addressLine(order: Order) {
-  const parts = [
+  const flat = [
     order.address_line1,
     order.address_line2,
     [order.postal_code, order.city].filter(Boolean).join(" "),
   ].filter(Boolean);
-  return parts.length ? parts.join(", ") : null;
+
+  if (flat.length) return flat.join(", ");
+
+  const raw = order.delivery_address;
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    const row = raw as Record<string, unknown>;
+    const parts = [
+      row.street && row.houseNumber
+        ? `${row.street} ${row.houseNumber}`
+        : row.street ?? row.address_line1 ?? row.line1,
+      row.address_line2 ?? row.line2,
+      [row.postalCode ?? row.postal_code, row.city].filter(Boolean).join(" "),
+    ]
+      .map((part) => (typeof part === "string" ? part.trim() : ""))
+      .filter(Boolean);
+    if (parts.length) return parts.join(", ");
+    const values = Object.values(row).filter(
+      (value): value is string => typeof value === "string" && value.trim().length > 0,
+    );
+    if (values.length) return values.join(", ");
+  }
+
+  return null;
 }
 
 export function buildReceiptPayload(
@@ -67,8 +89,13 @@ export function buildReceiptPayload(
     fulfillmentType: order.fulfillment_type,
     customerName: order.customer_name,
     customerPhone: order.customer_phone,
+    customerEmail: order.customer_email,
     customerNotes: order.customer_notes ?? order.customer_note,
     address: addressLine(order),
+    addressLine1: order.address_line1,
+    addressLine2: order.address_line2,
+    postalCode: order.postal_code,
+    city: order.city,
     items: items.map((item) => ({
       name: item.name || item.item_name,
       quantity: item.quantity,
@@ -153,6 +180,26 @@ export async function enqueueOrderPrintJob(input: {
     console.error("[print] enqueue failed", error);
     return null;
   }
+}
+
+/** Final A4 bill PDF for admin preview / download (same file the printer gets). */
+export async function buildOrderBillPdf(orderId: string) {
+  const { supabase } = await requireCapability("orders:read");
+  if (!isUuid(orderId)) {
+    throw new NotFoundError("order_not_found", "Bestellung wurde nicht gefunden.");
+  }
+
+  const { order, items, restaurantName } = await loadReceiptContext(
+    supabase as unknown as Db,
+    orderId,
+  );
+  const payload = buildReceiptPayload(order, items, restaurantName);
+  const bytes = await buildBillPdf(payload);
+  const safeNumber = order.order_number.replace(/[^\w.-]+/g, "_");
+  return {
+    bytes,
+    filename: `safran-rechnung-${safeNumber}.pdf`,
+  };
 }
 
 export async function processPrintQueue(options?: {

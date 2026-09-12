@@ -13,6 +13,7 @@ import {
   statusClass,
 } from "@/components/admin/data";
 import { Card, Notice, PageHeader, secondaryButtonClass } from "@/components/admin/ui";
+import { OrderBillPreview } from "@/components/admin/order-bill-preview";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 type OrderDetailProps = {
@@ -77,16 +78,19 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
                 <div>
                   <h2 className="font-sans text-2xl font-semibold tracking-tight">Rechnung / Bon</h2>
                   <p className="mt-1 text-sm text-muted">
-                    Jede Bestellung wird gespeichert und dann an den Drucker gesendet. Bei Fehlern wird automatisch erneut versucht.
+                    Vorschau zeigt genau das PDF, das an den Brother-Drucker geht.
                   </p>
                 </div>
-                <form action={reprintOrderBillAction}>
-                  <input type="hidden" name="id" value={order.id} />
-                  <input type="hidden" name="next" value={`/admin/orders/${order.id}`} />
-                  <PendingSubmitButton variant="secondary" pendingLabel="Wird gedruckt…">
-                    Rechnung drucken
-                  </PendingSubmitButton>
-                </form>
+                <div className="flex flex-wrap items-center gap-2">
+                  <OrderBillPreview orderId={order.id} />
+                  <form action={reprintOrderBillAction}>
+                    <input type="hidden" name="id" value={order.id} />
+                    <input type="hidden" name="next" value={`/admin/orders/${order.id}`} />
+                    <PendingSubmitButton variant="secondary" pendingLabel="Wird gedruckt…">
+                      Rechnung drucken
+                    </PendingSubmitButton>
+                  </form>
+                </div>
               </div>
               <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
                 <div>
