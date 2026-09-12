@@ -75,7 +75,7 @@ async function upsertContent() {
       key: "restaurant",
       value: {
         name: "Safran",
-        phone: "+41326235959",
+        phone: "+41712445533",
         email: "info@safran-solothurn.ch",
         address: {
           street: "Hafenstrasse 31",
@@ -99,7 +99,7 @@ async function upsertContent() {
     },
     { key: "restaurant_name", value: "Safran", is_public: true },
     { key: "contact_email", value: "info@safran-solothurn.ch", is_public: true },
-    { key: "contact_phone", value: "+41326235959", is_public: true },
+    { key: "contact_phone", value: "+41712445533", is_public: true },
     {
       key: "address",
       value: "Hafenstrasse 31, 8590 Romanshorn, Schweiz",

@@ -51,7 +51,7 @@ const fallbackSettings: StorefrontSettings = {
   description:
     "Authentische indische Küche am Romanshorner Hafen – frisch zubereitet, herzlich serviert und bequem nach Hause bestellt.",
   addressLines: ["Hafenstrasse 31", "8590 Romanshorn, Schweiz"],
-  phone: "+41326235959",
+  phone: "+41712445533",
   phoneDisplay: "032 623 59 59",
   email: "info@safran-solothurn.ch",
   timezone: "Europe/Zurich",

@@ -183,11 +183,33 @@ export async function processPrintQueue(options?: {
       continue;
     }
 
-    const pdfBytes = await buildBillPdf(payload);
+    let pdfBytes: Uint8Array;
+    try {
+      pdfBytes = await buildBillPdf(payload);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "PDF bill could not be built";
+      console.error("[print] PDF build failed", message);
+      await printJobRepository.markPrintJobFailed(
+        db,
+        job.id,
+        message.slice(0, 500),
+        null,
+        true,
+      );
+      failed += 1;
+      continue;
+    }
+
     const result = await sendPdfToPrinter({
       pdfBytes,
       title: `Safran #${payload.orderNumber}`,
     });
+    console.info(
+      `[print] job=${job.id} order=#${payload.orderNumber} ok=${result.ok}${
+        result.ok ? "" : ` error=${result.error}`
+      }`,
+    );
 
     if (result.ok) {
       await printJobRepository.markPrintJobPrinted(db, job.id);

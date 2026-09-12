@@ -40,6 +40,23 @@ function money(amount: number, currency: string) {
   return `${currency} ${amount.toFixed(2)}`;
 }
 
+/** Standard PDF fonts only support WinAnsi — map common DE/CH characters. */
+function pdfSafe(text: string) {
+  return text
+    .replaceAll("×", "x")
+    .replaceAll("–", "-")
+    .replaceAll("—", "-")
+    .replaceAll("ä", "ae")
+    .replaceAll("ö", "oe")
+    .replaceAll("ü", "ue")
+    .replaceAll("Ä", "Ae")
+    .replaceAll("Ö", "Oe")
+    .replaceAll("Ü", "Ue")
+    .replaceAll("ß", "ss")
+    .replaceAll("€", "EUR")
+    .replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
+}
+
 /**
  * Builds a simple A4 kitchen/counter bill PDF for Brother laser printers.
  */
@@ -60,7 +77,7 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
     size: number,
     options?: { bold?: boolean; color?: ReturnType<typeof rgb>; x?: number },
   ) => {
-    page.drawText(text, {
+    page.drawText(pdfSafe(text), {
       x: options?.x ?? left,
       y,
       size,

@@ -76,6 +76,9 @@ export function OrderAlertWatcher() {
     let timer: number | undefined;
 
     async function tick() {
+      // Don't hammer the API when the admin tab is in the background.
+      if (document.hidden) return;
+
       try {
         const response = await fetch("/api/admin/order-alerts", {
           cache: "no-store",
@@ -111,11 +114,17 @@ export function OrderAlertWatcher() {
       }
     }
 
+    function onVisibility() {
+      if (!document.hidden) void tick();
+    }
+
     void tick();
     timer = window.setInterval(() => void tick(), POLL_MS);
+    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       cancelled = true;
       if (timer) window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [unmuted, router]);
 

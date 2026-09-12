@@ -62,11 +62,14 @@ async function sendPrintNodePdf(
 
     if (!response.ok) {
       const text = await response.text();
+      console.error(`[print] PrintNode HTTP ${response.status}`, text.slice(0, 300));
       return {
         ok: false,
         error: `PrintNode HTTP ${response.status}: ${text.slice(0, 200)}`,
       };
     }
+    const jobId = await response.text();
+    console.info(`[print] PrintNode accepted job ${jobId} printer=${printerId}`);
     return { ok: true };
   } catch (error) {
     return {
