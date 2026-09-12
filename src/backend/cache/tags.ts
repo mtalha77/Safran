@@ -10,8 +10,8 @@ export const CACHE_TAGS = {
  * large menu page — on that interval. Open/closed freshness does not need it:
  *
  *  - closing from the admin calls `updateTag(status)`, invalidating immediately;
- *  - the storefront banner polls availability directly every 20s, so a stale
- *    cached page still flips within seconds;
+ *  - the storefront banner polls availability directly every 60s (and on tab
+ *    focus), so a stale cached page still flips soon after an admin close;
  *  - checkout re-checks availability server-side before an order is accepted.
  *
  * Keeping all three windows aligned therefore costs no freshness and avoids a

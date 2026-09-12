@@ -4,6 +4,7 @@ import {
   isEmail,
   text,
 } from "@/backend/validation/primitives";
+import { isHttpUrl, isValidEmailFormat } from "@/backend/validation/email-format";
 import type { OrderRequest } from "@/backend/types";
 
 const MENU_ITEM_ID = /^menu-(\d+)$/;
@@ -69,6 +70,7 @@ export function parseOrderRequest(
   if (
     !parsedCustomer.firstName ||
     !parsedCustomer.lastName ||
+    !isValidEmailFormat(parsedCustomer.email) ||
     !isEmail(parsedCustomer.email) ||
     parsedCustomer.phone.length < 6
   ) {
@@ -113,13 +115,26 @@ export function parseOrderRequest(
 
   let parsedAddress: OrderRequest["address"];
   if (fulfillment === "delivery") {
+    const locationUrlRaw = text(address.locationUrl, 2000);
+    if (locationUrlRaw && !isHttpUrl(locationUrlRaw)) {
+      throw new ValidationError(
+        "invalid_location_url",
+        "Bitte geben Sie einen gültigen Standort-Link ein (https://…).",
+      );
+    }
     parsedAddress = {
       street: text(address.street, 120),
       houseNumber: text(address.houseNumber, 20),
       postalCode: text(address.postalCode, 12),
       city: text(address.city, 80),
+      locationUrl: locationUrlRaw || undefined,
     };
-    if (Object.values(parsedAddress).some((value) => !value)) {
+    if (
+      !parsedAddress.street ||
+      !parsedAddress.houseNumber ||
+      !parsedAddress.postalCode ||
+      !parsedAddress.city
+    ) {
       throw new ValidationError(
         "invalid_address",
         "Bitte geben Sie eine vollständige Lieferadresse an.",

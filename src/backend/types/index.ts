@@ -23,6 +23,8 @@ export type DeliveryAddress = {
   houseNumber: string;
   postalCode: string;
   city: string;
+  /** Optional Google Maps / WhatsApp / other location share link. */
+  locationUrl?: string;
 };
 
 export type CartLineInput = {

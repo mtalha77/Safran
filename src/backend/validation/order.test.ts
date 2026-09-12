@@ -100,9 +100,30 @@ describe("checkout payload validation", () => {
         houseNumber: "31",
         postalCode: "8590",
         city: "Romanshorn",
+        locationUrl: "https://maps.google.com/?q=Romanshorn",
       },
     });
     assert.equal(parsed.address?.postalCode, "8590");
+    assert.equal(
+      parsed.address?.locationUrl,
+      "https://maps.google.com/?q=Romanshorn",
+    );
+
+    assert.throws(
+      () =>
+        parseOrderRequest({
+          ...validBody,
+          fulfillment: "delivery",
+          address: {
+            street: "Hafenstrasse",
+            houseNumber: "31",
+            postalCode: "8590",
+            city: "Romanshorn",
+            locationUrl: "not-a-link",
+          },
+        }),
+      ValidationError,
+    );
   });
 
   it("drops the address again when the guest switches to pickup", () => {
@@ -147,6 +168,14 @@ describe("checkout payload validation", () => {
         parseOrderRequest({
           ...validBody,
           customer: { ...validBody.customer, email: "not-an-email" },
+        }),
+      ValidationError,
+    );
+    assert.throws(
+      () =>
+        parseOrderRequest({
+          ...validBody,
+          customer: { ...validBody.customer, email: "a@b" },
         }),
       ValidationError,
     );

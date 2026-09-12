@@ -29,8 +29,13 @@ import * as orderRepository from "@/backend/repositories/order.repository";
 import * as printJobRepository from "@/backend/repositories/print-job.repository";
 import * as settingsRepository from "@/backend/repositories/settings.repository";
 import { enqueueOrderPrintJob } from "@/backend/services/print.service";
+import {
+  sendOrderPlacedEmail,
+  sendOrderStatusEmail,
+} from "@/backend/services/email.service";
 import { createServiceClient } from "@/backend/supabase/clients";
 import type { CreatedOrder, OrderRequest } from "@/backend/types";
+import { assertDeliverableEmail } from "@/backend/validation/email";
 import { menuItemNumber } from "@/backend/validation/order";
 import { isUuid } from "@/backend/validation/primitives";
 import type { Database, OrderStatus, PrintJob } from "@/types/database";
@@ -68,6 +73,8 @@ export async function createCashOrder(
   request: OrderRequest,
 ): Promise<CreatedOrder> {
   const db = trustedClient();
+
+  await assertDeliverableEmail(request.customer.email);
 
   const duplicate = await orderRepository.findByIdempotencyKey(
     db,
@@ -180,9 +187,18 @@ export async function createCashOrder(
     address_line1: request.address
       ? `${request.address.street} ${request.address.houseNumber}`
       : null,
-    address_line2: null,
+    address_line2: request.address?.locationUrl ?? null,
     postal_code: request.address?.postalCode ?? null,
     city: request.address?.city ?? null,
+    delivery_address: request.address
+      ? {
+          street: request.address.street,
+          houseNumber: request.address.houseNumber,
+          postalCode: request.address.postalCode,
+          city: request.address.city,
+          locationUrl: request.address.locationUrl ?? null,
+        }
+      : null,
     customer_notes: request.notes ?? null,
     subtotal: totals.subtotal,
     delivery_fee: totals.deliveryFee,
@@ -219,6 +235,18 @@ export async function createCashOrder(
       db,
     });
   }
+
+  void sendOrderPlacedEmail({
+    to: request.customer.email,
+    customerName: `${request.customer.firstName} ${request.customer.lastName}`,
+    orderNumber: result.order.order_number,
+    confirmationToken: result.order.confirmation_token,
+    fulfillmentType: request.fulfillment,
+    total: money(result.order.total),
+    status: result.order.status,
+  }).catch((error) => {
+    console.error("[email] order placed failed", error);
+  });
 
   return {
     orderNumber: result.order.order_number,
@@ -288,7 +316,32 @@ export async function updateOrderStatus(input: {
     changedBy: actor.userId,
   });
 
+  void notifyStatusEmail(db, input.orderId, to).catch((error) => {
+    console.error("[email] status change failed", error);
+  });
+
   return { from, to };
+}
+
+async function notifyStatusEmail(
+  db: Db,
+  orderId: string,
+  status: OrderStatus,
+) {
+  const orderResult = await orderRepository.findOrderById(db, orderId);
+  const order = orderResult.data;
+  if (!order?.customer_email || !order.confirmation_token) return;
+
+  await sendOrderStatusEmail({
+    to: order.customer_email,
+    customerName: order.customer_name || "Gast",
+    orderNumber: order.order_number,
+    confirmationToken: order.confirmation_token,
+    fulfillmentType:
+      order.fulfillment_type === "pickup" ? "pickup" : "delivery",
+    total: money(order.total),
+    status,
+  });
 }
 
 export type AdminOrderListResult = Awaited<

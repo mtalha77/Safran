@@ -9,6 +9,7 @@ import {
 import {
   readCategories,
   readContentBlocks,
+  readItemPreviews,
   readItems,
   readOpeningHours,
   readSiteSettings,
@@ -300,7 +301,10 @@ export const getStorefrontChrome = cache(async (): Promise<StorefrontChrome> => 
 });
 
 export const getHomepageCategories = cache(async (): Promise<HomepageCategory[]> => {
-  const [categoryRows, itemRows] = await Promise.all([readCategories(), readItems()]);
+  const [categoryRows, itemRows] = await Promise.all([
+    readCategories(),
+    readItemPreviews(),
+  ]);
   const fromRows = categoryRows?.length
     ? homepageCategoriesFromRows(categoryRows, itemRows)
     : [];
@@ -315,7 +319,7 @@ export const getMenuCategories = cache(async (): Promise<MenuCategory[]> => {
 /** Uploaded menu photos for homepage gallery (skips drinks/sides when possible). */
 export const getFlavorGalleryImages = cache(
   async (limit = 8): Promise<Array<{ src: string; alt: string }>> => {
-    const itemRows = await readItems();
+    const itemRows = await readItemPreviews();
     if (!itemRows?.length) return [];
 
     const skipName =

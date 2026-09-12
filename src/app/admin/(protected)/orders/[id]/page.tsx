@@ -31,9 +31,28 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
   if (!order && !error) notFound();
 
   const addressData = order?.delivery_address;
-  const address = addressData && typeof addressData === "object" && !Array.isArray(addressData)
-    ? Object.values(addressData).filter((value) => typeof value === "string").join(", ")
-    : [order?.address_line1, order?.postal_code, order?.city].filter(Boolean).join(", ");
+  const addressObject =
+    addressData && typeof addressData === "object" && !Array.isArray(addressData)
+      ? (addressData as Record<string, unknown>)
+      : null;
+  const locationUrl =
+    (typeof addressObject?.locationUrl === "string" && addressObject.locationUrl) ||
+    (order?.address_line2 && /^https?:\/\//i.test(order.address_line2)
+      ? order.address_line2
+      : null);
+  const address = addressObject
+    ? [
+        addressObject.street && addressObject.houseNumber
+          ? `${addressObject.street} ${addressObject.houseNumber}`
+          : addressObject.street,
+        [addressObject.postalCode, addressObject.city].filter(Boolean).join(" "),
+      ]
+        .map((part) => (typeof part === "string" ? part.trim() : ""))
+        .filter(Boolean)
+        .join(", ")
+    : [order?.address_line1, order?.postal_code, order?.city]
+        .filter(Boolean)
+        .join(", ");
 
   return (
     <>
@@ -163,6 +182,21 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
                 <div><dt className="text-xs uppercase tracking-wider text-muted">Telefon</dt><dd className="mt-1">{order.customer_phone ?? "–"}</dd></div>
                 <div><dt className="text-xs uppercase tracking-wider text-muted">Bestellart</dt><dd className="mt-1">{order.fulfillment_type === "delivery" ? "Lieferung" : "Abholung"}</dd></div>
                 {address ? <div><dt className="text-xs uppercase tracking-wider text-muted">Adresse</dt><dd className="mt-1">{address}</dd></div> : null}
+                {locationUrl ? (
+                  <div>
+                    <dt className="text-xs uppercase tracking-wider text-muted">Standort</dt>
+                    <dd className="mt-1 break-all">
+                      <a
+                        href={locationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-sage-deep underline-offset-2 hover:underline"
+                      >
+                        {locationUrl}
+                      </a>
+                    </dd>
+                  </div>
+                ) : null}
                 {order.customer_notes ? <div><dt className="text-xs uppercase tracking-wider text-muted">Hinweis</dt><dd className="mt-1 rounded-xl bg-cream/60 p-3">{order.customer_notes}</dd></div> : null}
               </dl>
             </Card>

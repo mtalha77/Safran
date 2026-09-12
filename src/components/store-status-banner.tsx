@@ -7,6 +7,8 @@ import {
   type StoreStatusConfig,
 } from "@/lib/store-status";
 
+const LIVE_POLL_MS = 60_000;
+
 export function StoreStatusBanner({
   config,
 }: {
@@ -32,6 +34,9 @@ export function StoreStatusBanner({
     let cancelled = false;
 
     async function syncAvailability() {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return;
+      }
       const result = await fetchLiveStoreAvailability();
       if (cancelled || !result) return;
       setLive(result);
@@ -39,11 +44,21 @@ export function StoreStatusBanner({
 
     void syncAvailability();
     const statusTimer = setInterval(() => setNow(Date.now()), 60_000);
-    const liveTimer = setInterval(() => void syncAvailability(), 20_000);
+    const liveTimer = setInterval(() => void syncAvailability(), LIVE_POLL_MS);
+
+    function onVisible() {
+      if (document.visibilityState === "visible") {
+        void syncAvailability();
+        setNow(Date.now());
+      }
+    }
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
       cancelled = true;
       clearInterval(statusTimer);
       clearInterval(liveTimer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 

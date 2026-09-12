@@ -78,7 +78,6 @@ export function FlavorGallerySection({
       <div className="absolute inset-0 flex flex-col justify-center gap-3 opacity-70 [mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_100%)] sm:gap-5">
         <GalleryRow images={galleryImages} />
         <GalleryRow images={galleryImages} reverse offset />
-        <GalleryRow images={galleryImages} />
       </div>
 
       <div className="absolute inset-0 bg-ink/40" aria-hidden />

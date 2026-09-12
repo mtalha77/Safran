@@ -54,7 +54,7 @@ function TruckIcon() {
 export default async function HomePage() {
   const [homepageCategories, galleryImages] = await Promise.all([
     getHomepageCategories(),
-    getFlavorGalleryImages(8),
+    getFlavorGalleryImages(6),
   ]);
 
   return (

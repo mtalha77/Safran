@@ -1,26 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export function MenuPdfDownload() {
+type MenuPdfDownloadProps = {
+  /** Changes when menu catalog changes — drops stale browser PDF blobs. */
+  revision: string;
+};
+
+export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
   const [lang, setLang] = useState<"de" | "en">("de");
   const [pending, setPending] = useState<"preview" | "download" | null>(null);
   const [error, setError] = useState("");
+  const blobCache = useRef(new Map<string, Blob>());
+
+  useEffect(() => {
+    blobCache.current.clear();
+  }, [revision]);
 
   async function loadPdf(mode: "preview" | "download") {
     setPending(mode);
     setError("");
+    const cacheKey = `${revision}:${lang}`;
     try {
-      const response = await fetch(
-        `/api/admin/menu-pdf?lang=${lang}${mode === "preview" ? "&preview=1" : ""}`,
-      );
-      if (!response.ok) {
-        const body = (await response.json().catch(() => null)) as {
-          message?: string;
-        } | null;
-        throw new Error(body?.message || "PDF fehlgeschlagen.");
+      let blob = blobCache.current.get(cacheKey) ?? null;
+      if (!blob) {
+        const response = await fetch(`/api/admin/menu-pdf?lang=${lang}`);
+        if (!response.ok) {
+          const body = (await response.json().catch(() => null)) as {
+            message?: string;
+          } | null;
+          throw new Error(body?.message || "PDF fehlgeschlagen.");
+        }
+        blob = await response.blob();
+        blobCache.current.set(cacheKey, blob);
       }
-      const blob = await response.blob();
+
       const url = URL.createObjectURL(blob);
       if (mode === "preview") {
         window.open(url, "_blank", "noopener,noreferrer");
@@ -46,7 +60,10 @@ export function MenuPdfDownload() {
         <select
           className="mt-1 block min-w-40 rounded-xl border border-sage/25 bg-white px-3 py-2 text-sm"
           value={lang}
-          onChange={(event) => setLang(event.target.value as "de" | "en")}
+          onChange={(event) => {
+            setLang(event.target.value as "de" | "en");
+            setError("");
+          }}
           disabled={pending !== null}
         >
           <option value="de">Deutsch</option>

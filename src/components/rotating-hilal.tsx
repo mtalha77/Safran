@@ -1,3 +1,5 @@
+import { amiri } from "@/lib/fonts";
+
 const GREEN = "#1A6B33";
 
 function Star({ x, y }: { x: number; y: number }) {
@@ -99,7 +101,7 @@ export function RotatingHilal() {
           fontSize="52"
           fontWeight="700"
           style={{
-            fontFamily: "var(--font-amiri), 'Noto Naskh Arabic', serif",
+            fontFamily: `${amiri.style.fontFamily}, 'Noto Naskh Arabic', serif`,
           }}
         >
           حلال

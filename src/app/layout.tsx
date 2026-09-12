@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Amiri, Caveat, DM_Sans, Playfair_Display } from "next/font/google";
+import { DM_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -11,20 +11,6 @@ const playfair = Playfair_Display({
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const amiri = Amiri({
-  subsets: ["arabic", "latin"],
-  weight: ["700"],
-  variable: "--font-amiri",
-  display: "swap",
-});
-
-const caveat = Caveat({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-caveat",
   display: "swap",
 });
 
@@ -47,7 +33,7 @@ export default function RootLayout({
     <html lang="de-CH">
       <body
         suppressHydrationWarning
-        className={`${playfair.variable} ${dmSans.variable} ${amiri.variable} ${caveat.variable} min-h-screen bg-paper font-sans text-ink antialiased`}
+        className={`${playfair.variable} ${dmSans.variable} min-h-screen bg-paper font-sans text-ink antialiased`}
       >
         {children}
       </body>

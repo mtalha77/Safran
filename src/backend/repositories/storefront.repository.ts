@@ -15,6 +15,9 @@ const CATEGORY_QUERY =
   "select=id,title,subtitle,sort_order,is_active,image_path,note_de,note_en&is_active=eq.true&order=sort_order";
 const ITEM_QUERY =
   "select=id,category_id,item_number,name,description_de,description_en,price,is_active,sort_order,image_path&is_active=eq.true&order=sort_order";
+/** Homepage tiles + gallery — no descriptions/prices needed. */
+const ITEM_PREVIEW_QUERY =
+  "select=id,category_id,item_number,name,is_active,sort_order,image_path&is_active=eq.true&order=sort_order";
 
 export const readCategories = cache(() =>
   readRows("menu_categories", CATEGORY_QUERY, [CACHE_TAGS.menu], CACHE_SECONDS.menu),
@@ -22,6 +25,15 @@ export const readCategories = cache(() =>
 
 export const readItems = cache(() =>
   readRows("menu_items", ITEM_QUERY, [CACHE_TAGS.menu], CACHE_SECONDS.menu),
+);
+
+export const readItemPreviews = cache(() =>
+  readRows(
+    "menu_items",
+    ITEM_PREVIEW_QUERY,
+    [CACHE_TAGS.menu],
+    CACHE_SECONDS.menu,
+  ),
 );
 
 export const readSiteSettings = cache(() =>

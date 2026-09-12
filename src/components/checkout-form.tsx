@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import {
+  type FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { isValidEmailFormat } from "@/backend/validation/email-format";
 import { useCart } from "@/components/cart-provider";
 import { fetchLiveStoreAvailability } from "@/lib/live-store-status";
 
@@ -11,6 +17,8 @@ type Fulfillment = "delivery" | "pickup";
 const inputClass =
   "mt-2 w-full rounded-xl border border-ink/12 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-sage focus:ring-2 focus:ring-sage/15";
 
+const inputErrorClass =
+  "mt-2 w-full rounded-xl border border-red-400 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-red-500 focus:ring-2 focus:ring-red-200";
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("de-CH", {
     style: "currency",
@@ -54,10 +62,91 @@ export function CheckoutForm({
   const [fulfillment, setFulfillment] = useState<Fulfillment>("delivery");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [notice, setNotice] = useState("");
+  const [emailValue, setEmailValue] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailOk, setEmailOk] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState("");
+  const emailCheckSeq = useRef(0);
   const closedLabel =
     closedMessage || "Das Restaurant nimmt derzeit keine Bestellungen an.";
+
+  useEffect(() => {
+    const value = emailValue.trim().toLowerCase();
+    if (!value) {
+      setEmailError("");
+      setEmailChecking(false);
+      setEmailOk(false);
+      return;
+    }
+
+    const at = value.indexOf("@");
+    const domain = at >= 0 ? value.slice(at + 1) : "";
+
+    // Still typing — wait until domain looks complete (has a TLD dot).
+    if (at < 0 || !domain.includes(".")) {
+      setEmailError("");
+      setEmailChecking(false);
+      setEmailOk(false);
+      return;
+    }
+
+    if (!isValidEmailFormat(value)) {
+      setEmailError(
+        "Bitte eine gültige E-Mail-Adresse eingeben (z. B. name@domain.ch).",
+      );
+      setEmailChecking(false);
+      setEmailOk(false);
+      return;
+    }
+
+    setEmailError("");
+    setEmailOk(false);
+    setEmailChecking(true);
+    const seq = ++emailCheckSeq.current;
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const response = await fetch("/api/validate-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: value }),
+          });
+          const result = (await response.json().catch(() => null)) as {
+            ok?: boolean;
+            message?: string;
+          } | null;
+          if (seq !== emailCheckSeq.current) return;
+          if (response.ok && result?.ok) {
+            setEmailError("");
+            setEmailOk(true);
+            return;
+          }
+          // Network/server hiccups: if format is valid, don't block the guest.
+          if (response.status >= 500 || response.status === 0) {
+            setEmailError("");
+            setEmailOk(true);
+            return;
+          }
+          setEmailOk(false);
+          setEmailError(
+            result?.message ||
+              "Diese E-Mail-Adresse scheint ungültig zu sein.",
+          );
+        } catch {
+          if (seq !== emailCheckSeq.current) return;
+          // Offline / fetch failed — format already OK, allow checkout.
+          setEmailError("");
+          setEmailOk(true);
+        } finally {
+          if (seq === emailCheckSeq.current) setEmailChecking(false);
+        }
+      })();
+    }, 400);
+
+    return () => window.clearTimeout(timer);
+  }, [emailValue]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -66,11 +155,58 @@ export function CheckoutForm({
     // React clears it once we await. Snapshot the field values up front so the
     // availability check below cannot invalidate them.
     const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") ?? "")
+      .trim()
+      .toLowerCase();
 
     if (!storeOpen) {
       setNotice(closedLabel);
       return;
     }
+
+    if (!email || !isValidEmailFormat(email)) {
+      setEmailError(
+        "Bitte eine gültige E-Mail-Adresse eingeben (z. B. name@domain.ch).",
+      );
+      setEmailOk(false);
+      return;
+    }
+
+    if (emailChecking || !emailOk) {
+      setEmailChecking(true);
+      try {
+        const response = await fetch("/api/validate-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+        const result = (await response.json().catch(() => null)) as {
+          ok?: boolean;
+          message?: string;
+        } | null;
+        if (response.ok && result?.ok) {
+          setEmailOk(true);
+          setEmailError("");
+        } else if (response.status >= 500) {
+          // Don't block a format-valid email on server/DNS outages.
+          setEmailOk(true);
+          setEmailError("");
+        } else {
+          setEmailOk(false);
+          setEmailError(
+            result?.message ||
+              "Diese E-Mail-Adresse scheint ungültig zu sein.",
+          );
+          return;
+        }
+      } catch {
+        setEmailOk(true);
+        setEmailError("");
+      } finally {
+        setEmailChecking(false);
+      }
+    }
+
     const live = await fetchLiveStoreAvailability();
     if (live?.closed) {
       setNotice(live.message || closedLabel);
@@ -102,7 +238,7 @@ export function CheckoutForm({
           customer: {
             firstName: formData.get("firstName"),
             lastName: formData.get("lastName"),
-            email: formData.get("email"),
+            email,
             phone: formData.get("phone"),
           },
           address:
@@ -112,6 +248,7 @@ export function CheckoutForm({
                   houseNumber: formData.get("houseNumber"),
                   postalCode: formData.get("postalCode"),
                   city: formData.get("city"),
+                  locationUrl: formData.get("locationUrl") || undefined,
                 }
               : undefined,
           notes: formData.get("notes"),
@@ -127,8 +264,22 @@ export function CheckoutForm({
       const result = (await response.json()) as {
         confirmationToken?: string;
         message?: string;
+        error?: string;
       };
       if (!response.ok || !result.confirmationToken) {
+        if (
+          result.error === "invalid_email" ||
+          result.error === "invalid_email_domain" ||
+          /e-?mail/i.test(result.message ?? "")
+        ) {
+          setEmailError(
+            result.message ||
+              "Diese E-Mail-Adresse scheint ungültig zu sein.",
+          );
+          setEmailOk(false);
+          setSubmitting(false);
+          return;
+        }
         throw new Error(
           result.message || "Die Bestellung konnte nicht gesendet werden.",
         );
@@ -232,15 +383,39 @@ export function CheckoutForm({
                 required
               />
             </label>
-            <label className="text-sm font-medium">
+            <label className="text-sm font-medium sm:col-span-1">
               E-Mail
               <input
-                className={inputClass}
+                className={emailError ? inputErrorClass : inputClass}
                 type="email"
                 name="email"
                 autoComplete="email"
                 required
+                inputMode="email"
+                value={emailValue}
+                aria-invalid={emailError ? true : undefined}
+                aria-describedby="checkout-email-status"
+                onChange={(event) => setEmailValue(event.currentTarget.value)}
               />
+              <span
+                id="checkout-email-status"
+                className={`mt-1.5 block text-xs font-normal ${
+                  emailError
+                    ? "text-red-700"
+                    : emailOk
+                      ? "text-emerald-700"
+                      : "text-muted"
+                }`}
+                aria-live="polite"
+              >
+                {emailError
+                  ? emailError
+                  : emailChecking
+                    ? "E-Mail wird geprüft…"
+                    : emailOk
+                      ? "E-Mail ist gültig."
+                      : "Bestellbestätigung und Status-Updates gehen an diese Adresse."}
+              </span>
             </label>
             <label className="text-sm font-medium">
               Telefonnummer
@@ -299,6 +474,19 @@ export function CheckoutForm({
                   autoComplete="address-level2"
                   required
                 />
+              </label>
+              <label className="text-sm font-medium sm:col-span-6">
+                Ihr Standort (Link)
+                <input
+                  className={inputClass}
+                  type="url"
+                  name="locationUrl"
+                  inputMode="url"
+                  placeholder="https://maps.google.com/… oder WhatsApp-Standort"
+                />
+                <span className="mt-1.5 block text-xs font-normal text-muted">
+                  Optional — Google Maps, Apple Maps oder WhatsApp-Standortlink einfügen.
+                </span>
               </label>
             </div>
           </fieldset>
@@ -482,14 +670,24 @@ export function CheckoutForm({
 
         <button
           type="submit"
-          disabled={!storeOpen || !items.length || !acceptedPolicy || submitting}
+          disabled={
+            !storeOpen ||
+            !items.length ||
+            !acceptedPolicy ||
+            submitting ||
+            emailChecking ||
+            Boolean(emailError) ||
+            (Boolean(emailValue.trim()) && !emailOk)
+          }
           className="mt-6 w-full rounded-full bg-gold px-6 py-4 text-sm font-semibold text-ink transition hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           {!storeOpen
             ? "Derzeit geschlossen"
             : submitting
               ? "Bestellung wird gesendet…"
-              : "Zahlungspflichtig bestellen"}
+              : emailChecking
+                ? "E-Mail wird geprüft…"
+                : "Zahlungspflichtig bestellen"}
         </button>
 
         {notice && (

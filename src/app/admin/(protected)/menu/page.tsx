@@ -9,6 +9,7 @@ import {
   updateMenuItemAction,
 } from "@/app/admin/actions";
 import { listMenu } from "@/backend/services/menu.service";
+import { warmMenuPdfAssets } from "@/backend/services/menu-pdf.service";
 import { MenuPdfDownload } from "@/components/admin/menu-pdf-download";
 import { AdminFileInput } from "@/components/admin/admin-file-input";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
@@ -29,6 +30,20 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
   const [params, context] = await Promise.all([searchParams, getAdminContext()]);
   if (context.state !== "ready") return null;
   const { categories, items, error } = await listMenu();
+  // Warm cover/blank templates in the background so the first PDF click is faster.
+  void warmMenuPdfAssets().catch(() => undefined);
+  const pdfRevision = [
+    categories?.length ?? 0,
+    items?.length ?? 0,
+    ...(items ?? []).map(
+      (item) =>
+        `${item.id}:${item.price}:${item.sort_order}:${item.is_active ? 1 : 0}:${item.image_path ?? ""}:${item.name}:${item.description_de ?? ""}:${item.description_en ?? ""}`,
+    ),
+    ...(categories ?? []).map(
+      (category) =>
+        `${category.id}:${category.sort_order}:${category.is_active ? 1 : 0}:${category.title}:${category.subtitle ?? ""}`,
+    ),
+  ].join("|");
 
   return (
     <>
@@ -46,7 +61,7 @@ export default async function MenuAdminPage({ searchParams }: MenuPageProps) {
           herunterladen.
         </p>
         <div className="mt-4">
-          <MenuPdfDownload />
+          <MenuPdfDownload revision={pdfRevision} />
         </div>
       </Card>
 

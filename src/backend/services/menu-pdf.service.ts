@@ -12,9 +12,9 @@ export type MenuPdfLang = "de" | "en";
 const PAGE_PX = { w: 2480, h: 3508 } as const;
 const A4 = { w: 595.28, h: 841.89 } as const;
 const PX = A4.w / PAGE_PX.w;
-/** ~120dpi chrome — sharp enough on screen, much faster to encode/embed */
-const RENDER_SCALE = 0.4;
-const THUMB_SCALE = 0.45;
+/** ~100dpi chrome — still sharp on A4, much faster encode/embed */
+const RENDER_SCALE = 0.32;
+const THUMB_SCALE = 0.34;
 
 function pt(px: number) {
   return px * PX;
@@ -65,8 +65,47 @@ type PageBlock =
 
 let templateCache: { cover: Buffer; blank: Buffer; version: number } | null =
   null;
-const TEMPLATE_CACHE_VERSION = 5;
+const TEMPLATE_CACHE_VERSION = 6;
 const thumbCache = new Map<string, Buffer>();
+const THUMB_CACHE_VERSION = 2;
+
+function thumbCacheKey(url: string) {
+  return `v${THUMB_CACHE_VERSION}:${url}`;
+}
+
+type BuiltPdfCache = {
+  signature: string;
+  bytes: Uint8Array;
+  filename: string;
+};
+/** Keep DE + EN (and recent revisions) in memory for instant repeat downloads. */
+const builtPdfCaches = new Map<string, BuiltPdfCache>();
+const BUILT_PDF_CACHE_MAX = 4;
+
+/** Prefetch cover/blank JPEG so the first PDF click is not paying resize cost. */
+export async function warmMenuPdfAssets() {
+  await loadTemplates();
+}
+
+function menuPdfSignature(
+  lang: MenuPdfLang,
+  categories: Awaited<ReturnType<typeof listMenu>>["categories"],
+  items: Awaited<ReturnType<typeof listMenu>>["items"],
+) {
+  // Compact fingerprint — any catalog/content change invalidates the cache.
+  const parts: string[] = [lang];
+  for (const category of categories) {
+    parts.push(
+      `c:${category.id}:${category.sort_order}:${category.is_active ? 1 : 0}:${category.title}:${category.subtitle ?? ""}:${category.note_de ?? ""}:${category.note_en ?? ""}`,
+    );
+  }
+  for (const item of items) {
+    parts.push(
+      `i:${item.id}:${item.category_id}:${item.item_number}:${item.sort_order}:${item.is_active ? 1 : 0}:${item.name}:${item.price}:${item.description_de ?? ""}:${item.description_en ?? ""}:${item.image_path ?? ""}`,
+    );
+  }
+  return parts.join("|");
+}
 
 /** Cover = shop PDF page 1; blank = provided ornate frame (text drawn on top). */
 async function loadTemplates() {
@@ -79,8 +118,8 @@ async function loadTemplates() {
   const width = Math.round(PAGE_PX.w * RENDER_SCALE);
   const height = Math.round(PAGE_PX.h * RENDER_SCALE);
   const [cover, blank] = await Promise.all([
-    sharp(coverRaw).resize(width, height).jpeg({ quality: 68 }).toBuffer(),
-    sharp(blankRaw).resize(width, height).jpeg({ quality: 72 }).toBuffer(),
+    sharp(coverRaw).resize(width, height).jpeg({ quality: 58, mozjpeg: true }).toBuffer(),
+    sharp(blankRaw).resize(width, height).jpeg({ quality: 62, mozjpeg: true }).toBuffer(),
   ]);
   templateCache = { cover, blank, version: TEMPLATE_CACHE_VERSION };
   return templateCache;
@@ -94,44 +133,28 @@ function formatItemNumber(n: number) {
   return String(n).padStart(2, "0");
 }
 
-/** Single-pass circular PNG thumb (transparent corners). */
+/** Circular PNG thumb with gold ring (transparent corners). */
 async function circlePng(source: Buffer, diameterPx: number): Promise<Buffer> {
   const size = Math.max(40, Math.round(diameterPx * THUMB_SCALE));
   const ring = 3;
   const cx = size / 2;
-  const overlay = Buffer.from(
-    `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <mask id="m"><rect width="100%" height="100%" fill="black"/>
-          <circle cx="${cx}" cy="${cx}" r="${cx - 1}" fill="white"/>
-        </mask>
-      </defs>
-      <circle cx="${cx}" cy="${cx}" r="${cx - ring / 2}" fill="none" stroke="#ebc37d" stroke-width="${ring}"/>
-    </svg>`,
-  );
   const mask = Buffer.from(
     `<svg width="${size}" height="${size}"><circle cx="${cx}" cy="${cx}" r="${cx - ring}" fill="white"/></svg>`,
   );
+  const overlay = Buffer.from(
+    `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="${cx}" cy="${cx}" r="${cx - ring / 2}" fill="none" stroke="#ebc37d" stroke-width="${ring}"/>
+    </svg>`,
+  );
 
-  const photo = await sharp(source)
+  return sharp(source)
     .resize(size, size, { fit: "cover" })
-    .composite([{ input: mask, blend: "dest-in" }])
-    .png()
-    .toBuffer();
-
-  return sharp({
-    create: {
-      width: size,
-      height: size,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
+    .ensureAlpha()
     .composite([
-      { input: photo, top: 0, left: 0 },
-      { input: overlay, top: 0, left: 0 },
+      { input: mask, blend: "dest-in" },
+      { input: overlay, blend: "over" },
     ])
-    .png({ compressionLevel: 4, effort: 3 })
+    .png({ compressionLevel: 6, effort: 1 })
     .toBuffer();
 }
 
@@ -177,7 +200,7 @@ async function prepareThumbs(urls: string[]): Promise<Map<string, Buffer>> {
   const unique = [...new Set(urls)];
   const map = new Map<string, Buffer>();
   const missing = unique.filter((url) => {
-    const hit = thumbCache.get(url);
+    const hit = thumbCache.get(thumbCacheKey(url));
     if (hit) {
       map.set(url, hit);
       return false;
@@ -192,7 +215,7 @@ async function prepareThumbs(urls: string[]): Promise<Map<string, Buffer>> {
     if (!raw) return;
     try {
       const thumb = await circlePng(raw, L.circleD);
-      thumbCache.set(url, thumb);
+      thumbCache.set(thumbCacheKey(url), thumb);
       map.set(url, thumb);
     } catch {
       /* skip broken images */
@@ -331,6 +354,13 @@ export async function buildMenuPdf(
     listMenu(),
     loadTemplates(),
   ]);
+
+  const signature = menuPdfSignature(lang, categories, items);
+  const cached = builtPdfCaches.get(signature);
+  if (cached) {
+    return { bytes: cached.bytes, filename: cached.filename };
+  }
+
   const catalog = buildCategories(categories, items, lang);
   const pages = paginate(catalog);
 
@@ -353,9 +383,11 @@ export async function buildMenuPdf(
   }
 
   const thumbEmbeds = new Map<string, PDFImage>();
-  for (const [url, buffer] of thumbs) {
-    thumbEmbeds.set(url, await pdf.embedPng(buffer));
-  }
+  await Promise.all(
+    [...thumbs.entries()].map(async ([url, buffer]) => {
+      thumbEmbeds.set(url, await pdf.embedPng(buffer));
+    }),
+  );
 
   let pageNumber = 2;
 
@@ -520,5 +552,11 @@ export async function buildMenuPdf(
   const bytes = await pdf.save({ useObjectStreams: true });
   const filename =
     lang === "de" ? "safran-speisekarte-de.pdf" : "safran-menu-en.pdf";
+  builtPdfCaches.set(signature, { signature, bytes, filename });
+  while (builtPdfCaches.size > BUILT_PDF_CACHE_MAX) {
+    const oldest = builtPdfCaches.keys().next().value;
+    if (oldest === undefined) break;
+    builtPdfCaches.delete(oldest);
+  }
   return { bytes, filename };
 }

@@ -203,7 +203,10 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
       y -= 15;
     }
     if (line2) {
-      write(line2.slice(0, 70), 11);
+      const locationLabel = /^https?:\/\//i.test(line2)
+        ? `Standort: ${line2}`
+        : line2;
+      write(locationLabel.slice(0, 90), 10);
       y -= 15;
     }
     if (cityLine) {

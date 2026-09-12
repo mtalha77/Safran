@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { MenuCatalog } from "@/components/menu-catalog";
 import { getMenuCategories } from "@/backend/services/storefront.service";
+import { MenuCatalogLazy } from "@/components/menu-catalog-lazy";
 import menuHeroImage from "../../../../public/images/hero-safran.jpg";
 
 export const metadata: Metadata = {
@@ -61,7 +61,7 @@ export default async function SpeisekartePage() {
         </div>
       </section>
 
-      <MenuCatalog categories={menuCategories} />
+      <MenuCatalogLazy categories={menuCategories} />
     </>
   );
 }
