@@ -67,6 +67,7 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
+  const pageWidth = 595.28;
   const left = 48;
   let y = 790;
   const ink = rgb(0.1, 0.1, 0.1);
@@ -86,20 +87,37 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
     });
   };
 
-  write(payload.restaurantName, 18, { bold: true });
-  y -= 22;
-  write("Bestellung / Küchenbon", 11, { color: muted });
-  y -= 28;
+  const writeCentered = (
+    text: string,
+    size: number,
+    options?: { bold?: boolean; color?: ReturnType<typeof rgb> },
+  ) => {
+    const safe = pdfSafe(text);
+    const usedFont = options?.bold ? bold : font;
+    const width = usedFont.widthOfTextAtSize(safe, size);
+    page.drawText(safe, {
+      x: (pageWidth - width) / 2,
+      y,
+      size,
+      font: usedFont,
+      color: options?.color ?? ink,
+    });
+  };
+
+  // Top banner: fulfillment type — large, bold, centered for kitchen.
+  const fulfillmentLabel =
+    payload.fulfillmentType === "delivery" ? "LIEFERUNG" : "ABHOLUNG";
+  writeCentered(fulfillmentLabel, 28, { bold: true });
+  y -= 36;
+
+  write(payload.restaurantName, 16, { bold: true });
+  y -= 20;
+  write("Bestellung / Kuechenbon", 11, { color: muted });
+  y -= 24;
   write(`#${payload.orderNumber}`, 16, { bold: true });
   y -= 18;
   write(payload.createdAt, 10, { color: muted });
-  y -= 14;
-  write(
-    payload.fulfillmentType === "delivery" ? "Lieferung" : "Abholung",
-    11,
-    { bold: true },
-  );
-  y -= 20;
+  y -= 18;
   page.drawLine({
     start: { x: left, y },
     end: { x: 547, y },
