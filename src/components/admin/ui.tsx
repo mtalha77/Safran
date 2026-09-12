@@ -92,7 +92,7 @@ export function AdminShell({
 
       <div className="relative flex min-h-screen flex-col">
         <header className="sticky top-0 z-30 border-b border-sage/15 bg-cream/80 backdrop-blur-md">
-          <div className="relative flex h-16 items-center gap-3 pl-3 pr-3 sm:pl-5 sm:pr-5 lg:pl-6 lg:pr-8">
+          <div className="relative flex min-h-16 flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 sm:px-5 lg:h-16 lg:flex-nowrap lg:gap-3 lg:px-6 lg:pr-8 lg:py-0">
             <div className="relative z-10 flex shrink-0 items-center gap-2">
               <button
                 type="button"
@@ -103,7 +103,7 @@ export function AdminShell({
                 <SidebarPanelIcon />
               </button>
               <p
-                className="select-none text-[1.85rem] leading-none text-sage-deep sm:text-[2.1rem]"
+                className="select-none text-[1.75rem] leading-none text-sage-deep sm:text-[2.1rem]"
                 style={{ fontFamily: "var(--font-caveat), 'Segoe Script', cursive" }}
                 translate="no"
               >
@@ -113,10 +113,10 @@ export function AdminShell({
 
             <div
               id="admin-header-search"
-              className="pointer-events-none absolute inset-x-0 flex justify-center px-3 empty:hidden sm:px-5 lg:px-8"
+              className="pointer-events-none order-last w-full basis-full empty:hidden md:order-none md:absolute md:inset-x-0 md:flex md:w-auto md:basis-auto md:justify-center md:px-5 lg:px-8"
             />
 
-            <div className="relative z-10 ml-auto flex shrink-0 items-center gap-3 sm:gap-4">
+            <div className="relative z-10 ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
               <AdminStoreToggle open={storeOpen} />
               {email ? (
                 <div className="hidden items-center gap-2 sm:flex">
@@ -139,7 +139,7 @@ export function AdminShell({
 
         <div
           id="admin-header-filters"
-          className="pointer-events-none absolute top-16 right-0 z-20 empty:hidden"
+          className="pointer-events-none empty:hidden max-md:flex max-md:justify-end max-md:px-3 max-md:pt-2 md:absolute md:top-16 md:right-0 md:z-20"
         />
 
         {/* Mobile drawer */}
@@ -153,7 +153,11 @@ export function AdminShell({
             />
             <aside className="absolute inset-y-0 left-0 flex w-[min(100%,18rem)] flex-col bg-ink text-white shadow-xl">
               <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                <p className="font-serif text-lg text-cream" translate="no">
+                <p
+                  className="text-[1.75rem] leading-none text-cream"
+                  style={{ fontFamily: "var(--font-caveat), 'Segoe Script', cursive" }}
+                  translate="no"
+                >
                   Safran
                 </p>
                 <button

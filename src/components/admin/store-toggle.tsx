@@ -32,11 +32,11 @@ export function AdminStoreToggle({ open }: { open: boolean }) {
   return (
     <form
       action={setStoreOpenAction}
-      className="flex items-center gap-2.5 rounded-full border border-ink/8 bg-white px-3 py-1.5 shadow-sm"
+      className="flex items-center gap-2 rounded-full border border-ink/8 bg-white px-2.5 py-1.5 shadow-sm sm:gap-2.5 sm:px-3"
     >
       <input type="hidden" name="is_open" value={open ? "false" : "true"} />
       <input type="hidden" name="next" value={pathname || "/admin"} />
-      <p className="text-xs font-semibold text-ink">
+      <p className="hidden text-xs font-semibold text-ink sm:block">
         {open ? "Bestellungen offen" : "Bestellungen zu"}
       </p>
       <ToggleButton open={open} />

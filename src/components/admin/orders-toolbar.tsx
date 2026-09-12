@@ -82,7 +82,7 @@ export function OrdersToolbar({
   }
 
   const searchField = (
-    <label className="pointer-events-auto relative block w-full max-w-md">
+    <label className="pointer-events-auto relative block w-full md:max-w-md">
       <span className="sr-only">Suche</span>
       <span
         className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
@@ -109,8 +109,8 @@ export function OrdersToolbar({
   );
 
   const statusField = (
-    <div className="pointer-events-auto px-3 pt-2 sm:px-5 lg:px-8">
-      <label className="relative block w-[min(100vw-1.5rem,14rem)] sm:w-56">
+    <div className="pointer-events-auto max-md:w-full max-md:max-w-[14rem] md:px-5 md:pt-2 lg:px-8">
+      <label className="relative block w-full sm:w-56">
         <span className="sr-only">Status</span>
         <select
           value={selectedStatus}
