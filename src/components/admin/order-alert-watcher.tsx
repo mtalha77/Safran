@@ -243,7 +243,7 @@ export function OrderAlertWatcher() {
         </button>
       ) : (
         <p className="rounded-full border border-sage/25 bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-muted shadow">
-          {live ? "Live · Alarm an" : "Alarm an · verbindet…"}
+          {live ? "Live · Alarm an" : "Alarm an · verbindet..."}
         </p>
       )}
     </div>
