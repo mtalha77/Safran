@@ -28,28 +28,30 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
           <div className="mt-5">
             <Notice error={params.error} />
           </div>
-          <form action={loginAction} className="space-y-4">
+          <form action={loginAction} className="mt-2 space-y-5">
             <input type="hidden" name="next" value={params.next ?? "/admin"} />
-            <label className="block text-sm font-semibold">
+            <label className="block text-sm font-semibold text-ink">
               E-Mail
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 type="email"
                 name="email"
                 autoComplete="email"
                 required
                 autoFocus
+                placeholder="admin@example.com"
               />
             </label>
-            <label className="block text-sm font-semibold">
+            <label className="block text-sm font-semibold text-ink">
               Passwort
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 type="password"
                 name="password"
                 autoComplete="current-password"
                 minLength={8}
                 required
+                placeholder="••••••••"
               />
             </label>
             <PendingSubmitButton className="w-full" pendingLabel="Anmeldung läuft…">

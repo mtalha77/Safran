@@ -40,11 +40,8 @@ body {
 }
 
 /*
- * Chrome, Edge and Safari paint autofilled fields with their own pale blue and
- * ignore `background-color`. Clipping that painted layer to the glyphs lets the
- * field keep whatever background its own classes set, so this works for the
- * white checkout inputs and the admin forms alike without naming a colour.
- * `-webkit-text-fill-color` is needed because the same layer overrides `color`.
+ * Keep autofilled fields readable. Do NOT use background-clip:text — that
+ * collapses empty/autofilled inputs to a thin line (especially on admin login).
  */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -56,10 +53,11 @@ textarea:-webkit-autofill:focus,
 select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus {
-  -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: var(--ink);
   caret-color: var(--ink);
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  transition: background-color 99999s ease-out;
 }
 
 @keyframes spin {
