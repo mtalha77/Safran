@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 /** Backup poll if Realtime disconnects — keep short for near-live UX. */
-const POLL_MS = 2500;
+const POLL_MS = 4000;
+const POLL_WHEN_LIVE_MS = 30_000;
 const STORAGE_KEY = "safran-order-alert-seen-id";
 const UNMUTE_KEY = "safran-order-alert-unmuted";
 
@@ -102,8 +103,11 @@ export function OrderAlertWatcher() {
       window.sessionStorage.setItem(STORAGE_KEY, orderId);
       setLastOrderNumber(orderNumber != null ? String(orderNumber) : null);
 
-      // Always refresh the dashboard list — no manual reload needed.
-      router.refresh();
+      // Refresh only pages that show order lists — avoid full RSC reload elsewhere.
+      const path = window.location.pathname;
+      if (path === "/admin" || path.startsWith("/admin/orders")) {
+        router.refresh();
+      }
 
       if (unmutedRef.current && enabledRef.current) {
         await playAlert(soundUrlRef.current);
@@ -205,8 +209,7 @@ export function OrderAlertWatcher() {
     }
 
     void tick();
-    // When Realtime is live, poll less often; otherwise stay near-live.
-    const interval = live ? 15_000 : POLL_MS;
+    const interval = live ? POLL_WHEN_LIVE_MS : POLL_MS;
     timer = window.setInterval(() => void tick(), interval);
     document.addEventListener("visibilitychange", onVisibility);
     return () => {

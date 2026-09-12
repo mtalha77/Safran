@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { logoutAction } from "@/app/admin/actions";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { AdminNavProgress } from "@/components/admin/admin-nav-progress";
 import { OrderAlertWatcher } from "@/components/admin/order-alert-watcher";
 import { AdminStoreToggle } from "@/components/admin/store-toggle";
 
@@ -92,6 +93,7 @@ export function AdminShell({
 
       <div className="relative flex min-h-screen flex-col">
         <header className="sticky top-0 z-30 border-b border-sage/15 bg-cream/80 backdrop-blur-md">
+          <AdminNavProgress />
           <div className="relative flex min-h-16 flex-wrap items-center gap-x-3 gap-y-2 px-3 py-2.5 sm:px-5 lg:h-16 lg:flex-nowrap lg:gap-3 lg:px-6 lg:pr-8 lg:py-0">
             <div className="relative z-10 flex shrink-0 items-center gap-2">
               <button

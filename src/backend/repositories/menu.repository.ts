@@ -9,11 +9,19 @@ type Db = SupabaseClient<Database>;
 export const MENU_BUCKET = "menu-images";
 
 export function listCategories(db: Db) {
-  return db.from("menu_categories").select("*").order("sort_order");
+  return db
+    .from("menu_categories")
+    .select("id, title, subtitle, sort_order, is_active, image_path, note_de, note_en")
+    .order("sort_order");
 }
 
 export function listItems(db: Db) {
-  return db.from("menu_items").select("*").order("sort_order");
+  return db
+    .from("menu_items")
+    .select(
+      "id, category_id, item_number, name, description_de, description_en, price, sort_order, is_active, image_path",
+    )
+    .order("sort_order");
 }
 
 export function countItemsInCategory(db: Db, categoryId: string) {

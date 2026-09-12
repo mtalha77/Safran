@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { requireCapability } from "@/backend/auth/authorize";
 import { UnavailableError } from "@/backend/errors";
@@ -49,13 +50,14 @@ export async function setStoreOpen(isOpen: boolean): Promise<void> {
   if (error) throw new UnavailableError("store_toggle_failed", error.message);
 }
 
-export async function getStoreOpen(): Promise<boolean> {
+/** Cached per request so layout + pages don’t double-hit store availability. */
+export const getStoreOpen = cache(async (): Promise<boolean> => {
   const { supabase } = await requireCapability("orders:read");
   const { data } = await settingsRepository.findAcceptsOrders(
     supabase as unknown as Db,
   );
   return data?.accepts_orders ?? true;
-}
+});
 
 export async function getRestaurantSettings() {
   const { supabase } = await requireCapability("settings:manage");
