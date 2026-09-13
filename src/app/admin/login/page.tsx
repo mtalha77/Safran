@@ -14,7 +14,7 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
   if (context.state === "setup") return <SetupState />;
 
   return (
-    <div className="min-h-screen bg-[#f3ede4] px-4 py-36">
+    <div className="notranslate min-h-screen bg-[#f3ede4] px-4 py-36" translate="no">
       <div className="mx-auto max-w-md">
         <div className="mb-7 text-center">
           <p className="font-serif text-4xl text-sage-deep">Safran</p>

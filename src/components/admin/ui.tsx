@@ -48,7 +48,8 @@ export function AdminShell({
 
   return (
     <div
-      className="min-h-screen lg:pl-20"
+      translate="no"
+      className="notranslate min-h-screen lg:pl-20"
       style={{
         background:
           "linear-gradient(160deg, var(--cream) 0%, var(--paper) 42%, color-mix(in srgb, var(--sage) 8%, var(--cream)) 100%)",
