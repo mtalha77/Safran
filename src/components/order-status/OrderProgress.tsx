@@ -30,7 +30,7 @@ export function OrderProgress({
         return (
           <li
             key={step}
-            className="relative flex min-w-0 flex-1 items-start gap-3 sm:flex-col sm:items-center sm:text-center"
+            className="relative flex min-w-0 flex-1 items-center gap-3 sm:flex-col sm:items-center sm:text-center"
             aria-current={isCurrent ? "step" : undefined}
           >
             {index < steps.length - 1 ? (
@@ -42,7 +42,7 @@ export function OrderProgress({
               />
             ) : null}
             <span
-              className={`relative z-[1] mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${
+              className={`relative z-[1] flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold leading-none ${
                 isDone
                   ? "border-sage bg-sage text-white"
                   : isCurrent
@@ -54,7 +54,7 @@ export function OrderProgress({
               {isDone ? "✓" : index + 1}
             </span>
             <span
-              className={`min-w-0 text-xs leading-snug sm:text-[13px] ${
+              className={`min-w-0 text-xs leading-none sm:mt-1 sm:leading-snug sm:text-[13px] ${
                 isCurrent
                   ? "font-semibold text-ink"
                   : isUpcoming
