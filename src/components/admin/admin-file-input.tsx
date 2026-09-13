@@ -35,6 +35,10 @@ export function AdminFileInput({
         onChange={(event) => {
           const file = event.target.files?.[0];
           setFileName(file?.name ?? "");
+          // Ensure parent DirtyForm sees the change (some browsers are flaky with file inputs).
+          event.currentTarget.dispatchEvent(
+            new Event("input", { bubbles: true }),
+          );
         }}
       />
       <label

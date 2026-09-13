@@ -6,6 +6,8 @@ import {
   uploadOrderAlertSoundAction,
 } from "@/app/admin/actions";
 import { getRestaurantSettings } from "@/backend/services/settings.service";
+import { AdminFileInput } from "@/components/admin/admin-file-input";
+import { DirtyForm } from "@/components/admin/dirty-form";
 import { HoursDayFields } from "@/components/admin/hours-day-fields";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { getAdminContext } from "@/components/admin/data";
@@ -59,7 +61,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             Bei einer neuen Bestellung wird im Admin automatisch ein Ton abgespielt.
             Einmal «Bestellalarm aktivieren» tippen (Browser-Regel), dann läuft der Alarm.
           </p>
-          <form
+          <DirtyForm
             key={`alert-enabled-${formKey}`}
             action={setOrderAlertEnabledAction}
             className="mt-5 flex flex-wrap items-end gap-3"
@@ -75,7 +77,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               Alarm aktiv
             </label>
             <PendingSubmitButton pendingLabel="Speichern…">Speichern</PendingSubmitButton>
-          </form>
+          </DirtyForm>
 
           <div className="mt-6 border-t border-sage/15 pt-5">
             <p className="text-sm font-semibold">Eigener Alarmton</p>
@@ -93,28 +95,28 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             ) : (
               <p className="mt-3 text-sm text-muted">Kein eigener Ton hinterlegt.</p>
             )}
-            <form
+            <DirtyForm
               key={`alert-upload-${formKey}`}
               action={uploadOrderAlertSoundAction}
               encType="multipart/form-data"
               className="mt-4 flex flex-wrap items-end gap-3"
             >
-              <label className="text-sm font-semibold">
-                Audiodatei
-                <input
-                  className={`${fieldClass} mt-1.5`}
+              <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+                <p className="mb-1.5 text-sm font-semibold">Audiodatei</p>
+                <AdminFileInput
                   name="sound"
-                  type="file"
-                  accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/mp4,audio/x-m4a,.mp3,.wav,.ogg,.m4a"
                   required
+                  buttonLabel="Datei wählen"
+                  accept="audio/mpeg,audio/mp3,audio/wav,audio/ogg,audio/mp4,audio/x-m4a,.mp3,.wav,.ogg,.m4a"
                 />
-              </label>
+              </div>
               <PendingSubmitButton pendingLabel="Hochladen…">Hochladen</PendingSubmitButton>
-            </form>
+            </DirtyForm>
             {orderAlert.soundUrl ? (
               <form action={clearOrderAlertSoundAction} className="mt-3">
                 <PendingSubmitButton
                   variant="secondary"
+                  requireDirty={false}
                   pendingLabel="Entfernen…"
                 >
                   Eigenen Ton entfernen
@@ -126,50 +128,50 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
 
         <Card>
           <h2 className="font-sans text-2xl font-semibold tracking-tight">Restaurant</h2>
-          <form
+          <DirtyForm
             key={`restaurant-${formKey}`}
             action={updateSettingsAction}
             className="mt-5 grid gap-4 sm:grid-cols-2"
           >
-            <label className="text-sm font-semibold sm:col-span-2">
+            <label className="block text-sm font-semibold sm:col-span-2">
               Restaurantname
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="restaurant_name"
                 defaultValue={String(settings.restaurant_name ?? "Safran")}
                 required
               />
             </label>
-            <label className="text-sm font-semibold">
+            <label className="block text-sm font-semibold">
               E-Mail
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="email"
                 type="email"
                 defaultValue={String(settings.contact_email ?? "")}
               />
             </label>
-            <label className="text-sm font-semibold">
+            <label className="block text-sm font-semibold">
               Telefon
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="phone"
                 type="tel"
                 defaultValue={String(settings.contact_phone ?? "")}
               />
             </label>
-            <label className="text-sm font-semibold sm:col-span-2">
+            <label className="block text-sm font-semibold sm:col-span-2">
               Adresse
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="address"
                 defaultValue={String(settings.address ?? "")}
               />
             </label>
-            <label className="text-sm font-semibold">
+            <label className="block text-sm font-semibold">
               Liefer-Mindestwert (CHF)
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="minimum_order"
                 type="number"
                 min="0"
@@ -177,10 +179,10 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 defaultValue={Number(settings.delivery_minimum ?? 0)}
               />
             </label>
-            <label className="text-sm font-semibold">
+            <label className="block text-sm font-semibold">
               Abhol-Mindestwert (CHF)
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="pickup_minimum"
                 type="number"
                 min="0"
@@ -188,10 +190,10 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 defaultValue={Number(settings.pickup_minimum ?? 0)}
               />
             </label>
-            <label className="text-sm font-semibold">
+            <label className="block text-sm font-semibold">
               Liefergebühr (CHF)
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="delivery_fee"
                 type="number"
                 min="0"
@@ -199,10 +201,10 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 defaultValue={Number(settings.delivery_fee ?? 0)}
               />
             </label>
-            <label className="text-sm font-semibold">
+            <label className="block text-sm font-semibold">
               Vorlaufzeit (Minuten)
               <input
-                className={`${fieldClass} mt-1.5`}
+                className={fieldClass}
                 name="minimum_notice_minutes"
                 type="number"
                 min="0"
@@ -231,7 +233,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <PendingSubmitButton className="sm:col-span-2 sm:justify-self-start">
               Restaurant speichern
             </PendingSubmitButton>
-          </form>
+          </DirtyForm>
         </Card>
 
         <Card>
@@ -241,7 +243,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             gepflegt werden. Gespeicherte Zeiten gelten sofort für Website,
             Banner und Bestellungen.
           </p>
-          <form
+          <DirtyForm
             key={`hours-${formKey}-${hours.map((h) => `${h.weekday}:${h.lunch_opens}`).join("|")}`}
             action={updateOpeningHoursAction}
             className="mt-5"
@@ -266,7 +268,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <PendingSubmitButton className="mt-5" pendingLabel="Öffnungszeiten werden gespeichert…">
               Öffnungszeiten speichern
             </PendingSubmitButton>
-          </form>
+          </DirtyForm>
         </Card>
       </div>
     </>

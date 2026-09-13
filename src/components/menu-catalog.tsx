@@ -152,14 +152,27 @@ export function MenuCatalog({
                         {category.subtitle}
                       </p>
                     )}
-                {(category.noteDe || category.noteEn) && (
-                  <div className="mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-left text-xs leading-5 text-sage-deep sm:mx-auto sm:max-w-2xl">
-                    {category.noteDe && <p>{category.noteDe}</p>}
-                    {category.noteEn && (
-                      <p className="text-muted">{category.noteEn}</p>
-                    )}
-                  </div>
-                )}
+                {(() => {
+                  const noteDe = category.noteDe?.trim() || "";
+                  const noteEn = category.noteEn?.trim() || "";
+                  if (!noteDe && !noteEn) return null;
+                  const same =
+                    Boolean(noteDe && noteEn) &&
+                    noteDe.localeCompare(noteEn, undefined, {
+                      sensitivity: "accent",
+                    }) === 0;
+                  return (
+                    <div
+                      translate="no"
+                      className="notranslate mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-left text-xs leading-5 text-sage-deep sm:mx-auto sm:max-w-2xl"
+                    >
+                      <p>{noteDe || noteEn}</p>
+                      {noteDe && noteEn && !same ? (
+                        <p className="mt-1 text-muted">{noteEn}</p>
+                      ) : null}
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="grid gap-4 lg:grid-cols-2">
