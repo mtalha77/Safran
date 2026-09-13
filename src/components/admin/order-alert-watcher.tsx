@@ -103,10 +103,17 @@ export function OrderAlertWatcher() {
       window.sessionStorage.setItem(STORAGE_KEY, orderId);
       setLastOrderNumber(orderNumber != null ? String(orderNumber) : null);
 
-      // Refresh only pages that show order lists — avoid full RSC reload elsewhere.
+      // Refresh only pages that show order lists — defer so audio/UI updates
+      // first, and avoid racing Google-Translate DOM mutations.
       const path = window.location.pathname;
       if (path === "/admin" || path.startsWith("/admin/orders")) {
-        router.refresh();
+        window.setTimeout(() => {
+          try {
+            router.refresh();
+          } catch {
+            /* soft refresh failed — list still updates on next poll/navigation */
+          }
+        }, 150);
       }
 
       if (unmutedRef.current && enabledRef.current) {
@@ -149,8 +156,17 @@ export function OrderAlertWatcher() {
   // Instant: Realtime INSERT on orders.
   useEffect(() => {
     let cancelled = false;
-    const supabase = createClient();
-    const channel = supabase
+    let channel: ReturnType<ReturnType<typeof createClient>["channel"]> | null =
+      null;
+    let supabase: ReturnType<typeof createClient> | null = null;
+
+    try {
+      supabase = createClient();
+    } catch {
+      return;
+    }
+
+    channel = supabase
       .channel("admin-order-alerts")
       .on(
         "postgres_changes",
@@ -172,7 +188,7 @@ export function OrderAlertWatcher() {
     return () => {
       cancelled = true;
       setLive(false);
-      void supabase.removeChannel(channel);
+      if (supabase && channel) void supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- stable handlers via refs
   }, [router]);

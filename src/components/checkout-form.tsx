@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   type FormEvent,
   useEffect,
@@ -50,7 +49,6 @@ export function CheckoutForm({
   storeOpen?: boolean;
   closedMessage?: string;
 }) {
-  const router = useRouter();
   const {
     items,
     itemCount,
@@ -286,7 +284,9 @@ export function CheckoutForm({
       }
 
       clearCart();
-      router.push(`/bestellung/${result.confirmationToken}`);
+      // Full navigation avoids soft-router crashes when the DOM was mutated
+      // (browser translate extensions, etc.) during checkout.
+      window.location.assign(`/bestellung/${result.confirmationToken}`);
     } catch (error) {
       setNotice(
         error instanceof Error

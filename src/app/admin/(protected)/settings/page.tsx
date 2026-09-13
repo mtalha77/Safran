@@ -64,7 +64,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           <DirtyForm
             key={`alert-enabled-${formKey}`}
             action={setOrderAlertEnabledAction}
-            className="mt-5 flex flex-wrap items-end gap-3"
+            className="mt-5 flex flex-wrap items-center gap-3"
           >
             <label className="flex items-center gap-2 text-sm font-semibold">
               <input
@@ -98,8 +98,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
             <DirtyForm
               key={`alert-upload-${formKey}`}
               action={uploadOrderAlertSoundAction}
-              encType="multipart/form-data"
-              className="mt-4 flex flex-wrap items-end gap-3"
+              className="mt-4 flex flex-wrap items-center gap-3"
             >
               <div className="min-w-0 flex-1 basis-full sm:basis-auto">
                 <p className="mb-1.5 text-sm font-semibold">Audiodatei</p>
