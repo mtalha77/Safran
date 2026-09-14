@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { getMenuCategories } from "@/backend/services/storefront.service";
+import { FloatingCartButton } from "@/components/floating-cart-button";
 import { MenuCatalogLazy } from "@/components/menu-catalog-lazy";
 import { MenuPageHeroCopy } from "@/components/menu-page-hero-copy";
 import menuHeroImage from "../../../../public/images/hero-safran.jpg";
@@ -42,6 +43,7 @@ export default async function SpeisekartePage() {
       </section>
 
       <MenuCatalogLazy categories={menuCategories} />
+      <FloatingCartButton />
     </>
   );
 }

@@ -60,15 +60,26 @@ export function SiteHeader() {
             : "border-b border-white/20 bg-transparent py-4"
         }`}
       >
-        <Link
-          href="/"
-          translate="no"
-          className={`notranslate font-serif text-[34px] leading-none ${
-            floating ? "text-sage" : "text-white"
-          }`}
-        >
-          Safran
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            translate="no"
+            className={`notranslate font-serif text-[34px] leading-none ${
+              floating ? "text-sage" : "text-white"
+            }`}
+          >
+            Safran
+          </Link>
+          <span
+            className={`hidden rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wide lg:inline-flex ${
+              floating
+                ? "border-sage/30 bg-sage/10 text-sage-deep"
+                : "border-white/35 bg-white/10 text-white"
+            }`}
+          >
+            {t("nav.freeDelivery")}
+          </span>
+        </div>
         <nav
           className={`absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 text-base font-medium md:flex ${
             floating ? "text-sage" : "text-white/90"
@@ -169,6 +180,9 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <span className="mx-4 mt-2 mb-1 self-start rounded-full bg-gold px-3 py-1 text-[11px] font-bold tracking-wide text-sage">
+            {t("nav.freeDelivery")}
+          </span>
         </nav>
       </div>
     </header>
