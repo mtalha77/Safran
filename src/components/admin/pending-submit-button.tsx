@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import { useDirtyForm } from "@/components/admin/dirty-form";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 type PendingSubmitButtonProps = {
   children: ReactNode;
@@ -36,15 +37,17 @@ const VARIANT_CLASS: Record<
  */
 export function PendingSubmitButton({
   children,
-  pendingLabel = "Wird gespeichert…",
+  pendingLabel,
   className = "",
   variant = "primary",
   requireDirty = true,
 }: PendingSubmitButtonProps) {
   const { pending } = useFormStatus();
   const dirty = useDirtyForm();
+  const { t } = useLocale();
   const blockedByDirty =
     requireDirty && dirty !== null && dirty === false;
+  const busyLabel = pendingLabel ?? t("admin.common.saving");
 
   return (
     <button
@@ -53,7 +56,7 @@ export function PendingSubmitButton({
       aria-busy={pending}
       className={`${VARIANT_CLASS[variant]} ${className}`.trim()}
     >
-      {pending ? pendingLabel : children}
+      {pending ? busyLabel : children}
     </button>
   );
 }

@@ -10,13 +10,12 @@ import {
   type ChangeEvent,
 } from "react";
 import { createPortal } from "react-dom";
-
-type StatusOption = { value: string; label: string };
+import { ORDER_STATUS_VALUES, useStatusLabel } from "@/components/admin/t";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 type OrdersToolbarProps = {
   q?: string;
   status?: string;
-  statusOptions: StatusOption[];
 };
 
 function buildOrdersUrl(q: string, status: string) {
@@ -28,12 +27,10 @@ function buildOrdersUrl(q: string, status: string) {
   return qs ? `/admin/orders?${qs}` : "/admin/orders";
 }
 
-export function OrdersToolbar({
-  q = "",
-  status = "",
-  statusOptions,
-}: OrdersToolbarProps) {
+export function OrdersToolbar({ q = "", status = "" }: OrdersToolbarProps) {
   const router = useRouter();
+  const { t } = useLocale();
+  const statusLabel = useStatusLabel();
   const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState(q);
   const [selectedStatus, setSelectedStatus] = useState(status);
@@ -83,7 +80,7 @@ export function OrdersToolbar({
 
   const searchField = (
     <label className="pointer-events-auto relative block w-full md:max-w-md">
-      <span className="sr-only">Suche</span>
+      <span className="sr-only">{t("admin.orders.search")}</span>
       <span
         className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted"
         aria-hidden
@@ -102,7 +99,7 @@ export function OrdersToolbar({
       <input
         value={search}
         onChange={(event) => setSearch(event.target.value)}
-        placeholder="Name oder Bestellnummer"
+        placeholder={t("admin.orders.search")}
         className="h-10 w-full rounded-xl border border-sage/20 bg-white/80 py-2 pr-3 pl-9 text-sm text-ink outline-none transition placeholder:text-muted/55 focus:border-sage focus:bg-white focus:ring-2 focus:ring-sage/15"
       />
     </label>
@@ -111,7 +108,7 @@ export function OrdersToolbar({
   const statusField = (
     <div className="pointer-events-auto max-md:w-full max-md:max-w-[14rem] md:px-5 md:pt-2 lg:px-8">
       <label className="relative block w-full sm:w-56">
-        <span className="sr-only">Status</span>
+        <span className="sr-only">{t("admin.orders.colStatus")}</span>
         <select
           value={selectedStatus}
           onChange={onStatusChange}
@@ -119,10 +116,10 @@ export function OrdersToolbar({
           aria-busy={isPending}
           className="h-10 w-full appearance-none rounded-xl border border-sage/20 bg-white py-2 pr-10 pl-3.5 text-sm text-ink shadow-sm outline-none transition focus:border-sage focus:ring-2 focus:ring-sage/15 disabled:cursor-wait disabled:opacity-70"
         >
-          <option value="">Alle Status</option>
-          {statusOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
+          <option value="">{t("admin.orders.allStatuses")}</option>
+          {ORDER_STATUS_VALUES.map((value) => (
+            <option key={value} value={value}>
+              {statusLabel(value)}
             </option>
           ))}
         </select>

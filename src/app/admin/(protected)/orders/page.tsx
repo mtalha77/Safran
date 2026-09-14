@@ -1,21 +1,16 @@
-import Link from "next/link";
-import { reprintOrderBillAction } from "@/app/admin/actions";
 import { listOrdersForBackOffice } from "@/backend/services/order.service";
-import {
-  formatDate,
-  formatMoney,
-  getAdminContext,
-  orderStatusLabels,
-  printJobStatusLabels,
-  printStatusClass,
-  statusClass,
-} from "@/components/admin/data";
+import { AdminOrdersView } from "@/components/admin/admin-orders-view";
+import { getAdminContext } from "@/components/admin/data";
 import { OrdersToolbar } from "@/components/admin/orders-toolbar";
-import { Card, EmptyState, Notice, PageHeader, secondaryButtonClass } from "@/components/admin/ui";
-import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
 type OrdersPageProps = {
-  searchParams: Promise<{ status?: string; q?: string; message?: string; error?: string; page?: string }>;
+  searchParams: Promise<{
+    status?: string;
+    q?: string;
+    message?: string;
+    error?: string;
+    page?: string;
+  }>;
 };
 
 const PAGE_SIZE = 30;
@@ -25,115 +20,42 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   if (context.state !== "ready") return null;
   const page = Math.max(1, Number(params.page) || 1);
 
-  const { data: orders, count, error, printJobsByOrderId } = await listOrdersForBackOffice({
-    status: params.status,
-    search: params.q,
-    page,
-    pageSize: PAGE_SIZE,
-  });
+  const { data: orders, count, error, printJobsByOrderId } =
+    await listOrdersForBackOffice({
+      status: params.status,
+      search: params.q,
+      page,
+      pageSize: PAGE_SIZE,
+    });
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
-  const statusOptions = Object.entries(orderStatusLabels).map(([value, label]) => ({
-    value,
-    label,
-  }));
+
+  const printJobs: Record<string, { status: string } | undefined> = {};
+  for (const [id, job] of printJobsByOrderId.entries()) {
+    printJobs[id] = job ? { status: job.status } : undefined;
+  }
 
   return (
     <>
-      <OrdersToolbar
+      <OrdersToolbar q={params.q} status={params.status} />
+      <AdminOrdersView
+        orders={(orders ?? []).map((order) => ({
+          id: order.id,
+          order_number: order.order_number,
+          customer_name: order.customer_name,
+          fulfillment_type: order.fulfillment_type,
+          created_at: order.created_at,
+          status: order.status,
+          total: order.total,
+        }))}
+        count={count ?? 0}
+        page={page}
+        pages={pages}
         q={params.q}
         status={params.status}
-        statusOptions={statusOptions}
+        message={params.message}
+        error={params.error ?? error?.message}
+        printJobsByOrderId={printJobs}
       />
-
-      <PageHeader
-        eyebrow="Bestellmanagement"
-        title="Bestellungen"
-        description={`${count ?? 0} Bestellungen gefunden. Öffne einen Eintrag für Details, Statuswechsel und Rechnungsdruck.`}
-      />
-      <Notice message={params.message} error={params.error ?? error?.message} />
-
-      <Card>
-        {!orders?.length ? (
-          <EmptyState title="Keine Bestellungen gefunden">Passe die Filter an oder warte auf eine neue Bestellung.</EmptyState>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[920px] text-left text-sm">
-              <thead className="border-b border-sage/15 text-xs uppercase tracking-wider text-muted">
-                <tr>
-                  <th className="pb-3">Bestellung</th>
-                  <th className="pb-3">Kunde</th>
-                  <th className="pb-3">Art</th>
-                  <th className="pb-3">Eingang</th>
-                  <th className="pb-3">Status</th>
-                  <th className="pb-3">Druck</th>
-                  <th className="pb-3 text-right">Total</th>
-                  <th className="pb-3 text-right">Aktion</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-sage/10">
-                {orders.map((order) => {
-                  const printJob = printJobsByOrderId.get(order.id);
-                  return (
-                    <tr key={order.id} className="transition hover:bg-cream/35">
-                      <td className="py-4 font-semibold">
-                        <Link href={`/admin/orders/${order.id}`} className="hover:text-sage-deep hover:underline">
-                          #{order.order_number ?? String(order.id).slice(0, 8)}
-                        </Link>
-                      </td>
-                      <td className="py-4">{order.customer_name ?? "Gast"}</td>
-                      <td className="py-4 text-muted">{order.fulfillment_type === "delivery" ? "Lieferung" : "Abholung"}</td>
-                      <td className="py-4 text-muted">{formatDate(order.created_at)}</td>
-                      <td className="py-4">
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass(order.status)}`}>
-                          {orderStatusLabels[order.status] ?? order.status}
-                        </span>
-                      </td>
-                      <td className="py-4">
-                        {printJob ? (
-                          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${printStatusClass(printJob.status)}`}>
-                            {printJobStatusLabels[printJob.status] ?? printJob.status}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted">–</span>
-                        )}
-                      </td>
-                      <td className="py-4 text-right font-semibold">{formatMoney(order.total)}</td>
-                      <td className="py-4 text-right">
-                        <form action={reprintOrderBillAction} className="inline">
-                          <input type="hidden" name="id" value={order.id} />
-                          <input type="hidden" name="next" value="/admin/orders" />
-                          <PendingSubmitButton
-                            variant="secondary"
-                            className="!px-3 !py-1.5 !text-xs"
-                            pendingLabel="…"
-                          >
-                            Drucken
-                          </PendingSubmitButton>
-                        </form>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-        {pages > 1 ? (
-          <nav className="mt-5 flex items-center justify-between border-t border-sage/15 pt-4 text-sm" aria-label="Seitennavigation">
-            <Link
-              aria-disabled={page <= 1}
-              className={`${secondaryButtonClass} ${page <= 1 ? "pointer-events-none opacity-40" : ""}`}
-              href={{ pathname: "/admin/orders", query: { ...params, page: page - 1 } }}
-            >Zurück</Link>
-            <span className="text-muted">Seite {page} von {pages}</span>
-            <Link
-              aria-disabled={page >= pages}
-              className={`${secondaryButtonClass} ${page >= pages ? "pointer-events-none opacity-40" : ""}`}
-              href={{ pathname: "/admin/orders", query: { ...params, page: page + 1 } }}
-            >Weiter</Link>
-          </nav>
-        ) : null}
-      </Card>
     </>
   );
 }

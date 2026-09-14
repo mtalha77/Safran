@@ -1,15 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import type { StorefrontSettings } from "@/backend/services/storefront.service";
+import { useLocale } from "@/lib/i18n/locale-context";
 import {
   formatOpeningRanges,
   type OpeningDay,
 } from "@/lib/store-status";
 
 const navigation = [
-  { href: "/", label: "Startseite" },
-  { href: "/speisekarte", label: "Speisekarte" },
-  { href: "/#ueber-uns", label: "Unsere Geschichte" },
-  { href: "/#kontakt", label: "Kontakt" },
+  { href: "/", labelKey: "nav.home" as const },
+  { href: "/speisekarte", labelKey: "nav.menu" as const },
+  { href: "/#ueber-uns", labelKey: "nav.story" as const },
+  { href: "/#kontakt", labelKey: "nav.contact" as const },
 ];
 
 function groupedHours(hours: OpeningDay[]) {
@@ -42,9 +45,40 @@ export function SiteFooter({
   settings: StorefrontSettings;
   hours: OpeningDay[];
 }) {
+  const { t } = useLocale();
+
   return (
-    <footer id="kontakt" className="overflow-hidden bg-ink text-cream">
-      <div className="mx-auto max-w-7xl px-5 pt-16 pb-8 sm:px-8 sm:pt-20">
+    <footer id="kontakt" className="relative overflow-hidden bg-ink text-cream">
+      {/* Watermark band on top — not beside content */}
+      <div
+        className="pointer-events-none relative z-0 flex min-h-[7.5rem] items-end overflow-hidden px-0 pt-8 select-none sm:min-h-[10rem] sm:pt-10"
+        aria-hidden
+      >
+        <svg
+          viewBox="0 0 100 18"
+          className="notranslate block h-auto w-full"
+          preserveAspectRatio="none"
+        >
+          <text
+            x="0"
+            y="14.5"
+            textLength="100"
+            lengthAdjust="spacingAndGlyphs"
+            fill="var(--cream)"
+            fillOpacity="0.1"
+            style={{
+              fontFamily: "var(--font-dm-sans), system-ui, sans-serif",
+              fontSize: "16px",
+              fontWeight: 800,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            Safran
+          </text>
+        </svg>
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-7xl px-5 pt-6 pb-10 sm:px-8 sm:pt-8 sm:pb-12">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.25fr_0.7fr_0.9fr_1fr] lg:gap-10">
           <div>
             <Link
@@ -61,7 +95,7 @@ export function SiteFooter({
 
           <div>
             <p className="text-xs font-semibold tracking-[0.24em] text-cream/70 uppercase">
-              Entdecken
+              {t("footer.explore")}
             </p>
             <nav className="mt-5 flex flex-col items-start gap-3">
               {navigation.map((item) => (
@@ -70,7 +104,7 @@ export function SiteFooter({
                   href={item.href}
                   className="text-sm text-cream/65 transition hover:translate-x-1 hover:text-white"
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               ))}
             </nav>
@@ -78,7 +112,7 @@ export function SiteFooter({
 
           <div>
             <p className="text-xs font-semibold tracking-[0.24em] text-cream/70 uppercase">
-              Öffnungszeiten
+              {t("footer.hours")}
             </p>
             <div className="mt-5 space-y-4 text-sm text-cream/65">
               {groupedHours(hours).map((group) => (
@@ -92,7 +126,7 @@ export function SiteFooter({
 
           <div>
             <p className="text-xs font-semibold tracking-[0.24em] text-cream/70 uppercase">
-              Besuchen Sie uns
+              {t("footer.visit")}
             </p>
             <address className="mt-5 space-y-4 text-sm leading-6 text-cream/65 not-italic">
               <p>
@@ -119,15 +153,15 @@ export function SiteFooter({
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-7 text-[11px] text-cream/45 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-16 flex flex-col gap-3 border-t border-white/10 pt-8 text-[11px] text-cream/45 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()}{" "}
             <span translate="no" className="notranslate">
               Safran
             </span>
-            . Alle Rechte vorbehalten.
+            . {t("footer.rights")}
           </p>
-          <p>100% Halal · Ohne Alkohol · Abholung &amp; Lieferung</p>
+          <p>{t("footer.tagline")}</p>
         </div>
       </div>
     </footer>

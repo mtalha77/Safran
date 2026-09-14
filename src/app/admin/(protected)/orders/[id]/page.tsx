@@ -1,18 +1,18 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { reprintOrderBillAction, updateOrderStatusAction } from "@/app/admin/actions";
+import { reprintOrderBillAction } from "@/app/admin/actions";
 import { getOrderForBackOffice } from "@/backend/services/order.service";
+import {
+  AdminOrderDetailHeader,
+  AdminOrderStatusCard,
+} from "@/components/admin/admin-order-detail-i18n";
 import {
   formatDate,
   formatMoney,
   getAdminContext,
-  orderStatusLabels,
   printJobStatusLabels,
   printStatusClass,
-  statusActionLabels,
-  statusClass,
 } from "@/components/admin/data";
-import { Card, Notice, PageHeader, secondaryButtonClass } from "@/components/admin/ui";
+import { Card, Notice } from "@/components/admin/ui";
 import { OrderBillPreview } from "@/components/admin/order-bill-preview";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 
@@ -56,41 +56,21 @@ export default async function OrderDetailPage({ params, searchParams }: OrderDet
 
   return (
     <>
-      <PageHeader
-        eyebrow="Bestelldetails"
-        title={`Bestellung #${order?.order_number ?? id.slice(0, 8)}`}
-        description={`Eingegangen am ${formatDate(order?.created_at)}`}
-        action={<Link href="/admin/orders" className={secondaryButtonClass}>← Zur Liste</Link>}
+      <AdminOrderDetailHeader
+        id={id}
+        orderNumber={order?.order_number}
+        createdAt={order?.created_at}
       />
       <Notice message={query.message} error={query.error ?? error ?? undefined} />
 
       {order ? (
         <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
           <div className="space-y-5">
-            <Card>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted">Aktueller Status</p>
-                  <span className={`mt-2 inline-block rounded-full px-3 py-1.5 text-sm font-semibold ${statusClass(order.status)}`}>
-                    {orderStatusLabels[order.status] ?? order.status}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {transitions.map((status) => (
-                    <form action={updateOrderStatusAction} key={status}>
-                      <input type="hidden" name="id" value={order.id} />
-                      <input type="hidden" name="status" value={status} />
-                      <PendingSubmitButton
-                        variant={status === "cancelled" ? "danger" : "primary"}
-                        pendingLabel="Wird aktualisiert…"
-                      >
-                        {statusActionLabels[status] ?? orderStatusLabels[status] ?? status}
-                      </PendingSubmitButton>
-                    </form>
-                  ))}
-                </div>
-              </div>
-            </Card>
+            <AdminOrderStatusCard
+              orderId={order.id}
+              status={order.status}
+              transitions={transitions}
+            />
 
             <Card>
               <div className="flex flex-wrap items-start justify-between gap-3">

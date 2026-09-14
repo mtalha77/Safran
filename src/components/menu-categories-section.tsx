@@ -1,6 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export type HomepageCategory = {
   name: string;
@@ -22,15 +25,17 @@ export function MenuCategoriesSection({
 }: {
   categories: HomepageCategory[];
 }) {
+  const { t } = useLocale();
+
   return (
     <section className="w-full bg-ink py-20 [content-visibility:auto] [contain-intrinsic-size:auto_2300px] sm:py-28">
       <div className="mx-auto max-w-7xl px-5 text-center sm:px-8">
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full bg-white/8 px-4 py-1.5 text-xs font-semibold tracking-[0.28em] text-cream uppercase">
-            Entdecken Sie unsere Auswahl
+            {t("categories.eyebrow")}
           </span>
           <h2 className="mt-4 font-serif text-3xl text-cream sm:text-5xl">
-            Unsere Köstlichkeiten
+            {t("categories.title")}
           </h2>
         </Reveal>
       </div>

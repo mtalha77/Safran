@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import type { MenuCategory } from "@/data/menu";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function SearchIcon() {
   return (
@@ -49,6 +50,7 @@ export function MenuCatalog({
 }) {
   const [query, setQuery] = useState("");
   const { items: cartItems, addItem, updateQuantity } = useCart();
+  const { locale, t } = useLocale();
   const cartById = useMemo(
     () => new Map(cartItems.map((item) => [item.id, item])),
     [cartItems],
@@ -83,7 +85,7 @@ export function MenuCatalog({
       <div className="border-b border-ink/10 bg-paper px-5 py-8 sm:px-8">
         <div className="mx-auto max-w-7xl">
           <label className="relative mx-auto block max-w-2xl">
-            <span className="sr-only">Gerichte suchen</span>
+            <span className="sr-only">{t("menu.search")}</span>
             <span className="pointer-events-none absolute top-1/2 left-5 -translate-y-1/2 text-muted">
               <SearchIcon />
             </span>
@@ -91,7 +93,7 @@ export function MenuCatalog({
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Gerichte oder Zutaten suchen …"
+              placeholder={t("menu.search")}
               className="w-full rounded-full border border-ink/12 bg-white py-4 pr-6 pl-14 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/65 focus:border-sage focus:ring-2 focus:ring-sage/15"
             />
           </label>
@@ -104,10 +106,10 @@ export function MenuCatalog({
             <div className="overflow-hidden rounded-3xl bg-ink text-cream shadow-lg">
               <div className="border-b border-white/10 px-5 py-5">
                 <p className="text-[10px] font-semibold tracking-[0.26em] text-cream/70 uppercase">
-                  Speisekarte
+                  {t("menu.title")}
                 </p>
                 <h2 className="mt-1 font-serif text-2xl text-white">
-                  Kategorien
+                  {t("menu.categories")}
                 </h2>
               </div>
               <nav
@@ -202,16 +204,22 @@ export function MenuCatalog({
                         <h3 className="font-serif text-xl leading-6 text-ink sm:text-2xl">
                           {item.name}
                         </h3>
-                        {item.descriptionDe && (
-                          <p className="mt-3 text-sm leading-6 text-muted">
-                            {item.descriptionDe}
-                          </p>
-                        )}
-                        {item.descriptionEn && (
+                        {locale === "en"
+                          ? (item.descriptionEn || item.descriptionDe) && (
+                              <p className="mt-3 text-sm leading-6 text-muted">
+                                {item.descriptionEn || item.descriptionDe}
+                              </p>
+                            )
+                          : item.descriptionDe && (
+                              <p className="mt-3 text-sm leading-6 text-muted">
+                                {item.descriptionDe}
+                              </p>
+                            )}
+                        {locale === "de" && item.descriptionEn ? (
                           <p className="mt-1 text-xs leading-5 text-muted/70">
                             {item.descriptionEn}
                           </p>
-                        )}
+                        ) : null}
 
                         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
                           <p className="font-serif text-xl text-sage-deep">
@@ -282,7 +290,7 @@ export function MenuCatalog({
             {!visibleCategories.length && (
               <div className="py-24 text-center">
                 <p className="font-serif text-3xl text-ink">
-                  Kein Gericht gefunden
+                  {t("menu.empty")}
                 </p>
                 <p className="mt-3 text-sm text-muted">
                   Versuchen Sie einen anderen Suchbegriff.

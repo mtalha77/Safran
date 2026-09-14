@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { fieldClass } from "@/components/admin/ui";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/messages";
 
 type HoursDayFieldsProps = {
-  day: string;
   index: number;
   defaultClosed: boolean;
   lunchOpens: string;
@@ -14,11 +15,10 @@ type HoursDayFieldsProps = {
 };
 
 /**
- * One weekday row. Checking "Geschlossen" disables and clears the time inputs
+ * One weekday row. Checking "Closed" disables and clears the time inputs
  * so the admin cannot leave stale times on a closed day.
  */
 export function HoursDayFields({
-  day,
   index,
   defaultClosed,
   lunchOpens,
@@ -26,13 +26,15 @@ export function HoursDayFields({
   dinnerOpens,
   dinnerCloses,
 }: HoursDayFieldsProps) {
+  const { t } = useLocale();
   const [closed, setClosed] = useState(defaultClosed);
+  const dayKey = `admin.day.${index}` as MessageKey;
 
   return (
     <fieldset className="rounded-xl border border-sage/20 bg-white p-3">
       <div className="grid items-end gap-3 md:grid-cols-[130px_1fr_1fr_1fr_1fr]">
         <div>
-          <legend className="font-semibold">{day}</legend>
+          <legend className="font-semibold">{t(dayKey)}</legend>
           <label className="mt-2 flex items-center gap-2 text-xs text-muted">
             <input
               name={`day_${index}_closed`}
@@ -40,11 +42,11 @@ export function HoursDayFields({
               checked={closed}
               onChange={(event) => setClosed(event.target.checked)}
             />
-            Geschlossen
+            {t("admin.settings.closed")}
           </label>
         </div>
         <label className="text-xs font-semibold text-muted">
-          Öffnet
+          {t("admin.settings.opens")}
           <input
             className={`${fieldClass} mt-1`}
             name={`day_${index}_open`}
@@ -54,7 +56,7 @@ export function HoursDayFields({
           />
         </label>
         <label className="text-xs font-semibold text-muted">
-          Schliesst
+          {t("admin.settings.closes")}
           <input
             className={`${fieldClass} mt-1`}
             name={`day_${index}_close`}
@@ -64,7 +66,7 @@ export function HoursDayFields({
           />
         </label>
         <label className="text-xs font-semibold text-muted">
-          Öffnet wieder
+          {t("admin.settings.opensAgain")}
           <input
             className={`${fieldClass} mt-1`}
             name={`day_${index}_second_open`}
@@ -74,7 +76,7 @@ export function HoursDayFields({
           />
         </label>
         <label className="text-xs font-semibold text-muted">
-          Schliesst
+          {t("admin.settings.closes")}
           <input
             className={`${fieldClass} mt-1`}
             name={`day_${index}_second_close`}

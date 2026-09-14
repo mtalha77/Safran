@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { getStorefrontChrome } from "@/backend/services/storefront.service";
 import { CartProvider } from "@/components/cart-provider";
+import { LocaleProvider } from "@/lib/i18n/locale-context";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StoreStatusBanner } from "@/components/store-status-banner";
@@ -21,24 +22,26 @@ export default function StorefrontLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <CartProvider>
-      <div className="flex min-h-screen flex-col">
-        <Suspense
-          fallback={
-            <div
-              className="fixed inset-x-0 top-0 z-[60] h-9 bg-sage"
-              aria-hidden
-            />
-          }
-        >
-          <StoreStatusBannerSlot />
-        </Suspense>
-        <SiteHeader />
-        <main className="flex-1">{children}</main>
-        <Suspense fallback={null}>
-          <SiteFooterSlot />
-        </Suspense>
-      </div>
-    </CartProvider>
+    <LocaleProvider>
+      <CartProvider>
+        <div className="flex min-h-screen flex-col">
+          <Suspense
+            fallback={
+              <div
+                className="fixed inset-x-0 top-0 z-[60] h-9 bg-sage"
+                aria-hidden
+              />
+            }
+          >
+            <StoreStatusBannerSlot />
+          </Suspense>
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <Suspense fallback={null}>
+            <SiteFooterSlot />
+          </Suspense>
+        </div>
+      </CartProvider>
+    </LocaleProvider>
   );
 }

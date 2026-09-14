@@ -1,8 +1,12 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import restaurantImage from "../../public/images/hero-safran.jpg";
 import foodImage from "../../public/brand/safran-parcel.jpg";
 import { Reveal } from "@/components/reveal";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/messages";
 
 function FoodMark() {
   return (
@@ -28,14 +32,20 @@ function FoodMark() {
   );
 }
 
-const values = [
-  { number: "01", title: "Authentische Küche", label: "Indische Tradition" },
-  { number: "02", title: "Frisch zubereitet", label: "Auf Bestellung" },
-  { number: "03", title: "Historisches Zuhause", label: "Erbaut um 1852" },
-  { number: "04", title: "Direkt am Hafen", label: "Romanshorn" },
+const values: Array<{
+  number: string;
+  titleKey: MessageKey;
+  labelKey: MessageKey;
+}> = [
+  { number: "01", titleKey: "about.v1.title", labelKey: "about.v1.label" },
+  { number: "02", titleKey: "about.v2.title", labelKey: "about.v2.label" },
+  { number: "03", titleKey: "about.v3.title", labelKey: "about.v3.label" },
+  { number: "04", titleKey: "about.v4.title", labelKey: "about.v4.label" },
 ];
 
 export function AboutStorySection() {
+  const { t } = useLocale();
+
   return (
     <section
       id="ueber-uns"
@@ -45,7 +55,7 @@ export function AboutStorySection() {
         <Reveal>
           <div className="text-center">
             <h2 className="font-serif text-4xl leading-tight text-white sm:text-6xl">
-              Von bescheidenen Anfängen
+              {t("about.title")}
             </h2>
             <div className="mt-5 flex items-center justify-center gap-4">
               <span className="h-px w-12 bg-cream/50" />
@@ -53,7 +63,7 @@ export function AboutStorySection() {
               <span className="h-px w-12 bg-cream/50" />
             </div>
             <p className="mt-2 text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
-              Unsere Geschichte
+              {t("about.eyebrow")}
             </p>
           </div>
         </Reveal>
@@ -61,26 +71,14 @@ export function AboutStorySection() {
         <div className="mt-14 grid items-center gap-12 lg:mt-20 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
           <Reveal className="reveal-left">
             <div className="max-w-xl text-base leading-8 text-cream/78 sm:text-lg">
-              <p>
-                Unsere Geschichte verbindet die Vergangenheit des Romanshorner
-                Hafens mit der Wärme indischer Gastfreundschaft.
-              </p>
-              <p className="mt-6">
-                Das Haus an der Hafenstrasse 31 wurde um 1852 vom Kanton
-                Thurgau als Korn- und Zollhaus erbaut – noch vor der
-                Eisenbahnzeit. Es gilt als das älteste Gebäude direkt am
-                Hafenbecken.
-              </p>
-              <p className="mt-6">
-                Wo einst Korn gelagert und Handel betrieben wurde, treffen heute
-                gelebte Geschichte, traditionelle indische Rezepte und frisch
-                zubereitete Gerichte aufeinander.
-              </p>
+              <p>{t("about.p1")}</p>
+              <p className="mt-6">{t("about.p2")}</p>
+              <p className="mt-6">{t("about.p3")}</p>
               <Link
                 href="/speisekarte"
                 className="mt-8 inline-flex border-b border-cream pb-1 text-sm font-semibold text-cream transition hover:text-white"
               >
-                Unsere Küche entdecken
+                {t("about.cta")}
               </Link>
             </div>
           </Reveal>
@@ -152,10 +150,10 @@ export function AboutStorySection() {
                   {value.number}
                 </span>
                 <h3 className="mt-3 font-serif text-xl text-white">
-                  {value.title}
+                  {t(value.titleKey)}
                 </h3>
                 <p className="mt-1 text-[10px] font-semibold tracking-[0.2em] text-cream/55 uppercase">
-                  {value.label}
+                  {t(value.labelKey)}
                 </p>
               </div>
             ))}

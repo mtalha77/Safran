@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
 import { getMenuCategories } from "@/backend/services/storefront.service";
 import { MenuCatalogLazy } from "@/components/menu-catalog-lazy";
+import { MenuPageHeroCopy } from "@/components/menu-page-hero-copy";
 import menuHeroImage from "../../../../public/images/hero-safran.jpg";
 
 export const metadata: Metadata = {
@@ -38,27 +38,7 @@ export default async function SpeisekartePage() {
           <div className="absolute inset-12 rounded-full border border-sage/10" />
           <div className="absolute inset-24 rounded-full border border-sage/10" />
         </div>
-        <div className="relative z-10 mx-auto max-w-7xl text-center">
-          <p className="text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
-            Frisch für Sie zubereitet
-          </p>
-          <h1 className="mt-5 font-serif text-6xl leading-none text-white sm:text-7xl lg:text-8xl">
-            Speisekarte
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-cream/65 sm:text-base">
-            Authentische indische Spezialitäten, aromatische Gewürze und eine
-            grosse Auswahl für jeden Geschmack.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-cream/55">
-            <span>100% Halal</span>
-            <span aria-hidden>·</span>
-            <span>Preise in CHF inkl. MwSt.</span>
-            <span aria-hidden>·</span>
-            <Link href="/kasse" className="text-cream transition hover:text-white">
-              Zum Warenkorb
-            </Link>
-          </div>
-        </div>
+        <MenuPageHeroCopy />
       </section>
 
       <MenuCatalogLazy categories={menuCategories} />

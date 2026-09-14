@@ -4,12 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/components/cart-provider";
-
-const nav = [
-  { href: "/speisekarte", label: "Speisekarte" },
-  { href: "/#ueber-uns", label: "Über uns" },
-  { href: "/#kontakt", label: "Kontakt" },
-];
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function CartIcon() {
   return (
@@ -31,8 +27,15 @@ function CartIcon() {
 export function SiteHeader() {
   const pathname = usePathname();
   const { itemCount } = useCart();
+  const { t } = useLocale();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const nav = [
+    { href: "/speisekarte", label: t("nav.menu") },
+    { href: "/#ueber-uns", label: t("nav.about") },
+    { href: "/#kontakt", label: t("nav.contact") },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -47,9 +50,7 @@ export function SiteHeader() {
   return (
     <header
       className={`fixed inset-x-0 z-50 transition-[top,padding] duration-300 ${
-        floating
-          ? "top-[52px] px-4"
-          : "top-9 px-0"
+        floating ? "top-[52px] px-4" : "top-9 px-0"
       }`}
     >
       <div
@@ -84,6 +85,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <LanguageToggle variant={floating ? "light" : "dark"} />
           <button
             type="button"
             aria-label={menuOpen ? "Menü schliessen" : "Menü öffnen"}
@@ -97,12 +99,12 @@ export function SiteHeader() {
           >
             <span className="relative h-4 w-4">
               <span
-                className={`absolute left-0 top-0.5 h-px w-4 bg-current transition-transform ${
+                className={`absolute top-0.5 left-0 h-px w-4 bg-current transition-transform ${
                   menuOpen ? "translate-y-[5px] rotate-45" : ""
                 }`}
               />
               <span
-                className={`absolute left-0 top-[7px] h-px w-4 bg-current transition-opacity ${
+                className={`absolute top-[7px] left-0 h-px w-4 bg-current transition-opacity ${
                   menuOpen ? "opacity-0" : ""
                 }`}
               />
@@ -115,7 +117,7 @@ export function SiteHeader() {
           </button>
           <Link
             href="/kasse"
-            aria-label={`Warenkorb, ${itemCount} Artikel`}
+            aria-label={`${t("nav.cart")}, ${itemCount}`}
             className={`relative flex h-9 w-9 items-center justify-center rounded-full transition ${
               floating
                 ? "bg-sage text-white hover:bg-sage-dark"
@@ -125,7 +127,7 @@ export function SiteHeader() {
             <CartIcon />
             {itemCount > 0 && (
               <span
-                className={`absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ring-2 ${
+                className={`absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold ring-2 ${
                   floating
                     ? "bg-gold text-sage ring-cream"
                     : "bg-sage text-white ring-gold"
@@ -137,14 +139,14 @@ export function SiteHeader() {
           </Link>
           <Link
             href="/speisekarte"
-            aria-label="Jetzt bestellen"
+            aria-label={t("nav.orderNow")}
             className={`btn-fill hidden items-center rounded-full px-3 text-xs font-extrabold sm:inline-flex sm:px-4 ${
               floating
                 ? "btn-fill-inverse bg-sage py-1.5 text-white"
                 : "bg-gold py-1.5 text-sage"
             }`}
           >
-            Jetzt bestellen
+            {t("nav.orderNow")}
           </Link>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 type MenuPdfDownloadProps = {
   /** Changes when menu catalog changes — drops stale browser PDF blobs. */
@@ -8,6 +9,7 @@ type MenuPdfDownloadProps = {
 };
 
 export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
+  const { t } = useLocale();
   const [lang, setLang] = useState<"de" | "en">("de");
   const [pending, setPending] = useState<"preview" | "download" | null>(null);
   const [error, setError] = useState("");
@@ -29,7 +31,7 @@ export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
           const body = (await response.json().catch(() => null)) as {
             message?: string;
           } | null;
-          throw new Error(body?.message || "PDF fehlgeschlagen.");
+          throw new Error(body?.message || t("admin.menu.pdfFailed"));
         }
         blob = await response.blob();
         blobCache.current.set(cacheKey, blob);
@@ -47,7 +49,7 @@ export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
       }
       window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "PDF fehlgeschlagen.");
+      setError(err instanceof Error ? err.message : t("admin.menu.pdfFailed"));
     } finally {
       setPending(null);
     }
@@ -56,7 +58,7 @@ export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
   return (
     <div className="flex flex-wrap items-end gap-3">
       <label className="text-sm font-semibold">
-        Sprache
+        {t("admin.menu.pdfLang")}
         <select
           className="mt-1 block min-w-40 rounded-xl border border-sage/25 bg-white px-3 py-2 text-sm"
           value={lang}
@@ -76,7 +78,9 @@ export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
         disabled={pending !== null}
         className="inline-flex min-h-10 items-center justify-center rounded-xl border border-sage/30 bg-white px-4 py-2 text-sm font-semibold text-sage-deep disabled:opacity-60"
       >
-        {pending === "preview" ? "Vorschau..." : "Menü-Vorschau"}
+        {pending === "preview"
+          ? t("admin.menu.pdfPreviewing")
+          : t("admin.menu.pdfPreview")}
       </button>
       <button
         type="button"
@@ -84,7 +88,9 @@ export function MenuPdfDownload({ revision }: MenuPdfDownloadProps) {
         disabled={pending !== null}
         className="inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
-        {pending === "download" ? "PDF wird erstellt..." : "PDF herunterladen"}
+        {pending === "download"
+          ? t("admin.menu.pdfBuilding")
+          : t("admin.menu.pdfDownload")}
       </button>
       {error ? <p className="w-full text-sm text-red-700">{error}</p> : null}
     </div>

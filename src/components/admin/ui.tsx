@@ -6,6 +6,8 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { AdminNavProgress } from "@/components/admin/admin-nav-progress";
 import { OrderAlertWatcher } from "@/components/admin/order-alert-watcher";
 import { AdminStoreToggle } from "@/components/admin/store-toggle";
+import { LanguageToggle } from "@/components/language-toggle";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export const fieldClass =
   "mt-1.5 block min-h-11 w-full rounded-xl border border-sage/40 bg-white px-3 py-2.5 text-sm leading-normal text-ink outline-none transition placeholder:text-muted/60 focus:border-sage-deep focus:ring-2 focus:ring-sage/20";
@@ -45,6 +47,7 @@ export function AdminShell({
   const [hovered, setHovered] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const expanded = hovered;
+  const { t } = useLocale();
 
   return (
     <div
@@ -84,9 +87,9 @@ export function AdminShell({
               className={`w-full rounded-xl border border-white/15 px-3 py-2 text-sm text-cream/80 transition hover:bg-white/10 ${
                 expanded ? "text-left" : "text-center text-lg"
               }`}
-              title="Abmelden"
+              title={t("admin.logout")}
             >
-              {expanded ? "Abmelden" : "↪"}
+              {expanded ? t("admin.logout") : "↪"}
             </button>
           </form>
         </div>
@@ -120,6 +123,7 @@ export function AdminShell({
             />
 
             <div className="relative z-10 ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
+              <LanguageToggle variant="admin" />
               <AdminStoreToggle open={storeOpen} />
               {email ? (
                 <div className="hidden items-center gap-2 sm:flex">
@@ -133,7 +137,7 @@ export function AdminShell({
               ) : null}
               <form action={logoutAction} className="sm:hidden">
                 <button className="rounded-full border border-ink/15 bg-white px-3 py-1.5 text-xs font-semibold text-ink">
-                  Abmelden
+                  {t("admin.logout")}
                 </button>
               </form>
             </div>
@@ -181,7 +185,7 @@ export function AdminShell({
                 ) : null}
                 <form action={logoutAction}>
                   <button className="w-full rounded-xl border border-white/15 px-3 py-2 text-left text-sm text-cream/80 hover:bg-white/10">
-                    Abmelden
+                    {t("admin.logout")}
                   </button>
                 </form>
               </div>
@@ -205,9 +209,9 @@ export function PageHeader({
   description,
   action,
 }: {
-  eyebrow?: string;
-  title: string;
-  description?: string;
+  eyebrow?: React.ReactNode;
+  title: React.ReactNode;
+  description?: React.ReactNode;
   action?: React.ReactNode;
 }) {
   return (

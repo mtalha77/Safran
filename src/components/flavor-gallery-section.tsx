@@ -1,7 +1,10 @@
+"use client";
+
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import parcelImage from "../../public/brand/safran-parcel.jpg";
 import { Reveal } from "@/components/reveal";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export type GalleryImage = {
   src: string | StaticImageData;
@@ -70,14 +73,16 @@ export function FlavorGallerySection({
 }: {
   images?: GalleryImage[];
 }) {
+  const { t } = useLocale();
   const galleryImages =
     images && images.length > 0 ? images : fallbackGallery;
 
   return (
-    <section className="relative isolate -mt-px min-h-[500px] overflow-hidden bg-sage-deep py-8 [content-visibility:auto] [contain-intrinsic-size:auto_560px] sm:min-h-[560px] sm:py-10">
-      <div className="absolute inset-0 flex flex-col justify-center gap-3 opacity-70 [mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_100%)] sm:gap-5">
+    <section className="relative isolate -mt-px overflow-hidden bg-sage-deep pt-8 pb-0 [content-visibility:auto] [contain-intrinsic-size:auto_560px] sm:pt-10">
+      <div className="absolute inset-0 flex flex-col justify-end gap-3 pb-3 opacity-70 [mask-image:linear-gradient(to_bottom,transparent_0%,black_12%,black_100%)] sm:gap-5 sm:pb-5">
         <GalleryRow images={galleryImages} />
         <GalleryRow images={galleryImages} reverse offset />
+        <GalleryRow images={galleryImages} />
       </div>
 
       <div className="absolute inset-0 bg-ink/40" aria-hidden />
@@ -90,22 +95,22 @@ export function FlavorGallerySection({
         aria-hidden
       />
 
-      <div className="relative z-10 flex min-h-[436px] items-center justify-center px-5 text-center sm:min-h-[480px]">
+      <div className="relative z-10 flex min-h-[420px] items-center justify-center px-5 pb-8 text-center sm:min-h-[520px] sm:pb-10">
         <Reveal className="blur-reveal">
           <div className="mx-auto max-w-3xl">
             <p className="text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
-              Mit Liebe zubereitet
+              {t("gallery.eyebrow")}
             </p>
             <h2 className="mt-5 font-serif text-5xl leading-[0.98] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
-              Aroma, Frische,
+              {t("gallery.title1")}
               <br />
-              Leidenschaft &amp; Genuss
+              {t("gallery.title2")}
             </h2>
             <Link
               href="/speisekarte"
               className="btn-fill btn-fill-inverse mt-9 inline-flex items-center gap-3 rounded-full border border-white/70 px-4 py-2 text-sm font-extrabold text-white"
             >
-              Speisekarte ansehen
+              {t("gallery.cta")}
               <ArrowIcon />
             </Link>
           </div>

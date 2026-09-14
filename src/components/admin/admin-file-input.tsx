@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 type AdminFileInputProps = {
   name: string;
@@ -18,10 +19,12 @@ export function AdminFileInput({
   accept,
   required,
   className = "",
-  buttonLabel = "Datei wählen",
+  buttonLabel,
 }: AdminFileInputProps) {
   const id = useId();
+  const { t } = useLocale();
   const [fileName, setFileName] = useState("");
+  const chooseLabel = buttonLabel ?? t("admin.settings.chooseFile");
 
   return (
     <div className={`flex min-w-0 flex-1 flex-wrap items-center gap-2 ${className}`.trim()}>
@@ -45,10 +48,10 @@ export function AdminFileInput({
         htmlFor={id}
         className="inline-flex min-h-10 cursor-pointer items-center justify-center rounded-xl border border-sage/35 bg-white px-4 py-2 text-sm font-semibold whitespace-nowrap text-sage-deep transition hover:bg-cream"
       >
-        {buttonLabel}
+        {chooseLabel}
       </label>
       <span className="min-w-0 truncate text-sm text-muted" title={fileName || undefined}>
-        {fileName || "Keine Datei ausgewählt"}
+        {fileName || t("admin.settings.noFile")}
       </span>
     </div>
   );

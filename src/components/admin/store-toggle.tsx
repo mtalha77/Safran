@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useFormStatus } from "react-dom";
 import { setStoreOpenAction } from "@/app/admin/actions";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 function ToggleButton({ open }: { open: boolean }) {
   const { pending } = useFormStatus();
@@ -28,6 +29,7 @@ function ToggleButton({ open }: { open: boolean }) {
 
 export function AdminStoreToggle({ open }: { open: boolean }) {
   const pathname = usePathname();
+  const { t } = useLocale();
 
   return (
     <form
@@ -37,7 +39,7 @@ export function AdminStoreToggle({ open }: { open: boolean }) {
       <input type="hidden" name="is_open" value={open ? "false" : "true"} />
       <input type="hidden" name="next" value={pathname || "/admin"} />
       <p className="hidden text-xs font-semibold text-ink sm:block">
-        {open ? "Bestellungen offen" : "Bestellungen zu"}
+        {open ? t("admin.storeOpen") : t("admin.storeClosed")}
       </p>
       <ToggleButton open={open} />
     </form>
