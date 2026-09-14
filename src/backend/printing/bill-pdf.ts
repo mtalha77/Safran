@@ -111,13 +111,13 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
 
   // Top banner: fulfillment type — large, bold, centered for kitchen.
   const fulfillmentLabel =
-    payload.fulfillmentType === "delivery" ? "LIEFERUNG" : "ABHOLUNG";
+    payload.fulfillmentType === "delivery" ? "DELIVERY" : "PICKUP";
   writeCentered(fulfillmentLabel, 28, { bold: true });
   y -= 36;
 
   write(payload.restaurantName, 16, { bold: true });
   y -= 20;
-  write("Bestellung / Kuechenbon", 11, { color: muted });
+  write("Order / Kitchen ticket", 11, { color: muted });
   y -= 24;
   write(`#${payload.orderNumber}`, 16, { bold: true });
   y -= 18;
@@ -154,15 +154,15 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
     color: rgb(0.75, 0.75, 0.75),
   });
   y -= 20;
-  write(`Zwischensumme: ${money(payload.subtotal, payload.currency)}`, 11);
+  write(`Subtotal: ${money(payload.subtotal, payload.currency)}`, 11);
   y -= 16;
   if (payload.deliveryFee > 0) {
-    write(`Liefergebühr: ${money(payload.deliveryFee, payload.currency)}`, 11);
+    write(`Delivery fee: ${money(payload.deliveryFee, payload.currency)}`, 11);
     y -= 16;
   }
   write(`TOTAL: ${money(payload.total, payload.currency)}`, 14, { bold: true });
   y -= 16;
-  write(`Zahlung: ${payload.paymentMethod}`, 10, { color: muted });
+  write(`Payment: ${payload.paymentMethod}`, 10, { color: muted });
   y -= 22;
 
   page.drawLine({
@@ -173,20 +173,20 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
   });
   y -= 22;
 
-  write("KUNDENDATEN", 12, { bold: true });
+  write("CUSTOMER", 12, { bold: true });
   y -= 18;
   write(`Name: ${payload.customerName}`, 11);
   y -= 15;
-  write(`Tel: ${payload.customerPhone}`, 11);
+  write(`Phone: ${payload.customerPhone}`, 11);
   y -= 15;
   if (payload.customerEmail) {
-    write(`E-Mail: ${payload.customerEmail}`.slice(0, 70), 11);
+    write(`Email: ${payload.customerEmail}`.slice(0, 70), 11);
     y -= 15;
   }
 
   if (payload.fulfillmentType === "delivery") {
     y -= 6;
-    write("LIEFERADRESSE", 12, { bold: true });
+    write("DELIVERY ADDRESS", 12, { bold: true });
     y -= 18;
 
     const street =
@@ -204,7 +204,7 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
     }
     if (line2) {
       const locationLabel = /^https?:\/\//i.test(line2)
-        ? `Standort: ${line2}`
+        ? `Location: ${line2}`
         : line2;
       write(locationLabel.slice(0, 90), 10);
       y -= 15;
@@ -217,20 +217,20 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
       y -= 15;
     }
     if (!street && !line2 && !cityLine && !payload.address) {
-      write("Keine Adresse hinterlegt", 11, { color: muted });
+      write("No address provided", 11, { color: muted });
       y -= 15;
     }
   } else {
     y -= 6;
-    write("ABHOLUNG", 12, { bold: true });
+    write("PICKUP", 12, { bold: true });
     y -= 18;
-    write("Kunde holt die Bestellung ab", 11, { color: muted });
+    write("Customer collects the order", 11, { color: muted });
     y -= 15;
   }
 
   if (payload.customerNotes) {
     y -= 6;
-    write("HINWEIS", 12, { bold: true });
+    write("NOTE", 12, { bold: true });
     y -= 18;
     write(payload.customerNotes.slice(0, 90), 11);
   }

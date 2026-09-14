@@ -8,6 +8,7 @@ import { OrderAlertWatcher } from "@/components/admin/order-alert-watcher";
 import { AdminStoreToggle } from "@/components/admin/store-toggle";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { messages, type MessageKey } from "@/lib/i18n/messages";
 
 export const fieldClass =
   "mt-1.5 block min-h-11 w-full rounded-xl border border-sage/40 bg-white px-3 py-2.5 text-sm leading-normal text-ink outline-none transition placeholder:text-muted/60 focus:border-sage-deep focus:ring-2 focus:ring-sage/20";
@@ -257,7 +258,23 @@ export function Notice({
   message?: string;
   error?: string;
 }) {
-  if (!message && !error) return null;
+  const { t } = useLocale();
+
+  /**
+   * Server Actions send a message key (optionally `key::fallback`) so the
+   * flash text follows the admin language instead of being fixed at redirect
+   * time. Anything unknown is shown as-is.
+   */
+  const resolve = (raw?: string) => {
+    if (!raw) return undefined;
+    const [code, ...rest] = raw.split("::");
+    if (code && code in messages.de) return t(code as MessageKey);
+    return rest.join("::") || raw;
+  };
+
+  const text = resolve(error) ?? resolve(message);
+  if (!text) return null;
+
   return (
     <div
       role={error ? "alert" : "status"}
@@ -267,7 +284,7 @@ export function Notice({
           : "border-sage/30 bg-sage/10 text-sage-deep"
       }`}
     >
-      {error ?? message}
+      {text}
     </div>
   );
 }

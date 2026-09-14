@@ -57,11 +57,16 @@ function destination(path: string, kind: "message" | "error", value: string): ne
  * Runs a service call and converts its outcome into a redirect. An expired or
  * unprivileged session ends at the login screen; everything else surfaces the
  * service's own message.
+ *
+ * `successKey` and the error value are i18n keys rather than finished text, so
+ * `Notice` renders the flash in whichever language the admin is using. Errors
+ * carry `key::fallback` because services may raise codes we have no wording
+ * for yet.
  */
 async function handle(
   returnTo: string,
   operation: () => Promise<void>,
-  successMessage: string,
+  successKey: string,
   invalidate?: () => void,
 ): Promise<never> {
   let failure: string | null = null;
@@ -77,14 +82,14 @@ async function handle(
       destination(LOGIN_PATH, "error", error.message);
     }
     failure = isAppError(error)
-      ? error.message
-      : "Die Aktion konnte nicht ausgeführt werden.";
+      ? `admin.err.${error.code}::${error.message}`
+      : "admin.err.generic";
   }
 
   if (failure) destination(returnTo, "error", failure);
 
   invalidate?.();
-  destination(returnTo, "message", successMessage);
+  destination(returnTo, "message", successKey);
 }
 
 export async function loginAction(formData: FormData) {
@@ -118,9 +123,7 @@ export async function setStoreOpenAction(formData: FormData) {
   await handle(
     returnTo,
     () => settingsService.setStoreOpen(isOpen),
-    isOpen
-      ? "Das Restaurant nimmt wieder Bestellungen an."
-      : "Das Restaurant ist jetzt geschlossen.",
+    isOpen ? "admin.msg.storeOpen" : "admin.msg.storeClosed",
     refreshStoreStatus,
   );
 }
@@ -135,7 +138,7 @@ export async function updateOrderStatusAction(formData: FormData) {
       orderService
         .updateOrderStatus({ orderId: id, nextStatus: text(formData, "status") })
         .then(() => undefined),
-    "Bestellstatus wurde aktualisiert.",
+    "admin.msg.orderStatusUpdated",
     () => revalidatePath("/admin/orders"),
   );
 }
@@ -152,15 +155,17 @@ export async function reprintOrderBillAction(formData: FormData) {
     async () => {
       const job = await printService.reprintOrderBill(id);
       if (job?.status === "failed") {
-        throw new ConflictError(
-          "print_failed",
-          job.last_error
-            ? `Druck fehlgeschlagen: ${job.last_error}`
-            : "Druck fehlgeschlagen.",
-        );
+        // With printer details there is no useful translation, so use a code
+        // without wording and let the raw reason through instead.
+        throw job.last_error
+          ? new ConflictError(
+              "print_failed_detail",
+              `Printing failed: ${job.last_error}`,
+            )
+          : new ConflictError("print_failed", "Printing failed.");
       }
     },
-    "Rechnung wurde an den Drucker gesendet.",
+    "admin.msg.billSent",
     () => {
       revalidatePath("/admin/orders");
       revalidatePath(returnTo);
@@ -179,7 +184,7 @@ export async function createCategoryAction(formData: FormData) {
         sortOrder: numberValue(formData, "sort_order"),
         isActive: checked(formData, "is_active"),
       }),
-    "Kategorie wurde erstellt.",
+    "admin.msg.categoryCreated",
     refreshMenu,
   );
 }
@@ -195,7 +200,7 @@ export async function updateCategoryAction(formData: FormData) {
         sortOrder: numberValue(formData, "sort_order"),
         isActive: checked(formData, "is_active"),
       }),
-    "Kategorie wurde gespeichert.",
+    "admin.msg.categorySaved",
     refreshMenu,
   );
 }
@@ -204,7 +209,7 @@ export async function deleteCategoryAction(formData: FormData) {
   await handle(
     MENU_PATH,
     () => menuService.deleteCategory({ id: text(formData, "id") }),
-    "Kategorie wurde gelöscht.",
+    "admin.msg.categoryDeleted",
     refreshMenu,
   );
 }
@@ -213,7 +218,7 @@ export async function sortCategoriesAction(formData: FormData) {
   await handle(
     MENU_PATH,
     () => menuService.sortCategories({ orderedIds: text(formData, "ordered_ids") }),
-    "Kategorien wurden sortiert.",
+    "admin.msg.categoriesSorted",
     refreshMenu,
   );
 }
@@ -235,7 +240,7 @@ export async function createMenuItemAction(formData: FormData) {
   await handle(
     MENU_PATH,
     () => menuService.createMenuItem(menuItemFields(formData), file(formData, "image")),
-    "Gericht wurde erstellt.",
+    "admin.msg.itemCreated",
     refreshMenu,
   );
 }
@@ -248,7 +253,7 @@ export async function updateMenuItemAction(formData: FormData) {
         ...menuItemFields(formData),
         id: numberValue(formData, "id"),
       }),
-    "Gericht wurde gespeichert.",
+    "admin.msg.itemSaved",
     refreshMenu,
   );
 }
@@ -261,7 +266,7 @@ export async function setMenuItemAvailabilityAction(formData: FormData) {
         id: numberValue(formData, "id"),
         isAvailable: checked(formData, "is_available"),
       }),
-    "Verfügbarkeit wurde aktualisiert.",
+    "admin.msg.availabilityUpdated",
     refreshMenu,
   );
 }
@@ -270,7 +275,7 @@ export async function sortMenuItemsAction(formData: FormData) {
   await handle(
     MENU_PATH,
     () => menuService.sortMenuItems({ orderedIds: text(formData, "ordered_ids") }),
-    "Gerichte wurden sortiert.",
+    "admin.msg.itemsSorted",
     refreshMenu,
   );
 }
@@ -283,7 +288,7 @@ export async function replaceMenuItemImageAction(formData: FormData) {
         { id: numberValue(formData, "id") },
         file(formData, "image"),
       ),
-    "Gerichtbild wurde ersetzt.",
+    "admin.msg.itemImageReplaced",
     refreshMenu,
   );
 }
@@ -292,7 +297,7 @@ export async function deleteMenuItemAction(formData: FormData) {
   await handle(
     MENU_PATH,
     () => menuService.deleteMenuItem({ id: numberValue(formData, "id") }),
-    "Gericht wurde gelöscht.",
+    "admin.msg.itemDeleted",
     refreshMenu,
   );
 }
@@ -313,7 +318,7 @@ export async function updateSettingsAction(formData: FormData) {
         deliveryEnabled: checked(formData, "delivery_enabled"),
         minimumNoticeMinutes: numberValue(formData, "minimum_notice_minutes", 30),
       }),
-    "Restaurant-Einstellungen wurden gespeichert.",
+    "admin.msg.settingsSaved",
     refreshSettings,
   );
 }
@@ -331,7 +336,7 @@ export async function updateOpeningHoursAction(formData: FormData) {
   await handle(
     SETTINGS_PATH,
     () => settingsService.updateOpeningHours(days),
-    "Öffnungszeiten wurden gespeichert.",
+    "admin.msg.hoursSaved",
     refreshSettings,
   );
 }
@@ -340,7 +345,7 @@ export async function setOrderAlertEnabledAction(formData: FormData) {
   await handle(
     SETTINGS_PATH,
     () => settingsService.setOrderAlertEnabled(checked(formData, "enabled")),
-    "Bestellalarm wurde gespeichert.",
+    "admin.msg.alertSaved",
     refreshSettings,
   );
 }
@@ -348,12 +353,12 @@ export async function setOrderAlertEnabledAction(formData: FormData) {
 export async function uploadOrderAlertSoundAction(formData: FormData) {
   const audio = file(formData, "sound");
   if (!audio) {
-    destination(SETTINGS_PATH, "error", "Bitte eine Audiodatei auswählen.");
+    destination(SETTINGS_PATH, "error", "admin.err.audioRequired");
   }
   await handle(
     SETTINGS_PATH,
     () => settingsService.uploadOrderAlertSound(audio),
-    "Alarmton wurde hochgeladen.",
+    "admin.msg.soundUploaded",
     refreshSettings,
   );
 }
@@ -362,7 +367,7 @@ export async function clearOrderAlertSoundAction(_formData?: FormData) {
   await handle(
     SETTINGS_PATH,
     () => settingsService.clearOrderAlertSound(),
-    "Alarmton wurde entfernt (Standardton wird verwendet).",
+    "admin.msg.soundRemoved",
     refreshSettings,
   );
 }

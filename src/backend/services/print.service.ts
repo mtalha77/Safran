@@ -38,9 +38,10 @@ function backoffMs(attempt: number) {
   return RETRY_BASE_MS * 2 ** Math.max(0, attempt - 1);
 }
 
+/** Printed bills are English; keep Swiss local time for the kitchen. */
 function formatCreatedAt(iso: string) {
-  return new Intl.DateTimeFormat("de-CH", {
-    dateStyle: "short",
+  return new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Europe/Zurich",
   }).format(new Date(iso));
