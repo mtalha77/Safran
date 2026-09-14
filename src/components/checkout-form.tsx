@@ -19,6 +19,7 @@ const inputClass =
 
 const inputErrorClass =
   "mt-2 w-full rounded-xl border border-red-400 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-red-500 focus:ring-2 focus:ring-red-200";
+
 function BagIcon() {
   return (
     <svg
@@ -292,29 +293,29 @@ export function CheckoutForm({
           role="status"
           className="rounded-3xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-800 lg:col-span-2"
         >
-          <p className="font-semibold">Derzeit geschlossen</p>
+          <p className="font-semibold">{t("checkout.closedTitle")}</p>
           <p className="mt-1">{closedLabel}</p>
         </div>
       ) : null}
       <div className="space-y-6">
         <fieldset className="rounded-3xl border border-ink/10 bg-white p-5 shadow-sm sm:p-7">
           <legend className="sr-only">
-            Wie möchten Sie bestellen?
+            {t("checkout.howOrder")}
           </legend>
           <h2 className="font-serif text-2xl text-ink">
-            Wie möchten Sie bestellen?
+            {t("checkout.howOrder")}
           </h2>
           <div className="mt-3 grid grid-cols-2 gap-3">
             {[
               {
                 value: "delivery" as const,
-                title: "Lieferung",
-                description: "Zu Ihnen nach Hause",
+                title: t("checkout.delivery"),
+                description: t("checkout.deliveryHint"),
               },
               {
                 value: "pickup" as const,
-                title: "Abholung",
-                description: "Direkt im Restaurant",
+                title: t("checkout.pickup"),
+                description: t("checkout.pickupHint"),
               },
             ].map((option) => (
               <label
@@ -345,11 +346,13 @@ export function CheckoutForm({
         </fieldset>
 
         <fieldset className="rounded-3xl border border-ink/10 bg-white p-5 shadow-sm sm:p-7">
-          <legend className="sr-only">Kontaktdaten</legend>
-          <h2 className="font-serif text-2xl text-ink">Kontaktdaten</h2>
+          <legend className="sr-only">{t("checkout.contact")}</legend>
+          <h2 className="font-serif text-2xl text-ink">
+            {t("checkout.contact")}
+          </h2>
           <div className="mt-3 grid gap-5 sm:grid-cols-2">
             <label className="text-sm font-medium">
-              Vorname
+              {t("checkout.firstName")}
               <input
                 className={inputClass}
                 type="text"
@@ -359,7 +362,7 @@ export function CheckoutForm({
               />
             </label>
             <label className="text-sm font-medium">
-              Nachname
+              {t("checkout.lastName")}
               <input
                 className={inputClass}
                 type="text"
@@ -369,7 +372,7 @@ export function CheckoutForm({
               />
             </label>
             <label className="text-sm font-medium sm:col-span-1">
-              E-Mail
+              {t("checkout.email")}
               <input
                 className={emailError ? inputErrorClass : inputClass}
                 type="email"
@@ -396,14 +399,14 @@ export function CheckoutForm({
                 {emailError
                   ? emailError
                   : emailChecking
-                    ? "E-Mail wird geprüft…"
+                    ? t("checkout.emailChecking")
                     : emailOk
-                      ? "E-Mail ist gültig."
-                      : "Bestellbestätigung und Status-Updates gehen an diese Adresse."}
+                      ? t("checkout.emailValid")
+                      : t("checkout.emailHint")}
               </span>
             </label>
             <label className="text-sm font-medium">
-              Telefonnummer
+              {t("checkout.phone")}
               <input
                 className={inputClass}
                 type="tel"
@@ -417,11 +420,13 @@ export function CheckoutForm({
 
         {fulfillment === "delivery" && (
           <fieldset className="rounded-3xl border border-ink/10 bg-white p-5 shadow-sm sm:p-7">
-            <legend className="sr-only">Lieferadresse</legend>
-            <h2 className="font-serif text-2xl text-ink">Lieferadresse</h2>
+            <legend className="sr-only">{t("checkout.addressTitle")}</legend>
+            <h2 className="font-serif text-2xl text-ink">
+              {t("checkout.addressTitle")}
+            </h2>
             <div className="mt-3 grid gap-5 sm:grid-cols-6">
               <label className="text-sm font-medium sm:col-span-4">
-                Strasse
+                {t("checkout.street")}
                 <input
                   className={inputClass}
                   type="text"
@@ -431,7 +436,7 @@ export function CheckoutForm({
                 />
               </label>
               <label className="text-sm font-medium sm:col-span-2">
-                Hausnummer
+                {t("checkout.houseNumber")}
                 <input
                   className={inputClass}
                   type="text"
@@ -440,7 +445,7 @@ export function CheckoutForm({
                 />
               </label>
               <label className="text-sm font-medium sm:col-span-2">
-                PLZ
+                {t("checkout.postalCode")}
                 <input
                   className={inputClass}
                   type="text"
@@ -451,7 +456,7 @@ export function CheckoutForm({
                 />
               </label>
               <label className="text-sm font-medium sm:col-span-4">
-                Ort
+                {t("checkout.city")}
                 <input
                   className={inputClass}
                   type="text"
@@ -461,16 +466,16 @@ export function CheckoutForm({
                 />
               </label>
               <label className="text-sm font-medium sm:col-span-6">
-                Ihr Standort (Link)
+                {t("checkout.locationLabel")}
                 <input
                   className={inputClass}
                   type="url"
                   name="locationUrl"
                   inputMode="url"
-                  placeholder="https://maps.google.com/… oder WhatsApp-Standort"
+                  placeholder={t("checkout.locationPlaceholder")}
                 />
                 <span className="mt-1.5 block text-xs font-normal text-muted">
-                  Optional — Google Maps, Apple Maps oder WhatsApp-Standortlink einfügen.
+                  {t("checkout.locationHint")}
                 </span>
               </label>
             </div>
@@ -478,8 +483,10 @@ export function CheckoutForm({
         )}
 
         <fieldset className="rounded-3xl border border-ink/10 bg-white p-5 shadow-sm sm:p-7">
-          <legend className="sr-only">Zahlung</legend>
-          <h2 className="font-serif text-2xl text-ink">Zahlung</h2>
+          <legend className="sr-only">{t("checkout.paymentTitle")}</legend>
+          <h2 className="font-serif text-2xl text-ink">
+            {t("checkout.paymentTitle")}
+          </h2>
           <div className="mt-3 space-y-3">
             <label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-sage bg-sage/8 p-4">
               <input
@@ -493,11 +500,11 @@ export function CheckoutForm({
               <span>
                 <span className="block text-sm font-semibold">
                   {fulfillment === "delivery"
-                    ? "Bar bei Lieferung"
-                    : "Bar bei Abholung"}
+                    ? t("checkout.cashDelivery")
+                    : t("checkout.cashPickup")}
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
-                  Direkt beim Erhalt bezahlen
+                  {t("checkout.cashHint")}
                 </span>
               </span>
             </label>
@@ -508,15 +515,15 @@ export function CheckoutForm({
               <input
                 type="radio"
                 disabled
-                aria-label="Online bezahlen – derzeit nicht verfügbar"
+                aria-label={t("checkout.payOnlineAria")}
                 className="h-4 w-4"
               />
               <span>
                 <span className="block text-sm font-semibold">
-                  Online bezahlen
+                  {t("checkout.payOnline")}
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
-                  Karte und TWINT – derzeit nicht verfügbar
+                  {t("checkout.payOnlineHint")}
                 </span>
               </span>
             </div>
@@ -524,20 +531,22 @@ export function CheckoutForm({
         </fieldset>
 
         <label className="block rounded-3xl border border-ink/10 bg-white p-5 text-sm font-medium shadow-sm sm:p-7">
-          Bemerkungen zur Bestellung
+          {t("checkout.notesLabel")}
           <textarea
             className={`${inputClass} min-h-28 resize-y`}
             name="notes"
-            placeholder="Zum Beispiel Hinweise zur Lieferung"
+            placeholder={t("checkout.notesPlaceholder")}
           />
         </label>
       </div>
 
       <aside className="rounded-3xl bg-ink p-5 text-cream shadow-xl sm:p-7 lg:sticky lg:top-32">
         <div className="flex items-center justify-between">
-          <h2 className="font-serif text-3xl text-white">Ihre Bestellung</h2>
+          <h2 className="font-serif text-3xl text-white">
+            {t("checkout.yourOrder")}
+          </h2>
           <span className="rounded-full bg-white/10 px-3 py-1 text-xs text-cream">
-            {itemCount} Artikel
+            {t("checkout.itemsCount", { n: itemCount })}
           </span>
         </div>
 
@@ -567,7 +576,7 @@ export function CheckoutForm({
                       onClick={() =>
                         updateQuantity(item.id, item.quantity - 1)
                       }
-                      aria-label={`${item.name} einmal weniger`}
+                      aria-label={t("checkout.oneLess", { name: item.name })}
                       className="flex h-8 w-8 items-center justify-center text-cream/70 transition hover:text-white"
                     >
                       −
@@ -580,7 +589,7 @@ export function CheckoutForm({
                       onClick={() =>
                         updateQuantity(item.id, item.quantity + 1)
                       }
-                      aria-label={`${item.name} einmal mehr`}
+                      aria-label={t("checkout.oneMore", { name: item.name })}
                       className="flex h-8 w-8 items-center justify-center text-cream/70 transition hover:text-white"
                     >
                       +
@@ -591,7 +600,7 @@ export function CheckoutForm({
                     onClick={() => removeItem(item.id)}
                     className="text-xs text-cream/45 underline-offset-4 transition hover:text-white hover:underline"
                   >
-                    Entfernen
+                    {t("checkout.remove")}
                   </button>
                 </div>
               </li>
@@ -603,39 +612,43 @@ export function CheckoutForm({
               <BagIcon />
             </span>
             <p className="mt-4 text-sm font-semibold text-white">
-              Ihr Warenkorb ist leer
+              {t("checkout.emptyTitle")}
             </p>
             <p className="mt-2 text-xs leading-5 text-cream/50">
-              Wählen Sie zuerst Ihre Lieblingsgerichte aus.
+              {t("checkout.emptyBody")}
             </p>
             <Link
               href="/speisekarte"
               className="mt-5 inline-flex rounded-full border border-cream/50 px-5 py-2.5 text-xs font-semibold text-cream transition hover:bg-sage hover:text-white"
             >
-              Zur Speisekarte
+              {t("checkout.toMenu")}
             </Link>
           </div>
         )}
 
         <div className="mt-6 space-y-3 border-t border-white/10 pt-5 text-sm">
           <div className="flex justify-between text-cream/60">
-            <span>Zwischensumme</span>
+            <span>{t("checkout.subtotal")}</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between text-cream/60">
-            <span>{fulfillment === "delivery" ? "Lieferkosten" : "Abholung"}</span>
             <span>
               {fulfillment === "delivery"
-                ? "Nach Adresse"
+                ? t("checkout.deliveryCost")
+                : t("checkout.pickup")}
+            </span>
+            <span>
+              {fulfillment === "delivery"
+                ? t("checkout.byAddress")
                 : formatCurrency(0)}
             </span>
           </div>
           <div className="flex justify-between border-t border-white/10 pt-4 font-serif text-xl text-white">
-            <span>Total</span>
+            <span>{t("checkout.total")}</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
           <p className="text-right text-[10px] text-cream/40">
-            Preise inklusive MwSt.
+            {t("checkout.vat")}
           </p>
         </div>
 
@@ -647,10 +660,7 @@ export function CheckoutForm({
             className="mt-0.5 h-4 w-4 shrink-0 accent-sage"
             required
           />
-          <span>
-            Ich bestätige, dass die Bestellung nach dem Absenden nicht
-            storniert werden kann.
-          </span>
+          <span>{t("checkout.policy")}</span>
         </label>
 
         <button
@@ -667,12 +677,12 @@ export function CheckoutForm({
           className="mt-6 w-full rounded-full bg-gold px-6 py-4 text-sm font-semibold text-ink transition hover:bg-gold-dark disabled:cursor-not-allowed disabled:opacity-40"
         >
           {!storeOpen
-            ? "Derzeit geschlossen"
+            ? t("checkout.closedTitle")
             : submitting
-              ? "Bestellung wird gesendet…"
+              ? t("checkout.submitting")
               : emailChecking
-                ? "E-Mail wird geprüft…"
-                : "Zahlungspflichtig bestellen"}
+                ? t("checkout.emailChecking")
+                : t("checkout.submit")}
         </button>
 
         {notice && (
