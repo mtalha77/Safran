@@ -32,6 +32,23 @@ function FoodMark() {
   );
 }
 
+function PinIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5 shrink-0 fill-none stroke-gold"
+      aria-hidden
+    >
+      <path
+        d="M12 21c4.5-4.4 6.8-8 6.8-10.8A6.8 6.8 0 0 0 5.2 10.2C5.2 13 7.5 16.6 12 21Z"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="10" r="2.3" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 const values: Array<{
   number: string;
   titleKey: MessageKey;
@@ -117,18 +134,21 @@ export function AboutStorySection() {
               </div>
             </Reveal>
 
-          {/* On phones the collage is too narrow for the badge and the sign to
-              share the bottom edge, so the badge moves up over the sky. */}
-          <Reveal
-            delay={260}
-            className="reveal-right absolute top-[3%] right-0 sm:top-auto sm:right-[6%] sm:bottom-[3%]"
-          >
-              <div className="rounded-full border border-white/20 bg-ink/80 px-5 py-3 text-center">
-                <span className="block font-serif text-2xl text-cream">
-                  Romanshorn
-                </span>
-                <span className="text-[10px] tracking-[0.22em] text-cream/65 uppercase">
-                  Hafenstrasse 31
+            {/* Sits bare on the photo's top-right corner, so the drop shadow is
+                what keeps it readable against the bright sky. */}
+            <Reveal
+              delay={260}
+              className="reveal-right absolute top-2 right-3 sm:top-3 sm:right-4"
+            >
+              <div className="flex items-center gap-2 drop-shadow-[0_1px_5px_rgba(0,0,0,0.85)]">
+                <PinIcon />
+                <span className="leading-tight">
+                  <span className="block font-serif text-sm text-white">
+                    Romanshorn
+                  </span>
+                  <span className="block text-[8px] tracking-[0.2em] text-white/80 uppercase">
+                    Hafenstrasse 31
+                  </span>
                 </span>
               </div>
             </Reveal>
