@@ -9,6 +9,7 @@ import {
 } from "react";
 import { isValidEmailFormat } from "@/backend/validation/email-format";
 import { useCart } from "@/components/cart-provider";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { fetchLiveStoreAvailability } from "@/lib/live-store-status";
 
 type Fulfillment = "delivery" | "pickup";
@@ -18,13 +19,6 @@ const inputClass =
 
 const inputErrorClass =
   "mt-2 w-full rounded-xl border border-red-400 bg-white px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-red-500 focus:ring-2 focus:ring-red-200";
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(value);
-}
-
 function BagIcon() {
   return (
     <svg
@@ -49,6 +43,7 @@ export function CheckoutForm({
   storeOpen?: boolean;
   closedMessage?: string;
 }) {
+  const { locale, t } = useLocale();
   const {
     items,
     itemCount,
@@ -57,6 +52,14 @@ export function CheckoutForm({
     removeItem,
     clearCart,
   } = useCart();
+
+  function formatCurrency(value: number) {
+    return new Intl.NumberFormat(locale === "en" ? "en-CH" : "de-CH", {
+      style: "currency",
+      currency: "CHF",
+    }).format(value);
+  }
+
   const [fulfillment, setFulfillment] = useState<Fulfillment>("delivery");
   const [acceptedPolicy, setAcceptedPolicy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -67,8 +70,7 @@ export function CheckoutForm({
   const [submitting, setSubmitting] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState("");
   const emailCheckSeq = useRef(0);
-  const closedLabel =
-    closedMessage || "Das Restaurant nimmt derzeit keine Bestellungen an.";
+  const closedLabel = closedMessage || t("checkout.closedDefault");
 
   useEffect(() => {
     const value = emailValue.trim().toLowerCase();
@@ -91,9 +93,7 @@ export function CheckoutForm({
     }
 
     if (!isValidEmailFormat(value)) {
-      setEmailError(
-        "Bitte eine gültige E-Mail-Adresse eingeben (z. B. name@domain.ch).",
-      );
+      setEmailError(t("checkout.emailFormat"));
       setEmailChecking(false);
       setEmailOk(false);
       return;
@@ -128,10 +128,7 @@ export function CheckoutForm({
             return;
           }
           setEmailOk(false);
-          setEmailError(
-            result?.message ||
-              "Diese E-Mail-Adresse scheint ungültig zu sein.",
-          );
+          setEmailError(result?.message || t("checkout.emailUnlikely"));
         } catch {
           if (seq !== emailCheckSeq.current) return;
           // Offline / fetch failed — format already OK, allow checkout.
@@ -144,7 +141,7 @@ export function CheckoutForm({
     }, 400);
 
     return () => window.clearTimeout(timer);
-  }, [emailValue]);
+  }, [emailValue, t]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -163,9 +160,7 @@ export function CheckoutForm({
     }
 
     if (!email || !isValidEmailFormat(email)) {
-      setEmailError(
-        "Bitte eine gültige E-Mail-Adresse eingeben (z. B. name@domain.ch).",
-      );
+      setEmailError(t("checkout.emailFormat"));
       setEmailOk(false);
       return;
     }
@@ -191,10 +186,7 @@ export function CheckoutForm({
           setEmailError("");
         } else {
           setEmailOk(false);
-          setEmailError(
-            result?.message ||
-              "Diese E-Mail-Adresse scheint ungültig zu sein.",
-          );
+          setEmailError(result?.message || t("checkout.emailUnlikely"));
           return;
         }
       } catch {
@@ -270,17 +262,12 @@ export function CheckoutForm({
           result.error === "invalid_email_domain" ||
           /e-?mail/i.test(result.message ?? "")
         ) {
-          setEmailError(
-            result.message ||
-              "Diese E-Mail-Adresse scheint ungültig zu sein.",
-          );
+          setEmailError(result.message || t("checkout.emailUnlikely"));
           setEmailOk(false);
           setSubmitting(false);
           return;
         }
-        throw new Error(
-          result.message || "Die Bestellung konnte nicht gesendet werden.",
-        );
+        throw new Error(result.message || t("checkout.orderFailed"));
       }
 
       clearCart();
@@ -289,9 +276,7 @@ export function CheckoutForm({
       window.location.assign(`/bestellung/${result.confirmationToken}`);
     } catch (error) {
       setNotice(
-        error instanceof Error
-          ? error.message
-          : "Die Bestellung konnte nicht gesendet werden.",
+        error instanceof Error ? error.message : t("checkout.orderFailed"),
       );
       setSubmitting(false);
     }
