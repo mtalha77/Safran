@@ -16,8 +16,9 @@ type Db = SupabaseClient<Database>;
 
 const CLOSED_REASON = "Online-Bestellungen sind derzeit geschlossen.";
 
+/** Unset settings are stored as an empty string (see `settingValue`). */
 function jsonString(value: Json | undefined): string | null {
-  if (typeof value === "string") return value;
+  if (typeof value === "string") return value.trim() ? value : null;
   if (value == null) return null;
   return String(value);
 }

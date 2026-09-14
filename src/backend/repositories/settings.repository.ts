@@ -48,6 +48,15 @@ export function findOrderAlertSettings(db: Db) {
     .in("key", [...ORDER_ALERT_SETTING_KEYS]);
 }
 
+/**
+ * `site_settings.value` is `jsonb not null`, and the Supabase client turns a
+ * JS `null` into SQL NULL — which the constraint rejects. Unset values are
+ * therefore stored as an empty string; readers treat that as "not set".
+ */
+function settingValue(value: string | null | undefined): Json {
+  return value ?? "";
+}
+
 export function upsertOrderAlertSettings(
   db: Db,
   input: { enabled: boolean; soundPath: string | null },
@@ -60,7 +69,7 @@ export function upsertOrderAlertSettings(
     },
     {
       key: "order_alert_sound_path",
-      value: input.soundPath,
+      value: settingValue(input.soundPath),
       is_public: true,
     },
   ];
@@ -124,9 +133,9 @@ export function setAcceptsOrders(
 export function upsertSiteSettings(db: Db, input: RestaurantSettingsInput) {
   const rows: Array<{ key: string; value: Json; is_public: boolean }> = [
     { key: "restaurant_name", value: input.restaurantName, is_public: true },
-    { key: "contact_email", value: input.email, is_public: true },
-    { key: "contact_phone", value: input.phone, is_public: true },
-    { key: "address", value: input.address, is_public: true },
+    { key: "contact_email", value: settingValue(input.email), is_public: true },
+    { key: "contact_phone", value: settingValue(input.phone), is_public: true },
+    { key: "address", value: settingValue(input.address), is_public: true },
     { key: "delivery_minimum", value: input.deliveryMinimum, is_public: true },
     { key: "pickup_minimum", value: input.pickupMinimum, is_public: true },
     { key: "delivery_fee", value: input.deliveryFee, is_public: true },
