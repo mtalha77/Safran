@@ -45,6 +45,16 @@ function money(amount: number, currency: string) {
   return `${currency} ${amount.toFixed(2)}`;
 }
 
+const isLink = (value: string) => /^https?:\/\//i.test(value);
+
+/** Splits a joined address into lines, dropping map links — useless on paper. */
+function addressParts(value: string) {
+  return value
+    .split(",")
+    .map((part) => part.trim())
+    .filter((part) => part && !isLink(part));
+}
+
 /** Standard PDF fonts only support WinAnsi — map common DE/CH characters. */
 function pdfSafe(text: string) {
   return text
@@ -153,34 +163,24 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
     write("DELIVERY ADDRESS", 12, { bold: true });
     y -= 18;
 
-    const street =
-      payload.addressLine1?.trim() ||
-      (payload.address ? payload.address.split(",")[0]?.trim() : "");
     const line2 = payload.addressLine2?.trim();
-    const cityLine = [payload.postalCode, payload.city]
-      .filter(Boolean)
-      .join(" ")
-      .trim();
+    const structured = [
+      payload.addressLine1?.trim(),
+      line2 && !isLink(line2) ? line2 : "",
+      [payload.postalCode, payload.city].filter(Boolean).join(" ").trim(),
+    ].filter((part): part is string => Boolean(part));
 
-    if (street) {
-      write(street.slice(0, 70), 11);
-      y -= 15;
-    }
-    if (line2) {
-      const locationLabel = /^https?:\/\//i.test(line2)
-        ? `Location: ${line2}`
-        : line2;
-      write(locationLabel.slice(0, 90), 10);
-      y -= 15;
-    }
-    if (cityLine) {
-      write(cityLine.slice(0, 70), 11);
-      y -= 15;
-    } else if (payload.address && !street) {
-      write(payload.address.slice(0, 70), 11);
-      y -= 15;
-    }
-    if (!street && !line2 && !cityLine && !payload.address) {
+    // `address` is a pre-joined fallback; prefer it when it carries more detail
+    // than the individual columns, which are not always filled in.
+    const flat = payload.address ? addressParts(payload.address) : [];
+    const lines = structured.length >= flat.length ? structured : flat;
+
+    if (lines.length) {
+      for (const line of lines) {
+        write(line.slice(0, 70), 11);
+        y -= 15;
+      }
+    } else {
       write("No address provided", 11, { color: muted });
       y -= 15;
     }
