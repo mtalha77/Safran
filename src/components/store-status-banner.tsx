@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { fetchLiveStoreAvailability } from "@/lib/live-store-status";
+import { useStoreStatusLabel } from "@/lib/i18n/store-status-label";
 import {
   getStoreStatus,
   type StoreStatusConfig,
@@ -29,6 +30,7 @@ export function StoreStatusBanner({
       : config,
     new Date(now),
   );
+  const label = useStoreStatusLabel(status);
 
   useEffect(() => {
     let cancelled = false;
@@ -68,7 +70,7 @@ export function StoreStatusBanner({
         status.open ? "bg-sage" : "bg-red-700"
       }`}
     >
-      {status.label}
+      {label}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { StorefrontSettings } from "@/backend/services/storefront.service";
 import { useLocale } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/messages";
 import {
   formatOpeningRanges,
   type OpeningDay,
@@ -19,23 +20,17 @@ function groupedHours(hours: OpeningDay[]) {
   const ordered = [...hours].sort(
     (a, b) => ((a.day + 6) % 7) - ((b.day + 6) % 7),
   );
-  const groups: Array<{ labels: string[]; ranges: OpeningDay["ranges"] }> = [];
+  const groups: Array<{ days: number[]; ranges: OpeningDay["ranges"] }> = [];
   for (const day of ordered) {
     const key = JSON.stringify(day.ranges);
     const previous = groups.at(-1);
     if (previous && JSON.stringify(previous.ranges) === key) {
-      previous.labels.push(day.label);
+      previous.days.push(day.day);
     } else {
-      groups.push({ labels: [day.label], ranges: day.ranges });
+      groups.push({ days: [day.day], ranges: day.ranges });
     }
   }
   return groups;
-}
-
-function dayLabel(labels: string[]) {
-  return labels.length > 2
-    ? `${labels[0]} – ${labels.at(-1)}`
-    : labels.join(" & ");
 }
 
 export function SiteFooter({
@@ -115,12 +110,26 @@ export function SiteFooter({
               {t("footer.hours")}
             </p>
             <div className="mt-5 space-y-4 text-sm text-cream/65">
-              {groupedHours(hours).map((group) => (
-                <div key={group.labels.join("-")}>
-                  <p className="text-cream">{dayLabel(group.labels)}</p>
-                  <p className="mt-1">{formatOpeningRanges(group.ranges)}</p>
-                </div>
-              ))}
+              {groupedHours(hours).map((group) => {
+                const names = group.days.map((day) =>
+                  t(`admin.day.${day}` as MessageKey),
+                );
+                return (
+                  <div key={group.days.join("-")}>
+                    <p className="text-cream">
+                      {names.length > 2
+                        ? `${names[0]} – ${names.at(-1)}`
+                        : names.join(" & ")}
+                    </p>
+                    <p className="mt-1">
+                      {formatOpeningRanges(
+                        group.ranges,
+                        t("status.closedWord"),
+                      )}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

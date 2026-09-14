@@ -18,7 +18,7 @@ export default async function KassePage() {
     <section className="bg-paper px-5 pt-40 pb-24 sm:px-8 sm:pt-44 sm:pb-32">
       <div className="mx-auto max-w-7xl">
         <CheckoutPageCopy />
-        <CheckoutForm storeOpen={status.open} closedMessage={status.label} />
+        <CheckoutForm storeOpen={status.open} closedMessage={status.message} />
       </div>
     </section>
   );

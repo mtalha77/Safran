@@ -11,9 +11,16 @@ export type StoreStatusConfig = {
   manualMessage?: string;
 };
 
+/**
+ * Structured so the label can be composed in the viewer's language on the
+ * client; only `message` is admin-authored and shown verbatim.
+ */
 export type StoreStatus = {
   open: boolean;
-  label: string;
+  message?: string;
+  /** Zurich weekday 0–6, or null while a manual override is active. */
+  dayIndex: number | null;
+  ranges: OpeningDay["ranges"];
 };
 
 function zonedParts(date: Date, timezone: string) {
@@ -46,10 +53,13 @@ function timeToMinutes(time: string) {
   return Number(hour) * 60 + Number(minute);
 }
 
-export function formatOpeningRanges(ranges: OpeningDay["ranges"]) {
+export function formatOpeningRanges(
+  ranges: OpeningDay["ranges"],
+  closedLabel = "Geschlossen",
+) {
   return ranges.length
     ? ranges.map(([start, end]) => `${start}–${end}`).join(" & ")
-    : "Geschlossen";
+    : closedLabel;
 }
 
 export function getStoreStatus(
@@ -57,32 +67,24 @@ export function getStoreStatus(
   date: Date = new Date(),
 ): StoreStatus {
   if (config.manualOverride !== "auto") {
-    const open = config.manualOverride === "open";
     return {
-      open,
-      label:
-        config.manualMessage ??
-        (open ? "Heute ausnahmsweise geöffnet" : "Heute geschlossen"),
+      open: config.manualOverride === "open",
+      message: config.manualMessage,
+      dayIndex: null,
+      ranges: [],
     };
   }
 
   const { day, minute } = zonedParts(date, config.timezone);
-  const openingDay = config.hours.find((entry) => entry.day === day);
-  const ranges = openingDay?.ranges ?? [];
-  const open = ranges.some(
-    ([start, end]) =>
-      minute >= timeToMinutes(start) && minute < timeToMinutes(end),
-  );
-  // Name the Zurich weekday so "Heute" is not confused with the viewer's local day.
-  const dayName = openingDay?.label ?? "Heute";
-  const schedule = formatOpeningRanges(ranges);
+  const ranges = config.hours.find((entry) => entry.day === day)?.ranges ?? [];
 
   return {
-    open,
-    label: open
-      ? `Geöffnet · ${dayName} ${schedule}`
-      : ranges.length
-        ? `Momentan geschlossen · ${dayName} ${schedule}`
-        : `${dayName} geschlossen`,
+    open: ranges.some(
+      ([start, end]) =>
+        minute >= timeToMinutes(start) && minute < timeToMinutes(end),
+    ),
+    // Carry the Zurich weekday so "today" is not read as the viewer's local day.
+    dayIndex: day,
+    ranges,
   };
 }

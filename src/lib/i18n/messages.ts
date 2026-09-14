@@ -74,6 +74,13 @@ export const messages = {
     "menu.empty": "Keine Gerichte gefunden",
     "menu.categories": "Kategorien",
 
+    "status.open": "Geöffnet · {day} {schedule}",
+    "status.closedNow": "Momentan geschlossen · {day} {schedule}",
+    "status.closedDay": "{day} geschlossen",
+    "status.manualOpen": "Heute ausnahmsweise geöffnet",
+    "status.manualClosed": "Heute geschlossen",
+    "status.closedWord": "Geschlossen",
+
     "checkout.closedTitle": "Derzeit geschlossen",
     "checkout.closedDefault":
       "Das Restaurant nimmt derzeit keine Bestellungen an.",
@@ -439,6 +446,13 @@ export const messages = {
     "menu.search": "Search dishes…",
     "menu.empty": "No dishes found",
     "menu.categories": "Categories",
+
+    "status.open": "Open · {day} {schedule}",
+    "status.closedNow": "Currently closed · {day} {schedule}",
+    "status.closedDay": "Closed {day}",
+    "status.manualOpen": "Open today as an exception",
+    "status.manualClosed": "Closed today",
+    "status.closedWord": "Closed",
 
     "checkout.closedTitle": "Currently closed",
     "checkout.closedDefault": "The restaurant is not accepting orders right now.",
