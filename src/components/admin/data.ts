@@ -34,62 +34,9 @@ export async function getAdminContext(): Promise<AdminContext> {
   }
 }
 
-export function formatMoney(value: number | string | null | undefined) {
-  const amount = typeof value === "string" ? Number(value) : value ?? 0;
-  return new Intl.NumberFormat("de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
-
-export function formatDate(value: string | null | undefined) {
-  if (!value) return "–";
-  return new Intl.DateTimeFormat("de-CH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-export const orderStatusLabels: Record<string, string> = {
-  pending: "Neu",
-  confirmed: "Bestätigt",
-  preparing: "In Zubereitung",
-  ready: "Bereit",
-  out_for_delivery: "Unterwegs",
-  completed: "Abgeschlossen",
-  cancelled: "Storniert",
-};
-
-/** Button label shown for the transition into each status. */
-export const statusActionLabels: Record<string, string> = {
-  confirmed: "Bestätigen",
-  preparing: "Zubereitung starten",
-  ready: "Als bereit markieren",
-  out_for_delivery: "An Lieferung übergeben",
-  completed: "Abschliessen",
-  cancelled: "Stornieren",
-};
-
-export function statusClass(status: string) {
-  if (status === "cancelled") return "bg-red-100 text-red-700";
-  if (status === "completed") return "bg-slate-100 text-slate-700";
-  if (status === "ready") return "bg-emerald-100 text-emerald-800";
-  if (status === "preparing") return "bg-amber-100 text-amber-800";
-  return "bg-sage/15 text-sage-deep";
-}
-
-export const printJobStatusLabels: Record<string, string> = {
-  pending: "Warteschlange",
-  printing: "Druckt…",
-  printed: "Gedruckt",
-  failed: "Fehlgeschlagen",
-  cancelled: "Abgebrochen",
-};
-
-export function printStatusClass(status: string) {
-  if (status === "printed") return "bg-emerald-100 text-emerald-800";
-  if (status === "failed") return "bg-red-100 text-red-700";
-  if (status === "printing") return "bg-amber-100 text-amber-800";
-  if (status === "pending") return "bg-sky-100 text-sky-800";
-  return "bg-slate-100 text-slate-700";
-}
+/*
+ * Labels, money and date formatting live in the client views so they follow the
+ * chosen language; status colours live in `status-styles.ts`. Keep this module
+ * free of anything a client component might want, since `server-only` above
+ * breaks the build the moment one imports it.
+ */

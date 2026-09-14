@@ -109,6 +109,15 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
     });
   };
 
+  const divider = () => {
+    page.drawLine({
+      start: { x: left, y },
+      end: { x: 547, y },
+      thickness: 1,
+      color: rgb(0.75, 0.75, 0.75),
+    });
+  };
+
   // Top banner: fulfillment type — large, bold, centered for kitchen.
   const fulfillmentLabel =
     payload.fulfillmentType === "delivery" ? "DELIVERY" : "PICKUP";
@@ -123,56 +132,11 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
   y -= 18;
   write(payload.createdAt, 10, { color: muted });
   y -= 18;
-  page.drawLine({
-    start: { x: left, y },
-    end: { x: 547, y },
-    thickness: 1,
-    color: rgb(0.75, 0.75, 0.75),
-  });
+  divider();
   y -= 22;
 
-  for (const item of payload.items) {
-    write(`${item.quantity}×  ${item.name}`.slice(0, 55), 11, { bold: true });
-    write(money(item.lineTotal, payload.currency), 11, {
-      bold: true,
-      x: 470,
-    });
-    y -= 16;
-    if (item.notes) {
-      write(item.notes.slice(0, 70), 9, { color: muted });
-      y -= 14;
-    }
-    y -= 4;
-    if (y < 120) break;
-  }
-
-  y -= 8;
-  page.drawLine({
-    start: { x: left, y },
-    end: { x: 547, y },
-    thickness: 1,
-    color: rgb(0.75, 0.75, 0.75),
-  });
-  y -= 20;
-  write(`Subtotal: ${money(payload.subtotal, payload.currency)}`, 11);
-  y -= 16;
-  if (payload.deliveryFee > 0) {
-    write(`Delivery fee: ${money(payload.deliveryFee, payload.currency)}`, 11);
-    y -= 16;
-  }
-  write(`TOTAL: ${money(payload.total, payload.currency)}`, 14, { bold: true });
-  y -= 16;
-  write(`Payment: ${payload.paymentMethod}`, 10, { color: muted });
-  y -= 22;
-
-  page.drawLine({
-    start: { x: left, y },
-    end: { x: 547, y },
-    thickness: 1,
-    color: rgb(0.75, 0.75, 0.75),
-  });
-  y -= 22;
-
+  // Who and where comes before the items so the driver and the counter can read
+  // it without turning the sheet over.
   write("CUSTOMER", 12, { bold: true });
   y -= 18;
   write(`Name: ${payload.customerName}`, 11);
@@ -221,15 +185,48 @@ export async function buildBillPdf(payload: ReceiptPayload): Promise<Uint8Array>
       y -= 15;
     }
   } else {
+    // The banner at the top already says PICKUP; don't print it twice.
     y -= 6;
-    write("PICKUP", 12, { bold: true });
-    y -= 18;
     write("Customer collects the order", 11, { color: muted });
     y -= 15;
   }
 
+  y -= 8;
+  divider();
+  y -= 22;
+
+  for (const item of payload.items) {
+    write(`${item.quantity}×  ${item.name}`.slice(0, 55), 11, { bold: true });
+    write(money(item.lineTotal, payload.currency), 11, {
+      bold: true,
+      x: 470,
+    });
+    y -= 16;
+    if (item.notes) {
+      write(item.notes.slice(0, 70), 9, { color: muted });
+      y -= 14;
+    }
+    y -= 4;
+    if (y < 120) break;
+  }
+
+  y -= 8;
+  divider();
+  y -= 20;
+  write(`Subtotal: ${money(payload.subtotal, payload.currency)}`, 11);
+  y -= 16;
+  if (payload.deliveryFee > 0) {
+    write(`Delivery fee: ${money(payload.deliveryFee, payload.currency)}`, 11);
+    y -= 16;
+  }
+  write(`TOTAL: ${money(payload.total, payload.currency)}`, 14, { bold: true });
+  y -= 16;
+  write(`Payment: ${payload.paymentMethod}`, 10, { color: muted });
+  y -= 22;
+
   if (payload.customerNotes) {
-    y -= 6;
+    divider();
+    y -= 22;
     write("NOTE", 12, { bold: true });
     y -= 18;
     write(payload.customerNotes.slice(0, 90), 11);
