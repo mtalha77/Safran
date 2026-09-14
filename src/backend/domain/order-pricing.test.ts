@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 import {
   assertMinimumOrder,
   calculateOrderTotals,
+  discountedPrice,
   money,
   type PricedLine,
   type PricingRules,
@@ -80,5 +81,24 @@ describe("order totals", () => {
       () => assertMinimumOrder(10, "delivery", rules),
       /CHF 30\.00/,
     );
+  });
+});
+
+describe("dish discounts", () => {
+  it("reduces the price by the given percentage, rounded to cents", () => {
+    assert.equal(discountedPrice(18.5, 20), 14.8);
+    assert.equal(discountedPrice(11.9, 15), 10.12);
+    assert.equal(discountedPrice(9.9, 12.5), 8.66);
+  });
+
+  it("leaves the price alone without a usable discount", () => {
+    assert.equal(discountedPrice(18.5, 0), 18.5);
+    assert.equal(discountedPrice(18.5, null), 18.5);
+    assert.equal(discountedPrice(18.5, "not a number"), 18.5);
+    assert.equal(discountedPrice(18.5, -30), 18.5);
+  });
+
+  it("never gives a dish away, however high the percentage", () => {
+    assert.equal(discountedPrice(100, 999), 1);
   });
 });

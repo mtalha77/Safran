@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 /** Backup poll if Realtime disconnects — keep short for near-live UX. */
 const POLL_MS = 4000;
@@ -62,6 +63,7 @@ async function playAlert(soundUrl: string | null) {
  */
 export function OrderAlertWatcher() {
   const router = useRouter();
+  const { t } = useLocale();
   const [unmuted, setUnmuted] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [live, setLive] = useState(false);
@@ -249,7 +251,7 @@ export function OrderAlertWatcher() {
     <div className="fixed right-3 bottom-3 z-[60] flex max-w-xs flex-col items-end gap-2 sm:right-5">
       {lastOrderNumber ? (
         <p className="rounded-xl bg-sage-deep px-3 py-2 text-xs font-semibold text-white shadow-lg">
-          Neue Bestellung #{lastOrderNumber}
+          {t("admin.alert.newOrder", { number: String(lastOrderNumber) })}
         </p>
       ) : null}
       {!unmuted ? (
@@ -258,11 +260,11 @@ export function OrderAlertWatcher() {
           onClick={enableSound}
           className="rounded-full border border-sage/30 bg-white px-4 py-2.5 text-sm font-semibold text-sage-deep shadow-lg transition hover:bg-cream"
         >
-          Bestellalarm aktivieren
+          {t("admin.alert.enable")}
         </button>
       ) : (
         <p className="rounded-full border border-sage/25 bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-muted shadow">
-          {live ? "Live · Alarm an" : "Alarm an · verbindet..."}
+          {t(live ? "admin.alert.live" : "admin.alert.connecting")}
         </p>
       )}
     </div>

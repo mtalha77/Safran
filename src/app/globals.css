@@ -143,6 +143,18 @@ select:-webkit-autofill:focus {
   animation: flavor-marquee-reverse 42s linear infinite;
 }
 
+/* Right-to-left ticker under the hero. Reuses the gallery keyframes: the track
+   holds two identical runs and slides by half its width, so the loop is seamless. */
+.promo-strip {
+  animation: flavor-marquee 32s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-strip {
+    animation: none;
+  }
+}
+
 .btn-fill {
   --fill: #2f0d29;
   --hover-color: #ffffff;

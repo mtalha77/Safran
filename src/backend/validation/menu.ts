@@ -1,3 +1,4 @@
+import { MAX_DISCOUNT_PERCENT } from "@/backend/domain/order-pricing";
 import { ValidationError } from "@/backend/errors";
 import { MAX_MENU_IMAGE_UPLOAD_BYTES } from "@/backend/media/compress-menu-image";
 import {
@@ -81,6 +82,36 @@ export function parseMenuItemId(value: unknown): number {
     "item_id_invalid",
     "Das Gericht wurde nicht gefunden.",
   );
+}
+
+/**
+ * Ticked dishes plus the percentage from the discount form. `percent` 0 clears
+ * the discount, which is what the "remove" button submits.
+ */
+export function parseDiscountInput(input: Record<string, unknown>): {
+  ids: number[];
+  percent: number;
+} {
+  const raw = Array.isArray(input.ids) ? input.ids : [input.ids];
+  const ids = Array.from(
+    new Set(raw.filter((id) => id !== undefined && id !== null && id !== "").map(parseMenuItemId)),
+  );
+  if (!ids.length) {
+    throw new ValidationError(
+      "discount_items_required",
+      "Bitte mindestens ein Gericht auswählen.",
+    );
+  }
+
+  const percent = numberValue(input.percent);
+  if (!Number.isFinite(percent) || percent < 0 || percent > MAX_DISCOUNT_PERCENT) {
+    throw new ValidationError(
+      "discount_percent_invalid",
+      `Der Rabatt muss zwischen 0 und ${MAX_DISCOUNT_PERCENT} Prozent liegen.`,
+    );
+  }
+
+  return { ids, percent: Math.round(percent * 100) / 100 };
 }
 
 /** Comma separated id list from the drag-and-drop sort forms. */

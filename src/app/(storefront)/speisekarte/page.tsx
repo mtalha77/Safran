@@ -17,7 +17,7 @@ export default async function SpeisekartePage() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-ink px-5 pt-40 pb-20 text-cream sm:px-8 sm:pt-48 sm:pb-28">
+      <section className="relative overflow-hidden bg-ink px-5 pt-32 pb-20 text-cream sm:px-8 sm:pt-40 sm:pb-28">
         <Image
           src={menuHeroImage}
           alt="Safran Romanshorn"

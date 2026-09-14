@@ -22,6 +22,11 @@ const navigation: Array<{ href: string; labelKey: MessageKey; icon: string }> = 
     icon: "/images/menu-navigation-grid-1528-svgrepo-com.svg",
   },
   {
+    href: "/admin/discounts",
+    labelKey: "admin.nav.discounts",
+    icon: "/images/menu-navigation-grid-1528-svgrepo-com.svg",
+  },
+  {
     href: "/admin/settings",
     labelKey: "admin.nav.settings",
     icon: "/images/setting-2-svgrepo-com.svg",

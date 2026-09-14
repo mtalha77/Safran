@@ -107,7 +107,7 @@ export function RotatingHilal() {
           حلال
         </text>
 
-        <g fill={GREEN} transform="translate(100 152)">
+        <g fill={GREEN} transform="translate(100 157) scale(1.5)">
           <path
             transform="rotate(-40) scale(0.72)"
             d="M0 0 C -5 -6 -5 -14 0 -20 C 5 -14 5 -6 0 0Z"

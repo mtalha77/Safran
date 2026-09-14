@@ -3,6 +3,7 @@ import { AboutStorySection } from "@/components/about-story-section";
 import { FlavorGallerySection } from "@/components/flavor-gallery-section";
 import { HomeHeroCopy } from "@/components/home-hero-copy";
 import { MenuCategoriesSection } from "@/components/menu-categories-section";
+import { PromoStrip } from "@/components/promo-strip";
 import { RotatingHilal } from "@/components/rotating-hilal";
 import {
   getFlavorGalleryImages,
@@ -18,7 +19,9 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="relative isolate h-[100svh] overflow-hidden">
+      {/* min-height, not a fixed height: short viewports grow to fit the copy
+          instead of clipping the badge row against `overflow-hidden`. */}
+      <section className="relative isolate flex min-h-[94svh] items-center overflow-hidden">
         <Image
           src={heroImage}
           alt="Safran in Romanshorn"
@@ -36,11 +39,14 @@ export default async function HomePage() {
 
         <RotatingHilal />
 
-        <div className="relative z-10 mx-auto flex h-full max-w-[1440px] items-center px-5 pt-24 sm:px-8 lg:px-[54px]">
+        {/* pb leaves room for the copy's `translate-y`, which sits outside the
+            layout box and would otherwise be clipped on short viewports. */}
+        <div className="relative z-10 mx-auto flex w-full max-w-[1440px] items-center px-5 pt-24 pb-10 sm:px-8 lg:px-[54px]">
           <HomeHeroCopy />
         </div>
       </section>
 
+      <PromoStrip />
       <MenuCategoriesSection categories={homepageCategories} />
       <AboutStorySection />
       <FlavorGallerySection images={galleryImages} />

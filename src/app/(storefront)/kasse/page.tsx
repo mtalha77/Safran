@@ -15,7 +15,7 @@ export default async function KassePage() {
   const status = getStoreStatus(chrome.statusConfig);
 
   return (
-    <section className="bg-paper px-5 pt-40 pb-24 sm:px-8 sm:pt-44 sm:pb-32">
+    <section className="bg-paper px-5 pt-32 pb-24 sm:px-8 sm:pt-36 sm:pb-32">
       <div className="mx-auto max-w-7xl">
         <CheckoutPageCopy />
         <CheckoutForm storeOpen={status.open} closedMessage={status.message} />

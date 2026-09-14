@@ -48,19 +48,16 @@ export function HomeHeroCopy() {
   const { t } = useLocale();
 
   return (
-    <div className="w-full max-w-[640px] sm:translate-y-5">
-      <div
-        className="hero-reveal flex items-center gap-3"
+    <div className="w-full max-w-[760px] sm:translate-y-5">
+      <p
+        className="hero-reveal text-xs font-medium tracking-[0.32em] text-cream uppercase sm:text-sm"
         style={{ animationDelay: "100ms" }}
       >
-        <span className="h-px w-6 bg-cream" />
-        <p className="text-[10px] font-medium tracking-[0.32em] text-cream uppercase sm:text-xs">
-          {t("hero.eyebrow")}
-        </p>
-      </div>
+        {t("hero.eyebrow")}
+      </p>
 
       <h1
-        className="hero-reveal mt-4 font-serif text-[clamp(2.75rem,5.8vw,5.25rem)] leading-[1.02] tracking-[-0.025em] text-white sm:mt-5"
+        className="hero-reveal mt-4 font-serif text-[clamp(2.4rem,5.4vw,5rem)] leading-[1.02] tracking-[-0.025em] text-white sm:mt-5"
         style={{ animationDelay: "190ms" }}
       >
         {t("hero.title1")}

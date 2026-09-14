@@ -36,6 +36,11 @@ function CartBagIcon() {
   );
 }
 
+/** Drops the ".00" so a flat 20% off reads "-20%", not "-20.00%". */
+function formatPercent(percent: number) {
+  return String(Math.round(percent * 100) / 100);
+}
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("de-CH", {
     style: "currency",
@@ -113,7 +118,7 @@ export function MenuCatalog({
                 </h2>
               </div>
               <nav
-                aria-label="Menükategorien"
+                aria-label={t("menu.categories")}
                 className="grid grid-cols-2 sm:grid-cols-3 lg:block"
               >
                 {categories.map((category, index) => (
@@ -137,7 +142,7 @@ export function MenuCatalog({
             <section
               key={category.id}
               id={category.id}
-              className="scroll-mt-44 [content-visibility:auto] [contain-intrinsic-size:auto_700px]"
+              className="scroll-mt-36 [content-visibility:auto] [contain-intrinsic-size:auto_700px]"
             >
               <div className="mb-8 border-b border-sage/30 pb-6 text-center">
                     <p
@@ -157,21 +162,15 @@ export function MenuCatalog({
                 {(() => {
                   const noteDe = category.noteDe?.trim() || "";
                   const noteEn = category.noteEn?.trim() || "";
-                  if (!noteDe && !noteEn) return null;
-                  const same =
-                    Boolean(noteDe && noteEn) &&
-                    noteDe.localeCompare(noteEn, undefined, {
-                      sensitivity: "accent",
-                    }) === 0;
+                  const note =
+                    locale === "en" ? noteEn || noteDe : noteDe || noteEn;
+                  if (!note) return null;
                   return (
                     <div
                       translate="no"
                       className="notranslate mt-5 rounded-2xl bg-sage/10 px-4 py-3 text-left text-xs leading-5 text-sage-deep sm:mx-auto sm:max-w-2xl"
                     >
-                      <p>{noteDe || noteEn}</p>
-                      {noteDe && noteEn && !same ? (
-                        <p className="mt-1 text-muted">{noteEn}</p>
-                      ) : null}
+                      <p>{note}</p>
                     </div>
                   );
                 })()}
@@ -222,8 +221,20 @@ export function MenuCatalog({
                         ) : null}
 
                         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
-                          <p className="font-serif text-xl text-sage-deep">
-                            {formatPrice(item.price)}
+                          <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 font-serif text-xl text-sage-deep">
+                            {item.originalPrice ? (
+                              <span className="text-base text-muted/70 line-through decoration-[1.5px]">
+                                {formatPrice(item.originalPrice)}
+                              </span>
+                            ) : null}
+                            <span>{formatPrice(item.price)}</span>
+                            {item.discountPercent ? (
+                              <span className="rounded-full bg-gold/25 px-2 py-0.5 font-sans text-[11px] font-semibold tracking-wide text-ink">
+                                {t("menu.discountBadge", {
+                                  percent: formatPercent(item.discountPercent),
+                                })}
+                              </span>
+                            ) : null}
                           </p>
 
                           {cartItem ? (
@@ -236,7 +247,9 @@ export function MenuCatalog({
                                     cartItem.quantity - 1,
                                   )
                                 }
-                                aria-label={`${item.name} einmal weniger`}
+                                aria-label={t("checkout.oneLess", {
+                                  name: item.name,
+                                })}
                                 className="flex h-10 w-10 items-center justify-center text-lg text-sage-deep transition hover:text-sage"
                               >
                                 −
@@ -252,7 +265,9 @@ export function MenuCatalog({
                                     cartItem.quantity + 1,
                                   )
                                 }
-                                aria-label={`${item.name} einmal mehr`}
+                                aria-label={t("checkout.oneMore", {
+                                  name: item.name,
+                                })}
                                 className="flex h-10 w-10 items-center justify-center text-lg text-sage-deep transition hover:text-sage"
                               >
                                 +
@@ -270,11 +285,13 @@ export function MenuCatalog({
                                 })
                               }
                               className="btn-cart"
-                              aria-label={`${item.name} hinzufügen`}
+                              aria-label={t("menu.addAria", {
+                                name: item.name,
+                              })}
                             >
                               <span className="btn-cart-face">
                                 <CartBagIcon />
-                                <span>Hinzufügen</span>
+                                <span>{t("menu.add")}</span>
                               </span>
                             </button>
                           )}

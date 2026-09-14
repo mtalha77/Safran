@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import { discountedPrice } from "@/backend/domain/order-pricing";
 import {
   fallbackMenuItemImage,
   menuImagePublicUrl,
@@ -190,13 +191,18 @@ function normalizeMenu(categoryRows: Row[] | null, itemRows: Row[] | null): Menu
           const name = text(item.name);
           const price = number(item.price);
           if (itemNumber === undefined || !name || price === undefined) return [];
+          const percent = number(item.discount_percent) ?? 0;
+          const salePrice = discountedPrice(price, percent);
+          const discounted = percent > 0 && salePrice < price;
           return [
             {
               number: itemNumber,
               name,
               descriptionDe: text(item.description_de),
               descriptionEn: text(item.description_en),
-              price,
+              price: discounted ? salePrice : price,
+              originalPrice: discounted ? price : undefined,
+              discountPercent: discounted ? percent : undefined,
               imageUrl: resolveMenuItemImage(text(item.image_path), itemNumber),
             },
           ];

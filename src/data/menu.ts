@@ -3,7 +3,12 @@ export type MenuItem = {
   name: string;
   descriptionDe?: string;
   descriptionEn?: string;
+  /** What the guest pays — already reduced when a discount is active. */
   price: number;
+  /** Regular price, shown struck through. Only set while discounted. */
+  originalPrice?: number;
+  /** Only set while discounted, for the "-20%" badge. */
+  discountPercent?: number;
   /** Public image URL (Storage or local fallback). */
   imageUrl?: string;
 };

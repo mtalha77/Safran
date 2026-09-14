@@ -101,7 +101,8 @@ export function FlavorGallerySection({
             <p className="text-xs font-semibold tracking-[0.3em] text-cream/80 uppercase">
               {t("gallery.eyebrow")}
             </p>
-            <h2 className="mt-5 font-serif text-5xl leading-[0.98] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
+            {/* Clamped so both halves stay on one line each, in German too. */}
+            <h2 className="mt-5 font-serif text-[clamp(2rem,8.2vw,2.75rem)] leading-[0.98] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
               {t("gallery.title1")}
               <br />
               {t("gallery.title2")}

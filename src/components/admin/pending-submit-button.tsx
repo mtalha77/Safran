@@ -17,6 +17,10 @@ type PendingSubmitButtonProps = {
    * be available (e.g. remove sound).
    */
   requireDirty?: boolean;
+  /** Lets a second button in the same form submit to another Server Action. */
+  formAction?: (formData: FormData) => void | Promise<void>;
+  /** Additional reason to block submission, e.g. an empty selection. */
+  disabled?: boolean;
 };
 
 const VARIANT_CLASS: Record<
@@ -41,6 +45,8 @@ export function PendingSubmitButton({
   className = "",
   variant = "primary",
   requireDirty = true,
+  formAction,
+  disabled = false,
 }: PendingSubmitButtonProps) {
   const { pending } = useFormStatus();
   const dirty = useDirtyForm();
@@ -52,7 +58,8 @@ export function PendingSubmitButton({
   return (
     <button
       type="submit"
-      disabled={pending || blockedByDirty}
+      formAction={formAction}
+      disabled={pending || blockedByDirty || disabled}
       aria-busy={pending}
       className={`${VARIANT_CLASS[variant]} ${className}`.trim()}
     >

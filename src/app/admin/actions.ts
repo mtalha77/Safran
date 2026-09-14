@@ -22,6 +22,7 @@ import * as settingsService from "@/backend/services/settings.service";
 
 const LOGIN_PATH = "/admin/login";
 const MENU_PATH = "/admin/menu";
+const DISCOUNTS_PATH = "/admin/discounts";
 const SETTINGS_PATH = "/admin/settings";
 
 function text(formData: FormData, key: string) {
@@ -267,6 +268,33 @@ export async function setMenuItemAvailabilityAction(formData: FormData) {
         isAvailable: checked(formData, "is_available"),
       }),
     "admin.msg.availabilityUpdated",
+    refreshMenu,
+  );
+}
+
+export async function applyMenuDiscountAction(formData: FormData) {
+  await handle(
+    DISCOUNTS_PATH,
+    () =>
+      menuService
+        .setMenuItemsDiscount({
+          ids: formData.getAll("ids"),
+          percent: formData.get("percent"),
+        })
+        .then(() => undefined),
+    "admin.msg.discountApplied",
+    refreshMenu,
+  );
+}
+
+export async function clearMenuDiscountAction(formData: FormData) {
+  await handle(
+    DISCOUNTS_PATH,
+    () =>
+      menuService
+        .setMenuItemsDiscount({ ids: formData.getAll("ids"), percent: 0 })
+        .then(() => undefined),
+    "admin.msg.discountCleared",
     refreshMenu,
   );
 }

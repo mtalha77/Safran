@@ -52,7 +52,7 @@ export default async function OrderConfirmationPage({
     }));
 
   return (
-    <section className="bg-paper px-4 pt-28 pb-10 sm:px-6 sm:pt-32 sm:pb-12 lg:px-8">
+    <section className="bg-paper px-4 pt-20 pb-10 sm:px-6 sm:pt-24 sm:pb-12 lg:px-8">
       <div className="mx-auto max-w-5xl">
         <div className="rounded-2xl border border-ink/10 bg-white p-4 shadow-sm sm:p-6 lg:p-7">
           <div className="flex flex-wrap items-end justify-between gap-3">

@@ -7,6 +7,7 @@ import { isWithinOpeningHours, zonedNow } from "@/backend/domain/opening-hours";
 import {
   assertMinimumOrder,
   calculateOrderTotals,
+  discountedPrice,
   lineTotal,
   money,
   type PricedLine,
@@ -156,7 +157,9 @@ export async function createCashOrder(
       menuItemId: String(current.id),
       name: current.name,
       quantity: item.quantity,
-      unitPrice: money(current.price),
+      // Discounts are applied here, from the database, so the customer is charged
+      // the reduced price even if the cart in the browser says otherwise.
+      unitPrice: discountedPrice(current.price, current.discount_percent),
     };
   });
 

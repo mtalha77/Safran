@@ -117,10 +117,12 @@ export function AboutStorySection() {
               </div>
             </Reveal>
 
-            <Reveal
-              delay={260}
-              className="reveal-right absolute right-[6%] bottom-[3%]"
-            >
+          {/* On phones the collage is too narrow for the badge and the sign to
+              share the bottom edge, so the badge moves up over the sky. */}
+          <Reveal
+            delay={260}
+            className="reveal-right absolute top-[3%] right-0 sm:top-auto sm:right-[6%] sm:bottom-[3%]"
+          >
               <div className="rounded-full border border-white/20 bg-ink/80 px-5 py-3 text-center">
                 <span className="block font-serif text-2xl text-cream">
                   Romanshorn

@@ -69,6 +69,8 @@ export type MenuItemRecord = {
   description_de: string | null;
   description_en: string | null;
   price: number;
+  /** 0–99; the charged price is `price` reduced by this share. */
+  discount_percent: number;
   image_path: string | null;
   sort_order: number;
   is_active: boolean;
@@ -247,6 +249,7 @@ export interface Database {
           description_de?: string | null;
           description_en?: string | null;
           price: number;
+          discount_percent?: number;
           image_path?: string | null;
           sort_order?: number;
           is_active?: boolean;

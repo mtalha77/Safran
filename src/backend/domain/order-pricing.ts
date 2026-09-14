@@ -38,6 +38,21 @@ export function lineTotal(line: Pick<PricedLine, "quantity" | "unitPrice">): num
   return money(money(line.unitPrice) * line.quantity);
 }
 
+export const MAX_DISCOUNT_PERCENT = 99;
+
+/**
+ * What a discounted dish actually costs. The single source of truth for both the
+ * price shown on the menu and the price charged at checkout, so the struck-out
+ * price and the bill can never disagree.
+ */
+export function discountedPrice(price: number, discountPercent: unknown): number {
+  const listPrice = money(price);
+  const percent = Number(discountPercent);
+  if (!Number.isFinite(percent) || percent <= 0) return listPrice;
+  const capped = Math.min(percent, MAX_DISCOUNT_PERCENT);
+  return money(listPrice * (1 - capped / 100));
+}
+
 /**
  * Authoritative total. Prices and fees come from the database, never from the
  * client, so a tampered cart cannot change what is charged.

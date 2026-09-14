@@ -4,12 +4,6 @@ import { CartProvider } from "@/components/cart-provider";
 import { LocaleProvider } from "@/lib/i18n/locale-context";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { StoreStatusBanner } from "@/components/store-status-banner";
-
-async function StoreStatusBannerSlot() {
-  const data = await getStorefrontChrome();
-  return <StoreStatusBanner config={data.statusConfig} />;
-}
 
 async function SiteFooterSlot() {
   const data = await getStorefrontChrome();
@@ -25,16 +19,6 @@ export default function StorefrontLayout({
     <LocaleProvider>
       <CartProvider>
         <div className="flex min-h-screen flex-col">
-          <Suspense
-            fallback={
-              <div
-                className="fixed inset-x-0 top-0 z-[60] h-9 bg-sage"
-                aria-hidden
-              />
-            }
-          >
-            <StoreStatusBannerSlot />
-          </Suspense>
           <SiteHeader />
           <main className="flex-1">{children}</main>
           <Suspense fallback={null}>

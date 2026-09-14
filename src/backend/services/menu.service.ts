@@ -9,6 +9,7 @@ import type { CategoryInput, MenuItemInput } from "@/backend/types";
 import {
   parseCategoryId,
   parseCategoryInput,
+  parseDiscountInput,
   parseMenuItemId,
   parseMenuItemInput,
   parseOrderedIds,
@@ -133,6 +134,20 @@ export async function setMenuItemAvailability(input: Record<string, unknown>) {
     await menuRepository.setItemAvailability(db, id, isAvailable).then((r) => r.error),
     "item_availability_failed",
   );
+}
+
+/**
+ * Sets one percentage on every ticked dish. `percent` 0 clears the discount, so
+ * the same path serves both the apply and the remove button.
+ */
+export async function setMenuItemsDiscount(input: Record<string, unknown>) {
+  const { db } = await menuContext();
+  const { ids, percent } = parseDiscountInput(input);
+  assertOk(
+    await menuRepository.setItemsDiscount(db, ids, percent).then((r) => r.error),
+    "discount_update_failed",
+  );
+  return { count: ids.length, percent };
 }
 
 export async function sortMenuItems(input: Record<string, unknown>) {

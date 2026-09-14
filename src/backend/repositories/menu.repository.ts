@@ -19,7 +19,7 @@ export function listItems(db: Db) {
   return db
     .from("menu_items")
     .select(
-      "id, category_id, item_number, name, description_de, description_en, price, sort_order, is_active, image_path",
+      "id, category_id, item_number, name, description_de, description_en, price, discount_percent, sort_order, is_active, image_path",
     )
     .order("sort_order");
 }
@@ -34,8 +34,15 @@ export function countItemsInCategory(db: Db, categoryId: string) {
 export function findItemsByNumbers(db: Db, itemNumbers: number[]) {
   return db
     .from("menu_items")
-    .select("id, item_number, name, price, is_active")
+    .select("id, item_number, name, price, discount_percent, is_active")
     .in("item_number", itemNumbers);
+}
+
+export function setItemsDiscount(db: Db, ids: number[], discountPercent: number) {
+  return db
+    .from("menu_items")
+    .update({ discount_percent: discountPercent })
+    .in("id", ids);
 }
 
 export function insertCategory(db: Db, input: CategoryInput) {
