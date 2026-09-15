@@ -6,6 +6,7 @@
   --sage-deep: #1a0716;
   --gold: #ebc37d;
   --gold-dark: #d4a85f;
+  --gold-light: #f4debb;
   --cream: #eae2d6;
   --paper: #f7f2eb;
   --ink: #1c1018;
@@ -18,6 +19,7 @@
   --color-sage-deep: var(--sage-deep);
   --color-gold: var(--gold);
   --color-gold-dark: var(--gold-dark);
+  --color-gold-light: var(--gold-light);
   --color-cream: var(--cream);
   --color-paper: var(--paper);
   --color-ink: var(--ink);
@@ -168,7 +170,7 @@ select:-webkit-autofill:focus {
 }
 
 .btn-fill-inverse {
-  --fill: #ebc37d;
+  --fill: var(--gold-light);
   --hover-color: #2f0d29;
 }
 

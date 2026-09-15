@@ -63,7 +63,7 @@ export function SiteHeader() {
       <div
         className={`relative mx-auto flex max-w-[1440px] items-center justify-between px-5 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-8 lg:px-[54px] ${
           floating
-            ? "scale-[0.99] rounded-2xl bg-gold py-2 shadow-lg"
+            ? "scale-[0.99] rounded-2xl bg-gold-light py-2 shadow-lg"
             : "border-b border-white/20 bg-transparent py-4"
         }`}
       >
@@ -127,13 +127,14 @@ export function SiteHeader() {
             aria-label={`${t("nav.cart")}, ${itemCount}`}
             className={`relative flex h-9 w-9 items-center justify-center rounded-full transition ${
               floating
-                ? "bg-sage text-gold hover:bg-sage-dark"
-                : "bg-gold text-sage hover:bg-gold-dark"
+                ? "bg-sage text-gold-light hover:bg-sage-dark"
+                : "bg-gold-light text-sage hover:bg-gold"
             }`}
           >
             <CartIcon />
             {itemCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-sage px-1 text-[10px] font-bold text-white ring-2 ring-gold">
+              <span
+                className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-sage px-1 text-[10px] font-bold text-white ring-2 ring-gold-light">
                 {itemCount > 99 ? "99+" : itemCount}
               </span>
             )}
@@ -144,7 +145,7 @@ export function SiteHeader() {
             className={`btn-fill hidden items-center rounded-full px-3 py-1.5 text-xs font-extrabold sm:inline-flex sm:px-4 ${
               floating
                 ? "btn-fill-inverse bg-sage text-white"
-                : "bg-gold text-sage"
+                : "bg-gold-light text-sage"
             }`}
           >
             {t("nav.orderNow")}

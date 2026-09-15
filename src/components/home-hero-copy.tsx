@@ -79,7 +79,7 @@ export function HomeHeroCopy() {
         <Link
           href="/speisekarte"
           aria-label={t("hero.ctaOrder")}
-          className="btn-fill inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-sm font-extrabold text-[#2F0D29]"
+          className="btn-fill inline-flex items-center gap-2 rounded-full bg-gold-light px-4 py-2 text-sm font-extrabold text-[#2F0D29]"
         >
           {t("hero.ctaOrder")}
           <ArrowIcon />

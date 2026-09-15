@@ -30,7 +30,7 @@ export function PromoStrip() {
   return (
     <aside
       aria-label={labels.join(" · ")}
-      className="relative overflow-hidden border-y border-[#2F0D29]/10 bg-gold py-1.5 text-[#2F0D29] sm:py-2"
+      className="relative overflow-hidden border-y border-[#2F0D29]/10 bg-gold-light py-1.5 text-[#2F0D29] sm:py-2"
     >
       <div className="promo-strip flex w-max items-center will-change-transform">
         {track.map((label, index) => (
