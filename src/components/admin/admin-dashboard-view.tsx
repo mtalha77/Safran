@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { OrderStatusBadge, useStatusLabel } from "@/components/admin/t";
+import { DashboardRangeFilter } from "@/components/admin/dashboard-range-filter";
+import { OrderStatusBadge } from "@/components/admin/t";
 import {
   Card,
   EmptyState,
@@ -49,6 +50,17 @@ function formatDate(value: string | null | undefined) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function formatRange(range: { from: string; to: string }, locale: string) {
+  const formatter = new Intl.DateTimeFormat(
+    locale === "en" ? "en-GB" : "de-CH",
+    { dateStyle: "medium" },
+  );
+  const day = (key: string) => formatter.format(new Date(`${key}T12:00:00Z`));
+  return range.from === range.to
+    ? day(range.from)
+    : `${day(range.from)} – ${day(range.to)}`;
 }
 
 function IconWrap({
@@ -102,131 +114,28 @@ function KpiCard({
   );
 }
 
-function StatusDonut({
-  total,
-  segments,
-  totalLabel,
-}: {
-  total: number;
-  segments: Array<{ label: string; value: number; color: string }>;
-  totalLabel: string;
-}) {
-  const size = 148;
-  const stroke = 16;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  let offset = 0;
-  const safeTotal = Math.max(total, 1);
-
-  return (
-    <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
-      <div className="relative shrink-0" style={{ width: size, height: size }}>
-        <svg width={size} height={size} className="-rotate-90" aria-hidden>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="#ebe6df"
-            strokeWidth={stroke}
-          />
-          {segments.map((segment) => {
-            const length = (segment.value / safeTotal) * circumference;
-            const circle = (
-              <circle
-                key={segment.label}
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="none"
-                stroke={segment.color}
-                strokeWidth={stroke}
-                strokeDasharray={`${length} ${circumference - length}`}
-                strokeDashoffset={-offset}
-                strokeLinecap="butt"
-              />
-            );
-            offset += length;
-            return circle;
-          })}
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <p className="font-sans text-2xl font-semibold tracking-tight tabular-nums text-ink">
-            {total}
-          </p>
-          <p className="text-[10px] tracking-wide text-muted uppercase">
-            {totalLabel}
-          </p>
-        </div>
-      </div>
-      <ul className="w-full space-y-2 text-sm">
-        {segments.map((segment) => (
-          <li
-            key={segment.label}
-            className="flex items-center justify-between gap-3"
-          >
-            <span className="flex items-center gap-2 text-ink">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ background: segment.color }}
-              />
-              {segment.label}
-            </span>
-            <span className="tabular-nums font-semibold text-ink">
-              {segment.value}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 export function AdminDashboardView({
   acceptsOrders,
   recentOrders,
   kpis,
+  range,
+  today,
   message,
   error,
 }: {
   acceptsOrders: boolean;
   recentOrders: DashboardOrder[];
   kpis: DashboardKpis;
+  range: { from: string; to: string };
+  today: string;
   message?: string;
   error?: string;
 }) {
-  const { t } = useLocale();
-  const statusLabel = useStatusLabel();
-
-  const todayRevenue = kpis.cashRevenue + kpis.onlineRevenue;
+  const { t, locale } = useLocale();
+  const rangeRevenue = kpis.cashRevenue + kpis.onlineRevenue;
   const avgOrder =
-    kpis.transactions > 0 ? todayRevenue / kpis.transactions : 0;
-
-  const statusTotal =
-    kpis.completed +
-    kpis.outForDelivery +
-    kpis.preparing +
-    kpis.ready +
-    kpis.pending +
-    kpis.confirmed;
-  const statusSegments = [
-    {
-      label: t("admin.dash.segCompleted"),
-      value: kpis.completed,
-      color: "#2f9e6b",
-    },
-    {
-      label: t("admin.dash.segDelivery"),
-      value: kpis.outForDelivery,
-      color: "#3b82f6",
-    },
-    {
-      label: t("admin.dash.segPreparing"),
-      value: kpis.preparing + kpis.ready + kpis.confirmed,
-      color: "#d97706",
-    },
-    { label: t("admin.dash.segNew"), value: kpis.pending, color: "#9ca3af" },
-  ];
+    kpis.transactions > 0 ? rangeRevenue / kpis.transactions : 0;
+  const rangeLabel = formatRange(range, locale);
 
   const paidTotal = kpis.cashRevenue + kpis.onlineRevenue;
   const cashPct = paidTotal > 0 ? (kpis.cashRevenue / paidTotal) * 100 : 0;
@@ -236,7 +145,7 @@ export function AdminDashboardView({
     <>
       <PageHeader
         title={t("admin.dash.title")}
-        description={t("admin.dash.desc")}
+        description={t("admin.dash.desc", { range: rangeLabel })}
         action={
           <Link href="/admin/orders" className={secondaryButtonClass}>
             {t("admin.dash.allOrders")}
@@ -245,10 +154,16 @@ export function AdminDashboardView({
       />
       <Notice message={message} error={error} />
 
+      <DashboardRangeFilter
+        from={range.from}
+        to={range.to}
+        today={today}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label={t("admin.dash.revenue")}
-          value={formatMoney(todayRevenue)}
+          value={formatMoney(rangeRevenue)}
           hint={
             acceptsOrders
               ? t("admin.dash.accepting")
@@ -342,7 +257,7 @@ export function AdminDashboardView({
         />
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <KpiCard
           label={t("admin.dash.new")}
           value={kpis.pending}
@@ -359,78 +274,6 @@ export function AdminDashboardView({
               >
                 <path
                   d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </IconWrap>
-          }
-        />
-        <KpiCard
-          label={t("admin.dash.preparing")}
-          value={kpis.preparing + kpis.confirmed}
-          hint={t("admin.dash.prepHint", {
-            c: kpis.confirmed,
-            p: kpis.preparing,
-          })}
-          href="/admin/orders?status=preparing"
-          icon={
-            <IconWrap className="bg-orange-50 text-orange-700">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path
-                  d="M12 3v3M8 6h8l1 4H7l1-4Zm-2 4h14v2a5 5 0 0 1-5 5h-4a5 5 0 0 1-5-5v-2Zm4 7v4m4-4v4"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </IconWrap>
-          }
-        />
-        <KpiCard
-          label={t("admin.dash.ready")}
-          value={kpis.ready}
-          hint={t("admin.dash.readyHint")}
-          href="/admin/orders?status=ready"
-          icon={
-            <IconWrap className="bg-emerald-50 text-emerald-700">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path
-                  d="M20 7 10 17l-5-5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </IconWrap>
-          }
-        />
-        <KpiCard
-          label={t("admin.dash.delivery")}
-          value={kpis.outForDelivery}
-          hint={t("admin.dash.deliveryHint")}
-          href="/admin/orders?status=out_for_delivery"
-          icon={
-            <IconWrap className="bg-blue-50 text-blue-700">
-              <svg
-                viewBox="0 0 24 24"
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <path
-                  d="M3 7h11v10H3V7Zm11 3h4l3 3v4h-7v-7ZM6 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -459,41 +302,7 @@ export function AdminDashboardView({
         />
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
-        <Card>
-          <div className="mb-5">
-            <h2 className="font-sans text-2xl font-semibold tracking-tight text-ink">
-              {t("admin.dash.statusTitle")}
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              {t("admin.dash.statusCount", { n: statusTotal })}
-            </p>
-          </div>
-          <StatusDonut
-            total={statusTotal}
-            segments={statusSegments}
-            totalLabel={t("admin.dash.colTotal")}
-          />
-          <div className="mt-5 flex flex-wrap gap-2 border-t border-ink/6 pt-4">
-            {(
-              [
-                ["pending", kpis.pending],
-                ["preparing", kpis.preparing],
-                ["ready", kpis.ready],
-                ["out_for_delivery", kpis.outForDelivery],
-              ] as const
-            ).map(([status, count]) => (
-              <Link
-                key={status}
-                href={`/admin/orders?status=${status}`}
-                className="rounded-full bg-[#f5f1eb] px-3 py-1.5 text-xs font-semibold text-ink transition hover:bg-sage/10"
-              >
-                {statusLabel(status)} · {count}
-              </Link>
-            ))}
-          </div>
-        </Card>
-
+      <div className="mt-4">
         <Card>
           <div className="mb-5">
             <h2 className="font-sans text-2xl font-semibold tracking-tight text-ink">

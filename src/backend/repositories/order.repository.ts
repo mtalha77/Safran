@@ -87,12 +87,22 @@ export function listOrders(db: Db, { status, search, from, to }: OrderListQuery)
   return query;
 }
 
-export function listRecentOrders(db: Db, limit: number) {
-  return db
+export function listRecentOrders(
+  db: Db,
+  limit: number,
+  range?: { since: string; until: string },
+) {
+  let query = db
     .from("orders")
     .select("id, order_number, customer_name, total, status, created_at")
     .order("created_at", { ascending: false })
     .limit(limit);
+
+  if (range) {
+    query = query.gte("created_at", range.since).lt("created_at", range.until);
+  }
+
+  return query;
 }
 
 /** Newest order id for kitchen alert polling. */
@@ -113,11 +123,13 @@ export function countOrdersSince(db: Db, since: string) {
 }
 
 /** Status + payment fields needed for dashboard KPIs — no full order rows. */
-export function listOrderKpisSince(db: Db, since: string) {
-  return db
+export function listOrderKpisSince(db: Db, since: string, until?: string) {
+  const query = db
     .from("orders")
     .select("status, total, payment_method")
     .gte("created_at", since);
+
+  return until ? query.lt("created_at", until) : query;
 }
 
 /**
@@ -137,6 +149,39 @@ export async function updateStatus(
     .eq("status", from)
     .select("id")
     .maybeSingle();
+}
+
+/** Open orders of one fulfillment type whose promised waiting time has passed. */
+export function findOrdersDueForCompletion(
+  db: Db,
+  fulfillmentType: "delivery" | "pickup",
+  createdBefore: string,
+  openStatuses: readonly OrderStatus[],
+) {
+  return db
+    .from("orders")
+    .select("id, status")
+    .eq("fulfillment_type", fulfillmentType)
+    .lte("created_at", createdBefore)
+    .in("status", openStatuses)
+    .limit(200);
+}
+
+/**
+ * Closes the given orders, guarded by `in(status, openStatuses)` so an order a
+ * staff member cancelled in the meantime is left alone.
+ */
+export function completeOrders(
+  db: Db,
+  orderIds: string[],
+  openStatuses: readonly OrderStatus[],
+) {
+  return db
+    .from("orders")
+    .update({ status: "completed", updated_at: new Date().toISOString() })
+    .in("id", orderIds)
+    .in("status", openStatuses)
+    .select("id");
 }
 
 export function insertStatusEvent(

@@ -2,12 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, type ComponentType } from "react";
-import {
-  toCustomerOrderStage,
-  type CustomerOrderStage,
-} from "./order-status.adapter";
-import { STAGE_COPY } from "./order-status.config";
-import { OrderProgress } from "./OrderProgress";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { MessageKey } from "@/lib/i18n/messages";
+import { toCustomerOrderStage } from "./order-status.adapter";
 import styles from "./order-status.module.css";
 
 function SceneSkeleton() {
@@ -23,49 +20,35 @@ function SceneSkeleton() {
 const ConfirmedScene = dynamic(() => import("./scenes/ConfirmedScene"), {
   loading: SceneSkeleton,
 });
-const PreparingScene = dynamic(() => import("./scenes/PreparingScene"), {
-  loading: SceneSkeleton,
-});
-const ReadyScene = dynamic(() => import("./scenes/ReadyScene"), {
-  loading: SceneSkeleton,
-});
-const DeliveringScene = dynamic(() => import("./scenes/DeliveringScene"), {
-  loading: SceneSkeleton,
-});
 const CompletedScene = dynamic(() => import("./scenes/CompletedScene"), {
   loading: SceneSkeleton,
 });
 const CancelledScene = dynamic(() => import("./scenes/CancelledScene"), {
   loading: SceneSkeleton,
 });
-const NeutralScene = dynamic(() => import("./scenes/NeutralScene"), {
-  loading: SceneSkeleton,
-});
 
-const SCENE_BY_STAGE: Record<CustomerOrderStage, ComponentType> = {
-  confirmed: ConfirmedScene,
-  preparing: PreparingScene,
-  ready: ReadyScene,
-  delivering: DeliveringScene,
-  completed: CompletedScene,
-  cancelled: CancelledScene,
-  unknown: NeutralScene,
-};
+type CustomerView = "active" | "completed" | "cancelled";
+
+function toCustomerView(status: string): CustomerView {
+  const stage = toCustomerOrderStage(status);
+  if (stage === "cancelled") return "cancelled";
+  if (stage === "completed") return "completed";
+  return "active";
+}
 
 export type OrderStatusExperienceProps = {
   status: string;
   orderNumber?: string | null;
-  estimatedArrival?: string | null;
   updatedAt?: string | Date | null;
   fulfillmentType?: string | null;
   /** Quiet indicator when the existing live channel is reconnecting. */
   connectionState?: "live" | "updating" | "offline" | "idle";
 };
 
-function formatUpdatedAt(value: string | Date) {
+function formatUpdatedAt(value: string | Date, locale: string) {
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat("de-CH", {
+  return new Intl.DateTimeFormat(locale === "en" ? "en-CH" : "de-CH", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(date);
@@ -74,25 +57,58 @@ function formatUpdatedAt(value: string | Date) {
 export function OrderStatusExperience({
   status,
   orderNumber,
-  estimatedArrival,
   updatedAt,
   fulfillmentType,
   connectionState = "idle",
 }: OrderStatusExperienceProps) {
-  const stage = toCustomerOrderStage(status);
-  const copy = STAGE_COPY[stage];
-  const Scene = SCENE_BY_STAGE[stage];
-  const [announcement, setAnnouncement] = useState(`${copy.title}. ${copy.message}`);
-  const previousStage = useRef(stage);
+  const { t, locale } = useLocale();
+  const view = toCustomerView(status);
+  const isPickup = fulfillmentType === "pickup";
+
+  const titleKey: MessageKey =
+    view === "cancelled"
+      ? "order.status.cancelledTitle"
+      : view === "completed"
+        ? "order.status.completedTitle"
+        : isPickup
+          ? "order.status.pickupTitle"
+          : "order.status.deliveryTitle";
+
+  const messageKey: MessageKey =
+    view === "cancelled"
+      ? "order.status.cancelledMessage"
+      : view === "completed"
+        ? "order.status.completedMessage"
+        : isPickup
+          ? "order.status.pickupMessage"
+          : "order.status.deliveryMessage";
+
+  const title = t(titleKey);
+  const message = t(messageKey);
+  const Scene: ComponentType =
+    view === "cancelled"
+      ? CancelledScene
+      : view === "completed"
+        ? CompletedScene
+        : ConfirmedScene;
+
+  const [announcement, setAnnouncement] = useState(`${title}. ${message}`);
+  const previousView = useRef(view);
+  const previousFulfillment = useRef(fulfillmentType);
 
   useEffect(() => {
-    if (previousStage.current === stage) return;
-    previousStage.current = stage;
-    // One polite announcement per genuine stage change — not per poll tick.
-    setAnnouncement(`${copy.title}. ${copy.message}`);
-  }, [stage, copy.title, copy.message]);
+    if (
+      previousView.current === view &&
+      previousFulfillment.current === fulfillmentType
+    ) {
+      return;
+    }
+    previousView.current = view;
+    previousFulfillment.current = fulfillmentType;
+    setAnnouncement(`${title}. ${message}`);
+  }, [view, fulfillmentType, title, message]);
 
-  const updatedLabel = updatedAt ? formatUpdatedAt(updatedAt) : null;
+  const updatedLabel = updatedAt ? formatUpdatedAt(updatedAt, locale) : null;
 
   return (
     <div className={styles.root}>
@@ -100,11 +116,11 @@ export function OrderStatusExperience({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-[11px] font-semibold tracking-wider text-sage uppercase">
-              Aktueller Status
+              {t("order.status.eyebrow")}
               {orderNumber ? ` · ${orderNumber}` : null}
             </p>
             <h2 className="mt-0.5 font-serif text-xl text-ink sm:text-2xl">
-              {copy.title}
+              {title}
             </h2>
           </div>
           {connectionState === "live" || connectionState === "updating" ? (
@@ -116,32 +132,27 @@ export function OrderStatusExperience({
                     : "animate-pulse bg-amber-500"
                 }`}
               />
-              {connectionState === "live" ? "Live" : "Aktualisiere…"}
+              {connectionState === "live"
+                ? t("order.status.live")
+                : t("order.status.updating")}
             </span>
           ) : connectionState === "offline" ? (
             <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-amber-800">
-              Verbindung…
+              {t("order.status.reconnecting")}
             </span>
           ) : null}
         </div>
-        <p className="mt-1 text-sm leading-5 text-muted">{copy.message}</p>
-        {estimatedArrival ? (
-          <p className="mt-1.5 text-sm font-semibold text-ink">
-            Voraussichtliche Ankunft: {estimatedArrival}
-          </p>
-        ) : null}
+        <p className="mt-1 text-sm leading-5 text-muted">{message}</p>
         {updatedLabel ? (
           <p className="mt-1 text-[11px] text-muted/80">
-            Zuletzt aktualisiert {updatedLabel}
+            {t("order.status.updatedAt", { time: updatedLabel })}
           </p>
         ) : null}
       </div>
 
-      <div className="mt-3" key={stage}>
+      <div className="mt-3" key={view}>
         <Scene />
       </div>
-
-      <OrderProgress stage={stage} fulfillmentType={fulfillmentType} />
 
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {announcement}

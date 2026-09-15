@@ -10,6 +10,7 @@ import {
 import { isValidEmailFormat } from "@/backend/validation/email-format";
 import { useCart } from "@/components/cart-provider";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { localizedDishName } from "@/lib/i18n/menu-text";
 import { fetchLiveStoreAvailability } from "@/lib/live-store-status";
 
 type Fulfillment = "delivery" | "pickup";
@@ -557,7 +558,7 @@ export function CheckoutForm({
                 <div className="flex justify-between gap-4">
                   <div>
                     <p className="text-sm font-semibold text-white">
-                      {item.name}
+                      {localizedDishName(item.name, locale)}
                     </p>
                     {item.details && (
                       <p className="mt-1 text-xs leading-5 text-cream/50">

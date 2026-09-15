@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Reveal } from "@/components/reveal";
 import { useLocale } from "@/lib/i18n/locale-context";
+import { localizedCategoryTitle } from "@/lib/i18n/menu-text";
 
 export type HomepageCategory = {
   name: string;
@@ -25,7 +26,7 @@ export function MenuCategoriesSection({
 }: {
   categories: HomepageCategory[];
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
 
   return (
     <section className="w-full bg-ink py-20 [content-visibility:auto] [contain-intrinsic-size:auto_2300px] sm:py-28">
@@ -79,10 +80,11 @@ export function MenuCategoriesSection({
                 />
 
                 <span className="relative z-10 min-w-0 flex-1 font-serif text-lg leading-tight tracking-[0.04em] text-cream uppercase transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:pl-8 group-hover:text-3xl group-hover:text-white sm:ml-48 sm:flex-none sm:shrink-0 sm:whitespace-nowrap sm:text-[clamp(1.15rem,calc(4.5vw-16px),2.5rem)] sm:group-hover:ml-0 sm:group-hover:pl-10 sm:group-hover:text-[clamp(1.3rem,calc(5vw-16px),3rem)]">
-                  {category.name}
-                </span>
-                <span className="relative z-10 ml-6 hidden min-w-0 truncate text-xs tracking-wide text-white/0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-white/80 sm:block">
-                  {category.subtitle}
+                  {localizedCategoryTitle(
+                    category.name,
+                    category.subtitle,
+                    locale,
+                  )}
                 </span>
 
                 <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-cream/50 text-cream transition-colors duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:border-gold group-hover:bg-gold group-hover:text-ink sm:ml-auto sm:h-14 sm:w-14">

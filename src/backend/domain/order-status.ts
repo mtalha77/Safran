@@ -28,11 +28,39 @@ const TRANSITIONS: Record<OrderStatus, readonly OrderStatus[]> = {
   pending: ["confirmed", "cancelled"],
   confirmed: ["preparing", "cancelled"],
   preparing: ["ready", "cancelled"],
-  ready: ["out_for_delivery", "completed"],
-  out_for_delivery: ["completed"],
-  completed: [],
+  ready: ["out_for_delivery", "completed", "cancelled"],
+  out_for_delivery: ["completed", "cancelled"],
+  // Staff must be able to cancel a closed order too (wrong handover, refund).
+  completed: ["cancelled"],
   cancelled: [],
 };
+
+/**
+ * Orders close themselves once the promised waiting time has passed, so staff
+ * never walk the kitchen statuses. These minutes are the same ones the guest
+ * sees on the confirmation page.
+ */
+export const AUTO_COMPLETE_MINUTES = {
+  delivery: 45,
+  pickup: 30,
+} as const;
+
+/** Statuses an order can sit in before it auto-completes. */
+export const OPEN_ORDER_STATUSES = [
+  "pending",
+  "confirmed",
+  "preparing",
+  "ready",
+  "out_for_delivery",
+] as const satisfies readonly OrderStatus[];
+
+/** Oldest `created_at` that may still stay open for this fulfillment type. */
+export function autoCompleteCutoff(
+  fulfillment: keyof typeof AUTO_COMPLETE_MINUTES,
+  now = new Date(),
+): Date {
+  return new Date(now.getTime() - AUTO_COMPLETE_MINUTES[fulfillment] * 60_000);
+}
 
 /**
  * Which role may perform a transition. Restaurant staff run the kitchen flow;

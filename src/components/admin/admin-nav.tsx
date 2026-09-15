@@ -24,7 +24,7 @@ const navigation: Array<{ href: string; labelKey: MessageKey; icon: string }> = 
   {
     href: "/admin/discounts",
     labelKey: "admin.nav.discounts",
-    icon: "/images/menu-navigation-grid-1528-svgrepo-com.svg",
+    icon: "/images/percent-discount-svgrepo-com.svg",
   },
   {
     href: "/admin/settings",

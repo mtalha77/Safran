@@ -40,7 +40,13 @@ export function SiteFooter({
   settings: StorefrontSettings;
   hours: OpeningDay[];
 }) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  // The settings blurb is a single German string, so it only ships on the
+  // German site; English falls back to the translated copy.
+  const about =
+    locale === "de" && settings.descriptionIsCustom
+      ? settings.description
+      : t("footer.about");
 
   return (
     <footer id="kontakt" className="relative overflow-hidden bg-ink text-cream">
@@ -84,7 +90,7 @@ export function SiteFooter({
               {settings.restaurantName}
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-7 text-cream/65">
-              {settings.description}
+              {about}
             </p>
           </div>
 
@@ -166,9 +172,9 @@ export function SiteFooter({
           <p>
             © {new Date().getFullYear()}{" "}
             <span translate="no" className="notranslate">
-              Safran
+              {settings.restaurantName}
             </span>
-            . {t("footer.rights")}
+            {`. ${t("footer.rights")}`}
           </p>
           <p>{t("footer.tagline")}</p>
         </div>

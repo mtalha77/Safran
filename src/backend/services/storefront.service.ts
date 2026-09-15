@@ -23,6 +23,11 @@ import type { OpeningDay, StoreStatusConfig } from "@/lib/store-status";
 export type StorefrontSettings = {
   restaurantName: string;
   description: string;
+  /**
+   * False when `description` is the built-in German copy. The footer then shows
+   * the translated blurb instead of German text on the English site.
+   */
+  descriptionIsCustom: boolean;
   addressLines: string[];
   phone: string;
   phoneDisplay: string;
@@ -51,7 +56,8 @@ export type StorefrontData = StorefrontChrome & {
 const fallbackSettings: StorefrontSettings = {
   restaurantName: "Safran",
   description:
-    "Authentische indische Küche am Romanshorner Hafen – frisch zubereitet, herzlich serviert und bequem nach Hause bestellt.",
+    "Authentische indische Küche am Romanshorner Hafen, frisch zubereitet, herzlich serviert und bequem nach Hause bestellt.",
+  descriptionIsCustom: false,
   addressLines: ["Hafenstrasse 31", "8590 Romanshorn, Schweiz"],
   phone: "+41712445533",
   phoneDisplay: "032 623 59 59",
@@ -107,16 +113,17 @@ function normalizeSettings(settingsRows: Row[] | null, contentRows: Row[] | null
     text(values.address) ??
     text(values.restaurant_address) ??
     fallbackSettings.addressLines.join("\n");
+  const customDescription =
+    text(values.footer_description) ??
+    text(values["footer.description"]) ??
+    text(values.description) ??
+    text(values["home.hero"]);
 
   return {
     restaurantName:
       text(values.restaurant_name) ?? text(values.site_name) ?? fallbackSettings.restaurantName,
-    description:
-      text(values.footer_description) ??
-      text(values["footer.description"]) ??
-      text(values.description) ??
-      text(values["home.hero"]) ??
-      fallbackSettings.description,
+    description: customDescription ?? fallbackSettings.description,
+    descriptionIsCustom: Boolean(customDescription),
     addressLines: address.split(/\r?\n|,\s*(?=\d{4}\s)/).filter(Boolean),
     phone:
       text(values.contact_phone) ??

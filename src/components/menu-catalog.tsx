@@ -5,6 +5,10 @@ import { useMemo, useState } from "react";
 import { useCart } from "@/components/cart-provider";
 import type { MenuCategory } from "@/data/menu";
 import { useLocale } from "@/lib/i18n/locale-context";
+import {
+  localizedCategoryTitle,
+  localizedDishName,
+} from "@/lib/i18n/menu-text";
 
 function SearchIcon() {
   return (
@@ -130,7 +134,13 @@ export function MenuCatalog({
                     <span className="font-serif text-cream/55 transition group-hover:text-white/70">
                       {String(index + 1).padStart(2, "0")}
                     </span>
-                    <span>{category.title}</span>
+                    <span>
+                      {localizedCategoryTitle(
+                        category.title,
+                        category.subtitle,
+                        locale,
+                      )}
+                    </span>
                   </a>
                 ))}
               </nav>
@@ -152,13 +162,12 @@ export function MenuCatalog({
                       Safran Speisekarte
                     </p>
                     <h2 className="mt-2 font-serif text-4xl text-ink sm:text-5xl">
-                      {category.title}
+                      {localizedCategoryTitle(
+                        category.title,
+                        category.subtitle,
+                        locale,
+                      )}
                     </h2>
-                    {category.subtitle && (
-                      <p className="mt-2 text-sm text-muted">
-                        {category.subtitle}
-                      </p>
-                    )}
                 {(() => {
                   const noteDe = category.noteDe?.trim() || "";
                   const noteEn = category.noteEn?.trim() || "";
@@ -180,6 +189,7 @@ export function MenuCatalog({
                 {category.items.map((item) => {
                   const cartId = `menu-${item.number}`;
                   const cartItem = cartById.get(cartId);
+                  const dishName = localizedDishName(item.name, locale);
 
                   return (
                     <article
@@ -189,7 +199,7 @@ export function MenuCatalog({
                       <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-2xl bg-sage/10 sm:w-44">
                         <Image
                           src={item.imageUrl ?? "/brand/safran-parcel.jpg"}
-                          alt={item.name}
+                          alt={dishName}
                           fill
                           sizes="(max-width: 640px) calc(100vw - 64px), 176px"
                           className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -201,24 +211,20 @@ export function MenuCatalog({
 
                       <div className="flex min-w-0 flex-1 flex-col px-2 pt-5 pb-2 sm:py-2 sm:pr-2 sm:pl-5">
                         <h3 className="font-serif text-xl leading-6 text-ink sm:text-2xl">
-                          {item.name}
+                          {dishName}
                         </h3>
-                        {locale === "en"
-                          ? (item.descriptionEn || item.descriptionDe) && (
-                              <p className="mt-3 text-sm leading-6 text-muted">
-                                {item.descriptionEn || item.descriptionDe}
-                              </p>
-                            )
-                          : item.descriptionDe && (
-                              <p className="mt-3 text-sm leading-6 text-muted">
-                                {item.descriptionDe}
-                              </p>
-                            )}
-                        {locale === "de" && item.descriptionEn ? (
-                          <p className="mt-1 text-xs leading-5 text-muted/70">
-                            {item.descriptionEn}
-                          </p>
-                        ) : null}
+                        {(() => {
+                          const description =
+                            locale === "en"
+                              ? item.descriptionEn || item.descriptionDe
+                              : item.descriptionDe || item.descriptionEn;
+                          if (!description) return null;
+                          return (
+                            <p className="mt-3 text-sm leading-6 text-muted">
+                              {description}
+                            </p>
+                          );
+                        })()}
 
                         <div className="mt-auto flex items-center justify-between gap-4 pt-6">
                           <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 font-serif text-xl text-sage-deep">
@@ -248,7 +254,7 @@ export function MenuCatalog({
                                   )
                                 }
                                 aria-label={t("checkout.oneLess", {
-                                  name: item.name,
+                                  name: dishName,
                                 })}
                                 className="flex h-10 w-10 items-center justify-center text-lg text-sage-deep transition hover:text-sage"
                               >
@@ -266,7 +272,7 @@ export function MenuCatalog({
                                   )
                                 }
                                 aria-label={t("checkout.oneMore", {
-                                  name: item.name,
+                                  name: dishName,
                                 })}
                                 className="flex h-10 w-10 items-center justify-center text-lg text-sage-deep transition hover:text-sage"
                               >
@@ -286,7 +292,7 @@ export function MenuCatalog({
                               }
                               className="btn-cart"
                               aria-label={t("menu.addAria", {
-                                name: item.name,
+                                name: dishName,
                               })}
                             >
                               <span className="btn-cart-face">

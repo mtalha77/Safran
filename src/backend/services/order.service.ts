@@ -16,8 +16,10 @@ import {
 import {
   allowedTransitionsFor,
   assertTransition,
+  autoCompleteCutoff,
   INITIAL_ORDER_STATUS,
   isOrderStatus,
+  OPEN_ORDER_STATUSES,
 } from "@/backend/domain/order-status";
 import type { AppRole } from "@/backend/domain/roles";
 import {
@@ -260,6 +262,64 @@ export async function createCashOrder(
   };
 }
 
+/** Only one sweep per this many ms per server instance. */
+const AUTO_COMPLETE_THROTTLE_MS = 20_000;
+let lastAutoCompleteAt = 0;
+
+/**
+ * Closes orders whose promised waiting time has passed (45 min delivery, 30 min
+ * pickup). There is no scheduler: every admin or status read triggers a sweep,
+ * throttled so the 4s confirmation-page poll cannot hammer the database.
+ *
+ * Failures are swallowed on purpose — a sweep is never worth breaking a page
+ * render or a status poll over, and the next read retries.
+ */
+export async function completeDueOrders(force = false): Promise<number> {
+  const now = Date.now();
+  if (!force && now - lastAutoCompleteAt < AUTO_COMPLETE_THROTTLE_MS) return 0;
+  lastAutoCompleteAt = now;
+
+  let closed = 0;
+  try {
+    const db = trustedClient();
+
+    for (const fulfillment of ["delivery", "pickup"] as const) {
+      const cutoff = autoCompleteCutoff(fulfillment, new Date(now)).toISOString();
+      const due = await orderRepository.findOrdersDueForCompletion(
+        db,
+        fulfillment,
+        cutoff,
+        OPEN_ORDER_STATUSES,
+      );
+      const rows = due.data ?? [];
+      if (!rows.length) continue;
+
+      const statusById = new Map(rows.map((row) => [row.id, row.status]));
+      const updated = await orderRepository.completeOrders(
+        db,
+        rows.map((row) => row.id),
+        OPEN_ORDER_STATUSES,
+      );
+
+      for (const row of updated.data ?? []) {
+        const from = statusById.get(row.id);
+        await orderRepository.insertStatusEvent(db, {
+          orderId: row.id,
+          from: isOrderStatus(from) ? from : null,
+          to: "completed",
+          changedBy: null,
+          note: "Automatisch abgeschlossen",
+        });
+        closed += 1;
+      }
+    }
+  } catch (error) {
+    console.error("[orders] auto-complete sweep failed", error);
+  }
+
+  return closed;
+}
+
 /**
  * Guest-facing order lookup. The confirmation token is the capability, so no
  * session is required, but nothing is returned for a malformed token.
@@ -268,6 +328,7 @@ export async function getOrderByToken(token: string) {
   if (!isUuid(token)) return null;
 
   try {
+    await completeDueOrders();
     const db = trustedClient();
     const orderResult = await orderRepository.findByConfirmationToken(db, token);
     if (orderResult.error || !orderResult.data) return null;
@@ -358,6 +419,7 @@ export async function listOrdersForBackOffice(query: {
   pageSize: number;
 }) {
   const { supabase } = await requireCapability("orders:read");
+  await completeDueOrders();
   const db = supabase as unknown as Db;
   const from = Math.max(0, (query.page - 1) * query.pageSize);
 
@@ -396,6 +458,7 @@ export async function getOrderForBackOffice(orderId: string) {
     };
   }
 
+  await completeDueOrders();
   const db = supabase as unknown as Db;
   const [orderResult, itemsResult, printResult] = await Promise.all([
     orderRepository.findOrderById(db, orderId),
@@ -409,8 +472,12 @@ export async function getOrderForBackOffice(orderId: string) {
     order: orderResult.data ?? null,
     items: itemsResult.data ?? [],
     printJob: printResult.data ?? null,
+    // Staff only ever cancel: the kitchen statuses are gone from the UI and
+    // orders close themselves once the promised waiting time has passed.
     transitions: isOrderStatus(status)
-      ? allowedTransitionsFor(actor.role as AppRole, status)
+      ? allowedTransitionsFor(actor.role as AppRole, status).filter(
+          (next) => next === "cancelled",
+        )
       : [],
     error:
       orderResult.error?.message ??
@@ -420,11 +487,8 @@ export async function getOrderForBackOffice(orderId: string) {
   };
 }
 
-/**
- * Midnight today in the restaurant timezone, as a UTC ISO string. KPI cards
- * ("Heute", "Umsatz") must follow Zurich calendar days, not the server's.
- */
-function startOfRestaurantDay(now = new Date()): string {
+/** Today's calendar date in the restaurant timezone, as `YYYY-MM-DD`. */
+export function restaurantDateKey(now = new Date()): string {
   const dateParts = Object.fromEntries(
     new Intl.DateTimeFormat("en-CA", {
       timeZone: RESTAURANT_TIMEZONE,
@@ -435,7 +499,15 @@ function startOfRestaurantDay(now = new Date()): string {
       .formatToParts(now)
       .map((part) => [part.type, part.value]),
   );
-  const dateStr = `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
+  return `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
+}
+
+/**
+ * Midnight of a Zurich calendar date, as a UTC ISO string. KPI cards must
+ * follow Zurich calendar days, not the server's.
+ */
+function startOfRestaurantDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
 
   // Midday UTC on that calendar date, then read Zurich's wall clock to learn
   // the current offset (CET +1 / CEST +2) without a timezone library.
@@ -450,25 +522,58 @@ function startOfRestaurantDay(now = new Date()): string {
   const offsetHours = zurichHour - 12;
 
   return new Date(
-    Date.UTC(
-      Number(dateParts.year),
-      Number(dateParts.month) - 1,
-      Number(dateParts.day),
-      -offsetHours,
-      0,
-      0,
-      0,
-    ),
+    Date.UTC(year, month - 1, day, -offsetHours, 0, 0, 0),
   ).toISOString();
 }
 
+/** The day after `dateStr`, so a range can be queried as `[since, until)`. */
+function nextRestaurantDate(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const next = new Date(Date.UTC(year, month - 1, day + 1));
+  return next.toISOString().slice(0, 10);
+}
+
+const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
+
+function dateKeyOrNull(value: unknown): string | null {
+  if (typeof value !== "string" || !DATE_KEY.test(value)) return null;
+  const parsed = new Date(`${value}T12:00:00.000Z`);
+  return Number.isNaN(parsed.getTime()) ? null : value;
+}
+
+export type OverviewRange = {
+  /** Inclusive Zurich calendar dates, `YYYY-MM-DD`. */
+  from: string;
+  to: string;
+};
+
+/**
+ * Turns whatever the dashboard URL carries into a sane inclusive day range.
+ * Missing or malformed values fall back to today, and a reversed range is
+ * swapped rather than returning nothing.
+ */
+export function resolveOverviewRange(input: {
+  from?: unknown;
+  to?: unknown;
+}): OverviewRange {
+  const today = restaurantDateKey();
+  const from = dateKeyOrNull(input.from);
+  const to = dateKeyOrNull(input.to);
+
+  if (!from && !to) return { from: today, to: today };
+
+  const start = from ?? to ?? today;
+  const end = to ?? from ?? today;
+  return start <= end ? { from: start, to: end } : { from: end, to: start };
+}
+
 export type OverviewKpis = {
-  /** Non-cancelled orders placed today. */
+  /** Non-cancelled orders placed in the selected range. */
   transactions: number;
-  /** Online / card / TWINT totals today (non-cash, non-cancelled). */
+  /** Online / card / TWINT totals (non-cash, non-cancelled). */
   onlineRevenue: number;
   onlineCount: number;
-  /** Cash totals today (non-cancelled). */
+  /** Cash totals (non-cancelled). */
   cashRevenue: number;
   cashCount: number;
   pending: number;
@@ -478,7 +583,7 @@ export type OverviewKpis = {
   outForDelivery: number;
   completed: number;
   cancelled: number;
-  /** Orders still in the kitchen / handoff pipeline today. */
+  /** Orders still in the kitchen / handoff pipeline. */
   inProgress: number;
 };
 
@@ -492,18 +597,21 @@ export async function getLatestOrderForAlert() {
     : null;
 }
 
-export async function getBackOfficeOverview() {
+export async function getBackOfficeOverview(range?: OverviewRange) {
   const { supabase } = await requireCapability("orders:read");
+  await completeDueOrders();
   const db = supabase as unknown as Db;
-  const since = startOfRestaurantDay();
+  const { from, to } = range ?? resolveOverviewRange({});
+  const since = startOfRestaurantDate(from);
+  const until = startOfRestaurantDate(nextRestaurantDate(to));
 
-  const [availability, recent, todayRows] = await Promise.all([
+  const [availability, recent, rangeRows] = await Promise.all([
     settingsRepository.findAcceptsOrders(db),
-    orderRepository.listRecentOrders(db, 6),
-    orderRepository.listOrderKpisSince(db, since),
+    orderRepository.listRecentOrders(db, 6, { since, until }),
+    orderRepository.listOrderKpisSince(db, since, until),
   ]);
 
-  const rows = todayRows.data ?? [];
+  const rows = rangeRows.data ?? [];
   const byStatus = {
     pending: 0,
     confirmed: 0,
@@ -563,10 +671,11 @@ export async function getBackOfficeOverview() {
     acceptsOrders: availability.data?.accepts_orders ?? true,
     orders: recent.data ?? [],
     kpis,
+    range: { from, to },
     error:
       availability.error?.message ??
       recent.error?.message ??
-      todayRows.error?.message ??
+      rangeRows.error?.message ??
       null,
   };
 }

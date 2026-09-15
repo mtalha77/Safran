@@ -294,6 +294,9 @@ export function AdminMenuView({
                 </label>
                 <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
                   {t("admin.menu.imageHint")}
+                  <span className="mt-1 text-xs font-normal text-muted">
+                    {t("admin.menu.imageSpec")}
+                  </span>
                   <AdminFileInput
                     className="mt-1.5"
                     name="image"
@@ -487,38 +490,43 @@ export function AdminMenuView({
                               {t("admin.menu.saveChanges")}
                             </PendingSubmitButton>
                           </form>
-                          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
-                            <form
-                              action={replaceMenuItemImageAction}
-                              className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center"
-                            >
-                              <input type="hidden" name="id" value={item.id} />
-                              <AdminFileInput
-                                name="image"
-                                accept="image/jpeg,image/png,image/webp,image/avif"
-                                required
-                              />
-                              <PendingSubmitButton
-                                variant="secondary"
-                                className="shrink-0 whitespace-nowrap"
-                                pendingLabel={t("admin.menu.compressing")}
+                          <div className="mt-4">
+                            <p className="text-xs text-muted">
+                              {t("admin.menu.imageSpec")}
+                            </p>
+                            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                              <form
+                                action={replaceMenuItemImageAction}
+                                className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center"
                               >
-                                {t("admin.menu.replaceImage")}
-                              </PendingSubmitButton>
-                            </form>
-                            <form
-                              action={deleteMenuItemAction}
-                              className="shrink-0"
-                            >
-                              <input type="hidden" name="id" value={item.id} />
-                              <PendingSubmitButton
-                                variant="danger"
-                                className="w-full whitespace-nowrap sm:w-auto"
-                                pendingLabel={t("admin.menu.deleting")}
+                                <input type="hidden" name="id" value={item.id} />
+                                <AdminFileInput
+                                  name="image"
+                                  accept="image/jpeg,image/png,image/webp,image/avif"
+                                  required
+                                />
+                                <PendingSubmitButton
+                                  variant="secondary"
+                                  className="shrink-0 whitespace-nowrap"
+                                  pendingLabel={t("admin.menu.compressing")}
+                                >
+                                  {t("admin.menu.replaceImage")}
+                                </PendingSubmitButton>
+                              </form>
+                              <form
+                                action={deleteMenuItemAction}
+                                className="shrink-0"
                               >
-                                {t("admin.menu.delete")}
-                              </PendingSubmitButton>
-                            </form>
+                                <input type="hidden" name="id" value={item.id} />
+                                <PendingSubmitButton
+                                  variant="danger"
+                                  className="w-full whitespace-nowrap sm:w-auto"
+                                  pendingLabel={t("admin.menu.deleting")}
+                                >
+                                  {t("admin.menu.delete")}
+                                </PendingSubmitButton>
+                              </form>
+                            </div>
                           </div>
                         </div>
                       </details>
