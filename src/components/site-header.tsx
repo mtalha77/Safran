@@ -30,12 +30,15 @@ export function SiteHeader() {
   const { t } = useLocale();
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const nav = [
     { href: "/speisekarte", label: t("nav.menu") },
     { href: "/#ueber-uns", label: t("nav.about") },
     { href: "/#kontakt", label: t("nav.contact") },
   ];
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -44,7 +47,11 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const onHero = pathname === "/";
+  // A prerendered page cannot trust `usePathname()` — with a Proxy in play the
+  // request may have been rewritten, and in production the homepage was served
+  // with the solid bar covering its hero. So the server always renders the
+  // see-through header and the browser adds the bar for the inner pages.
+  const onHero = !mounted || pathname === "/";
   const floating = scrolled || !onHero;
 
   return (
