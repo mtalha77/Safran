@@ -17,6 +17,24 @@ export const messages = {
     "footer.about":
       "Authentische indische Küche am Romanshorner Hafen, frisch zubereitet, herzlich serviert und bequem nach Hause bestellt.",
     "footer.tagline": "100% Halal · Ohne Alkohol · Abholung & Lieferung",
+
+    "contact.eyebrow": "Kontakt",
+    "contact.title": "Wir freuen uns auf Sie",
+    "contact.intro":
+      "Fragen zur Bestellung, zu Allergenen oder zu einer Feier? Rufen Sie uns an, schreiben Sie uns oder kommen Sie direkt am Hafen vorbei.",
+    "contact.openNow": "Jetzt geöffnet",
+    "contact.closedNow": "Momentan geschlossen",
+    "contact.addressTitle": "So finden Sie uns",
+    "contact.directions": "Route planen",
+    "contact.reachTitle": "Direkt erreichen",
+    "contact.reachBody":
+      "Am schnellsten geht es telefonisch, besonders bei kurzfristigen Änderungen an einer laufenden Bestellung.",
+    "contact.hoursTitle": "Öffnungszeiten",
+    "contact.mapTitle": "Karte mit dem Standort von Safran Romanshorn",
+    "contact.orderTitle": "Lieber gleich bestellen?",
+    "contact.orderBody":
+      "Die ganze Speisekarte ist online: zur Abholung am Hafen oder zur Lieferung nach Hause.",
+
     "lang.toEn": "EN",
     "lang.toDe": "DE",
     "lang.switchToEn": "Switch to English",
@@ -600,6 +618,24 @@ export const messages = {
     "footer.about":
       "Authentic Indian cuisine at Romanshorn harbour, freshly prepared, warmly served and conveniently delivered to your door.",
     "footer.tagline": "100% Halal · Alcohol-free · Pickup & delivery",
+
+    "contact.eyebrow": "Contact",
+    "contact.title": "We look forward to seeing you",
+    "contact.intro":
+      "Questions about an order, allergens, or a celebration? Call us, send an email, or drop by at the harbour.",
+    "contact.openNow": "Open now",
+    "contact.closedNow": "Currently closed",
+    "contact.addressTitle": "Where to find us",
+    "contact.directions": "Get directions",
+    "contact.reachTitle": "Reach us directly",
+    "contact.reachBody":
+      "A phone call is quickest, especially for last-minute changes to an order that is already running.",
+    "contact.hoursTitle": "Opening hours",
+    "contact.mapTitle": "Map showing the location of Safran Romanshorn",
+    "contact.orderTitle": "Rather order right away?",
+    "contact.orderBody":
+      "The full menu is online, for pickup at the harbour or delivery to your door.",
+
     "lang.toEn": "EN",
     "lang.toDe": "DE",
     "lang.switchToEn": "Switch to English",

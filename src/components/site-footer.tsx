@@ -6,6 +6,7 @@ import { useLocale } from "@/lib/i18n/locale-context";
 import type { MessageKey } from "@/lib/i18n/messages";
 import {
   formatOpeningRanges,
+  groupOpeningHours,
   type OpeningDay,
 } from "@/lib/store-status";
 
@@ -13,25 +14,8 @@ const navigation = [
   { href: "/", labelKey: "nav.home" as const },
   { href: "/speisekarte", labelKey: "nav.menu" as const },
   { href: "/#ueber-uns", labelKey: "nav.story" as const },
-  { href: "/#kontakt", labelKey: "nav.contact" as const },
+  { href: "/kontakt", labelKey: "nav.contact" as const },
 ];
-
-function groupedHours(hours: OpeningDay[]) {
-  const ordered = [...hours].sort(
-    (a, b) => ((a.day + 6) % 7) - ((b.day + 6) % 7),
-  );
-  const groups: Array<{ days: number[]; ranges: OpeningDay["ranges"] }> = [];
-  for (const day of ordered) {
-    const key = JSON.stringify(day.ranges);
-    const previous = groups.at(-1);
-    if (previous && JSON.stringify(previous.ranges) === key) {
-      previous.days.push(day.day);
-    } else {
-      groups.push({ days: [day.day], ranges: day.ranges });
-    }
-  }
-  return groups;
-}
 
 export function SiteFooter({
   settings,
@@ -116,7 +100,7 @@ export function SiteFooter({
               {t("footer.hours")}
             </p>
             <div className="mt-5 space-y-4 text-sm text-cream/65">
-              {groupedHours(hours).map((group) => {
+              {groupOpeningHours(hours).map((group) => {
                 const names = group.days.map((day) =>
                   t(`admin.day.${day}` as MessageKey),
                 );

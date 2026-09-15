@@ -62,6 +62,27 @@ export function formatOpeningRanges(
     : closedLabel;
 }
 
+/**
+ * Monday-first list where neighbouring days with identical hours are merged,
+ * so the footer and contact page can print "Mon – Fri" instead of five rows.
+ */
+export function groupOpeningHours(hours: OpeningDay[]) {
+  const ordered = [...hours].sort(
+    (a, b) => ((a.day + 6) % 7) - ((b.day + 6) % 7),
+  );
+  const groups: Array<{ days: number[]; ranges: OpeningDay["ranges"] }> = [];
+  for (const day of ordered) {
+    const key = JSON.stringify(day.ranges);
+    const previous = groups.at(-1);
+    if (previous && JSON.stringify(previous.ranges) === key) {
+      previous.days.push(day.day);
+    } else {
+      groups.push({ days: [day.day], ranges: day.ranges });
+    }
+  }
+  return groups;
+}
+
 export function getStoreStatus(
   config: StoreStatusConfig,
   date: Date = new Date(),

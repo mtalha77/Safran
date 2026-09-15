@@ -35,7 +35,7 @@ export function SiteHeader() {
   const nav = [
     { href: "/speisekarte", label: t("nav.menu") },
     { href: "/#ueber-uns", label: t("nav.about") },
-    { href: "/#kontakt", label: t("nav.contact") },
+    { href: "/kontakt", label: t("nav.contact") },
   ];
 
   useEffect(() => setMounted(true), []);
