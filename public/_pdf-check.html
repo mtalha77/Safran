@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PDF check</title>
+    <style>
+      body { margin: 0; background: #ddd; font-family: sans-serif; }
+      canvas { display: block; margin: 12px auto; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.3); }
+      #err { color: #b00; padding: 12px; }
+    </style>
+  </head>
+  <body>
+    <div id="err"></div>
+    <div id="out"></div>
+    <script type="module">
+      const file = new URLSearchParams(location.search).get("file") || "_bill-delivery.pdf";
+      try {
+        const pdfjs = await import("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.min.mjs");
+        pdfjs.GlobalWorkerOptions.workerSrc =
+          "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.6.82/build/pdf.worker.min.mjs";
+        const doc = await pdfjs.getDocument(`/${file}`).promise;
+        for (let n = 1; n <= doc.numPages; n += 1) {
+          const page = await doc.getPage(n);
+          const viewport = page.getViewport({ scale: 1.25 });
+          const canvas = document.createElement("canvas");
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          document.getElementById("out").append(canvas);
+          await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+        }
+        document.title = `PDF check: ${file} (${doc.numPages} pages)`;
+      } catch (error) {
+        document.getElementById("err").textContent = String(error);
+      }
+    </script>
+  </body>
+</html>

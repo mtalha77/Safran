@@ -36,6 +36,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  // The bill PDF reads the handwriting font from disk at request time, which
+  // file tracing cannot infer on its own.
+  outputFileTracingIncludes: {
+    "/*": ["src/backend/printing/fonts/**"],
+  },
 };
 
 export default nextConfig;
