@@ -5,6 +5,7 @@ import {
   reprintOrderBillAction,
   updateOrderStatusAction,
 } from "@/app/admin/actions";
+import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 import { OrderBillPreview } from "@/components/admin/order-bill-preview";
 import { printStatusClass } from "@/components/admin/status-styles";
 import {
@@ -97,14 +98,22 @@ export function AdminOrderStatusCard({
             <form action={updateOrderStatusAction} key={next}>
               <input type="hidden" name="id" value={orderId} />
               <input type="hidden" name="status" value={next} />
-              <PendingSubmitButton
-                variant={next === "cancelled" ? "danger" : "primary"}
-                pendingLabel={t("admin.detail.updating")}
-              >
-              {actionLabel(next)}
-            </PendingSubmitButton>
-          </form>
-        ))}
+              {next === "cancelled" ? (
+                <ConfirmSubmitButton
+                  label={actionLabel(next)}
+                  title={t("admin.detail.cancelConfirmTitle")}
+                  body={t("admin.detail.cancelConfirmBody")}
+                  confirmLabel={t("admin.detail.cancelConfirm")}
+                  cancelLabel={t("admin.detail.cancelKeep")}
+                  pendingLabel={t("admin.detail.updating")}
+                />
+              ) : (
+                <PendingSubmitButton pendingLabel={t("admin.detail.updating")}>
+                  {actionLabel(next)}
+                </PendingSubmitButton>
+              )}
+            </form>
+          ))}
         </div>
       </div>
     </Card>

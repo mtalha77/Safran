@@ -432,6 +432,11 @@ export const messages = {
     "admin.detail.back": "← Zur Liste",
     "admin.detail.currentStatus": "Aktueller Status",
     "admin.detail.updating": "Wird aktualisiert…",
+    "admin.detail.cancelConfirmTitle": "Bestellung wirklich stornieren?",
+    "admin.detail.cancelConfirmBody":
+      "Die Bestellung wird als storniert markiert und der Gast sieht den neuen Status sofort. Das lässt sich nicht rückgängig machen.",
+    "admin.detail.cancelConfirm": "Ja, stornieren",
+    "admin.detail.cancelKeep": "Behalten",
     "admin.detail.billTitle": "Rechnung / Bon",
     "admin.detail.billDesc":
       "Vorschau zeigt genau das PDF, das an den Brother-Drucker geht.",
@@ -914,6 +919,11 @@ export const messages = {
     "admin.detail.back": "← Back to list",
     "admin.detail.currentStatus": "Current status",
     "admin.detail.updating": "Updating…",
+    "admin.detail.cancelConfirmTitle": "Cancel this order?",
+    "admin.detail.cancelConfirmBody":
+      "The order is marked as cancelled and the guest sees the new status right away. This cannot be undone.",
+    "admin.detail.cancelConfirm": "Yes, cancel order",
+    "admin.detail.cancelKeep": "Keep order",
     "admin.detail.billTitle": "Receipt / Kitchen ticket",
     "admin.detail.billDesc":
       "The preview is exactly the PDF that goes to the Brother printer.",
