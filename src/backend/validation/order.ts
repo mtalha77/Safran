@@ -151,6 +151,9 @@ export function parseOrderRequest(
     address: parsedAddress,
     notes: text(input.notes, 1000) || undefined,
     items,
+    // Cosmetic only (it picks the email language), so an unknown value falls
+    // back to German instead of rejecting the order.
+    locale: input.locale === "en" ? "en" : "de",
   };
 }
 

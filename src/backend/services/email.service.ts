@@ -3,15 +3,33 @@ import "server-only";
 import { Resend } from "resend";
 import type { OrderStatus } from "@/backend/domain/order-status";
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Neu",
-  confirmed: "Bestätigt",
-  preparing: "In Zubereitung",
-  ready: "Bereit",
-  out_for_delivery: "Unterwegs",
-  completed: "Abgeschlossen",
-  cancelled: "Storniert",
+export type EmailLocale = "de" | "en";
+
+const STATUS_LABELS: Record<EmailLocale, Record<string, string>> = {
+  de: {
+    pending: "Neu",
+    confirmed: "Bestätigt",
+    preparing: "In Zubereitung",
+    ready: "Bereit",
+    out_for_delivery: "Unterwegs",
+    completed: "Abgeschlossen",
+    cancelled: "Storniert",
+  },
+  en: {
+    pending: "New",
+    confirmed: "Confirmed",
+    preparing: "Being prepared",
+    ready: "Ready",
+    out_for_delivery: "On the way",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  },
 };
+
+/** Guests only ever see German or English; anything else means German. */
+function emailLocale(value: string | null | undefined): EmailLocale {
+  return value === "en" ? "en" : "de";
+}
 
 function siteUrl() {
   const explicit =
@@ -37,20 +55,25 @@ function getResend() {
   return new Resend(apiKey);
 }
 
-function money(value: number) {
-  return new Intl.NumberFormat("de-CH", {
+function money(value: number, locale: EmailLocale) {
+  return new Intl.NumberFormat(locale === "en" ? "en-CH" : "de-CH", {
     style: "currency",
     currency: "CHF",
   }).format(value);
 }
 
-function statusLabel(status: string) {
-  return STATUS_LABELS[status] ?? status;
+function statusLabel(status: string, locale: EmailLocale) {
+  return STATUS_LABELS[locale][status] ?? status;
 }
 
-function wrapHtml(title: string, body: string) {
+function wrapHtml(title: string, body: string, locale: EmailLocale) {
+  const contactLine =
+    locale === "en"
+      ? `If you have any questions, reach us on ${process.env.NEXT_PUBLIC_RESTAURANT_PHONE || "+41 71 244 55 33"} or ${process.env.NEXT_PUBLIC_RESTAURANT_EMAIL || "info@safran-solothurn.ch"}.`
+      : `Bei Fragen erreichen Sie uns unter ${process.env.NEXT_PUBLIC_RESTAURANT_PHONE || "+41 71 244 55 33"} oder ${process.env.NEXT_PUBLIC_RESTAURANT_EMAIL || "info@safran-solothurn.ch"}.`;
+
   return `<!DOCTYPE html>
-<html lang="de">
+<html lang="${locale === "en" ? "en" : "de"}">
 <head><meta charset="utf-8"/><title>${title}</title></head>
 <body style="margin:0;background:#f6f3ee;font-family:Georgia,'Times New Roman',serif;color:#2f0d29;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f6f3ee;padding:24px 12px;">
@@ -59,8 +82,7 @@ function wrapHtml(title: string, body: string) {
         <tr><td style="background:#2f0d29;padding:20px 24px;color:#f6f3ee;font-size:22px;">Safran Romanshorn</td></tr>
         <tr><td style="padding:28px 24px;font-size:16px;line-height:1.55;">${body}</td></tr>
         <tr><td style="padding:0 24px 28px;font-size:13px;color:#6b5b66;line-height:1.5;">
-          Bei Fragen erreichen Sie uns unter ${process.env.NEXT_PUBLIC_RESTAURANT_PHONE || "+41 71 244 55 33"}
-          oder ${process.env.NEXT_PUBLIC_RESTAURANT_EMAIL || "info@safran-solothurn.ch"}.
+          ${contactLine}
         </td></tr>
       </table>
     </td></tr>
@@ -77,6 +99,8 @@ export type OrderEmailContext = {
   fulfillmentType: "delivery" | "pickup";
   total: number;
   status: string;
+  /** Language the guest ordered in; defaults to German when unknown. */
+  locale?: string | null;
 };
 
 async function sendEmail(input: {
@@ -108,86 +132,136 @@ async function sendEmail(input: {
 }
 
 export async function sendOrderPlacedEmail(ctx: OrderEmailContext) {
+  const locale = emailLocale(ctx.locale);
   const trackUrl = `${siteUrl()}/bestellung/${ctx.confirmationToken}`;
-  const fulfillment =
-    ctx.fulfillmentType === "delivery" ? "Lieferung" : "Abholung";
-  const subject = `Bestellung #${ctx.orderNumber} erhalten — Safran`;
+  const amount = money(ctx.total, locale);
+  const copy =
+    locale === "en"
+      ? {
+          fulfillment: ctx.fulfillmentType === "delivery" ? "delivery" : "pickup",
+          subject: `Order #${ctx.orderNumber} received — Safran`,
+          greeting: `Hello ${ctx.customerName},`,
+          thanks: `thank you for your order #${ctx.orderNumber} (${ctx.fulfillmentType === "delivery" ? "delivery" : "pickup"}).`,
+          totalLabel: `Total: ${amount}`,
+          followLine: "You can follow the current status here at any time:",
+          button: "Track order",
+          fallbackLine: "If the button does not work:",
+          saveLine:
+            "Please save or bookmark this link, so you can find your order again after leaving the page.",
+          signOff: "Kind regards",
+        }
+      : {
+          fulfillment:
+            ctx.fulfillmentType === "delivery" ? "Lieferung" : "Abholung",
+          subject: `Bestellung #${ctx.orderNumber} erhalten — Safran`,
+          greeting: `Hallo ${ctx.customerName},`,
+          thanks: `vielen Dank für Ihre Bestellung #${ctx.orderNumber} (${ctx.fulfillmentType === "delivery" ? "Lieferung" : "Abholung"}).`,
+          totalLabel: `Total: ${amount}`,
+          followLine: "Den aktuellen Status können Sie jederzeit hier verfolgen:",
+          button: "Bestellung verfolgen",
+          fallbackLine: "Falls der Button nicht funktioniert:",
+          saveLine:
+            "Bitte speichern oder bookmarken Sie diesen Link — so finden Sie Ihre Bestellung auch wieder, wenn Sie die Seite verlassen.",
+          signOff: "Freundliche Grüsse",
+        };
+
   const text = [
-    `Hallo ${ctx.customerName},`,
+    copy.greeting,
     ``,
-    `vielen Dank für Ihre Bestellung #${ctx.orderNumber} (${fulfillment}).`,
-    `Total: ${money(ctx.total)}`,
+    copy.thanks,
+    copy.totalLabel,
     ``,
-    `Status und Fortschritt jederzeit hier verfolgen:`,
+    copy.followLine,
     trackUrl,
     ``,
-    `Bitte speichern oder bookmarken Sie diesen Link.`,
+    copy.saveLine,
     ``,
-    `Freundliche Grüsse`,
+    copy.signOff,
     `Safran Romanshorn`,
   ].join("\n");
 
   const html = wrapHtml(
-    subject,
+    copy.subject,
     `
-      <p>Hallo ${escapeHtml(ctx.customerName)},</p>
-      <p>vielen Dank für Ihre Bestellung <strong>#${escapeHtml(ctx.orderNumber)}</strong> (${escapeHtml(fulfillment)}).</p>
-      <p style="font-size:18px;margin:18px 0;"><strong>Total: ${escapeHtml(money(ctx.total))}</strong></p>
-      <p>Den aktuellen Status können Sie jederzeit hier verfolgen:</p>
+      <p>${escapeHtml(copy.greeting)}</p>
+      <p>${escapeHtml(copy.thanks)}</p>
+      <p style="font-size:18px;margin:18px 0;"><strong>${escapeHtml(copy.totalLabel)}</strong></p>
+      <p>${escapeHtml(copy.followLine)}</p>
       <p style="margin:22px 0;">
         <a href="${escapeAttr(trackUrl)}" style="display:inline-block;background:#1a6b33;color:#fff;text-decoration:none;padding:12px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;">
-          Bestellung verfolgen
+          ${escapeHtml(copy.button)}
         </a>
       </p>
-      <p style="font-size:13px;color:#6b5b66;">Falls der Button nicht funktioniert:<br/>
+      <p style="font-size:13px;color:#6b5b66;">${escapeHtml(copy.fallbackLine)}<br/>
         <a href="${escapeAttr(trackUrl)}" style="color:#1a6b33;word-break:break-all;">${escapeHtml(trackUrl)}</a>
       </p>
-      <p>Bitte speichern oder bookmarken Sie diesen Link — so finden Sie Ihre Bestellung auch wieder, wenn Sie die Seite verlassen.</p>
-      <p>Freundliche Grüsse<br/>Safran Romanshorn</p>
+      <p>${escapeHtml(copy.saveLine)}</p>
+      <p>${escapeHtml(copy.signOff)}<br/>Safran Romanshorn</p>
     `,
+    locale,
   );
 
-  return sendEmail({ to: ctx.to, subject, html, text });
+  return sendEmail({ to: ctx.to, subject: copy.subject, html, text });
 }
 
 export async function sendOrderStatusEmail(
   ctx: OrderEmailContext & { status: OrderStatus | string },
 ) {
+  const locale = emailLocale(ctx.locale);
   const trackUrl = `${siteUrl()}/bestellung/${ctx.confirmationToken}`;
-  const label = statusLabel(ctx.status);
-  const subject = `Bestellung #${ctx.orderNumber}: ${label} — Safran`;
+  const label = statusLabel(ctx.status, locale);
+  const copy =
+    locale === "en"
+      ? {
+          subject: `Order #${ctx.orderNumber}: ${label} — Safran`,
+          greeting: `Hello ${ctx.customerName},`,
+          intro: `the status of your order #${ctx.orderNumber} has been updated:`,
+          detailsLine: "Details and progress:",
+          button: "View status",
+          signOff: "Kind regards",
+        }
+      : {
+          subject: `Bestellung #${ctx.orderNumber}: ${label} — Safran`,
+          greeting: `Hallo ${ctx.customerName},`,
+          intro: `der Status Ihrer Bestellung #${ctx.orderNumber} wurde aktualisiert:`,
+          detailsLine: "Details und Fortschritt:",
+          button: "Status ansehen",
+          signOff: "Freundliche Grüsse",
+        };
+
   const text = [
-    `Hallo ${ctx.customerName},`,
+    copy.greeting,
     ``,
-    `der Status Ihrer Bestellung #${ctx.orderNumber} wurde aktualisiert:`,
+    copy.intro,
     label,
     ``,
-    `Details und Fortschritt:`,
+    copy.detailsLine,
     trackUrl,
     ``,
-    `Freundliche Grüsse`,
+    copy.signOff,
     `Safran Romanshorn`,
   ].join("\n");
 
   const html = wrapHtml(
-    subject,
+    copy.subject,
     `
-      <p>Hallo ${escapeHtml(ctx.customerName)},</p>
-      <p>der Status Ihrer Bestellung <strong>#${escapeHtml(ctx.orderNumber)}</strong> wurde aktualisiert:</p>
+      <p>${escapeHtml(copy.greeting)}</p>
+      <p>${escapeHtml(copy.intro)}</p>
       <p style="font-size:20px;margin:18px 0;"><strong>${escapeHtml(label)}</strong></p>
       <p style="margin:22px 0;">
         <a href="${escapeAttr(trackUrl)}" style="display:inline-block;background:#1a6b33;color:#fff;text-decoration:none;padding:12px 20px;border-radius:999px;font-family:Arial,sans-serif;font-size:14px;font-weight:700;">
-          Status ansehen
+          ${escapeHtml(copy.button)}
         </a>
       </p>
       <p style="font-size:13px;color:#6b5b66;word-break:break-all;">
         <a href="${escapeAttr(trackUrl)}" style="color:#1a6b33;">${escapeHtml(trackUrl)}</a>
       </p>
-      <p>Freundliche Grüsse<br/>Safran Romanshorn</p>
+      <p>${escapeHtml(copy.signOff)}<br/>Safran Romanshorn</p>
     `,
+    locale,
   );
 
-  return sendEmail({ to: ctx.to, subject, html, text });
+  return sendEmail({ to: ctx.to, subject: copy.subject, html, text });
 }
 
 function escapeHtml(value: string) {

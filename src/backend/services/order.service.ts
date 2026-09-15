@@ -205,6 +205,7 @@ export async function createCashOrder(
         }
       : null,
     customer_notes: request.notes ?? null,
+    locale: request.locale,
     subtotal: totals.subtotal,
     delivery_fee: totals.deliveryFee,
     total: totals.total,
@@ -249,6 +250,7 @@ export async function createCashOrder(
     fulfillmentType: request.fulfillment,
     total: money(result.order.total),
     status: result.order.status,
+    locale: request.locale,
   }).catch((error) => {
     console.error("[email] order placed failed", error);
   });
@@ -405,6 +407,7 @@ async function notifyStatusEmail(
       order.fulfillment_type === "pickup" ? "pickup" : "delivery",
     total: money(order.total),
     status,
+    locale: order.locale,
   });
 }
 

@@ -150,6 +150,8 @@ export type Order = {
   delivery_address: Json | null;
   customer_notes: string | null;
   customer_note: string | null;
+  /** Language the guest ordered in; drives confirmation email wording. */
+  locale: "de" | "en";
   requested_for: string | null;
   created_at: string;
   updated_at: string;
@@ -333,6 +335,7 @@ export interface Database {
           city?: string | null;
           delivery_address?: Json | null;
           customer_notes?: string | null;
+          locale?: "de" | "en";
           requested_for?: string | null;
           created_at?: string;
           updated_at?: string;

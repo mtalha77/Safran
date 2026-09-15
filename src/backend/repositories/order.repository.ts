@@ -241,7 +241,20 @@ export async function insertOrder(
     };
   }
 
-  const inserted = await db.from("orders").insert(order).select("id").single();
+  let inserted = await db.from("orders").insert(order).select("id").single();
+
+  // Direct-insert fallback only: if the deployment is ahead of the `locale`
+  // migration, drop the column and keep the order rather than losing the sale.
+  if (inserted.error && /locale/i.test(inserted.error.message)) {
+    const withoutLocale: Record<string, unknown> = { ...order };
+    delete withoutLocale.locale;
+    inserted = await db
+      .from("orders")
+      .insert(withoutLocale as NewOrderRow)
+      .select("id")
+      .single();
+  }
+
   if (inserted.error) {
     const raced = await findByIdempotencyKey(db, String(order.idempotency_key));
     if (raced.data?.id) {

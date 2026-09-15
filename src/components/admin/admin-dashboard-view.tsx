@@ -238,12 +238,12 @@ export function AdminDashboardView({
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <KpiCard
-          label={t("admin.dash.new")}
-          value={kpis.pending}
-          hint={t("admin.dash.awaiting")}
-          href="/admin/orders?status=pending"
+          label={t("admin.dash.completed")}
+          value={kpis.completed}
+          hint={t("admin.dash.completedHint")}
+          href="/admin/orders?status=completed"
           icon={
-            <IconWrap className="bg-slate-100 text-slate-600">
+            <IconWrap className="bg-emerald-50 text-emerald-700">
               <svg
                 viewBox="0 0 24 24"
                 className="h-5 w-5"
@@ -252,7 +252,7 @@ export function AdminDashboardView({
                 strokeWidth="1.8"
               >
                 <path
-                  d="M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"
+                  d="m8.5 12.5 2.5 2.5 4.5-5M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />

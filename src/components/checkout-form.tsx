@@ -226,6 +226,8 @@ export function CheckoutForm({
           idempotencyKey: key,
           fulfillment,
           paymentMethod: "cash",
+          // Confirmation and status emails are written in this language.
+          locale,
           acceptedNoCancellation: acceptedPolicy,
           customer: {
             firstName: formData.get("firstName"),

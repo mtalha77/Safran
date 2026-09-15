@@ -26,17 +26,26 @@ describe("order lifecycle", () => {
     assert.equal(canTransition("completed", "preparing"), false);
   });
 
-  it("treats completed and cancelled as terminal", () => {
+  it("treats cancelled as terminal", () => {
     for (const status of ORDER_STATUSES) {
-      assert.equal(canTransition("completed", status), false);
       assert.equal(canTransition("cancelled", status), false);
     }
   });
 
-  it("stops accepting cancellations once the order has left the kitchen", () => {
+  it("closes a completed order to everything but a cancellation", () => {
+    // Staff must still be able to cancel after handover (wrong order, refund).
+    assert.equal(canTransition("completed", "cancelled"), true);
+    for (const status of ORDER_STATUSES) {
+      if (status === "cancelled") continue;
+      assert.equal(canTransition("completed", status), false);
+    }
+  });
+
+  it("accepts a cancellation at every stage of the flow", () => {
+    assert.equal(canTransition("pending", "cancelled"), true);
     assert.equal(canTransition("preparing", "cancelled"), true);
-    assert.equal(canTransition("ready", "cancelled"), false);
-    assert.equal(canTransition("out_for_delivery", "cancelled"), false);
+    assert.equal(canTransition("ready", "cancelled"), true);
+    assert.equal(canTransition("out_for_delivery", "cancelled"), true);
   });
 
   it("rejects values that are not statuses at all", () => {
@@ -74,10 +83,12 @@ describe("order lifecycle", () => {
   it("offers staff the kitchen steps and admins the handover as well", () => {
     assert.deepEqual(allowedTransitionsFor("restaurant_staff", "ready"), [
       "completed",
+      "cancelled",
     ]);
     assert.deepEqual(allowedTransitionsFor("restaurant_admin", "ready"), [
       "out_for_delivery",
       "completed",
+      "cancelled",
     ]);
   });
 });

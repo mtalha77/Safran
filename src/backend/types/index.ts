@@ -42,6 +42,8 @@ export type OrderRequest = {
   address?: DeliveryAddress;
   notes?: string;
   items: CartLineInput[];
+  /** Language the guest checked out in; drives the confirmation emails. */
+  locale: "de" | "en";
 };
 
 export type CreatedOrder = {
