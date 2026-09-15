@@ -7,13 +7,14 @@ import { useLocale } from "@/lib/i18n/locale-context";
 
 function ToggleButton({ open }: { open: boolean }) {
   const { pending } = useFormStatus();
+  const { t } = useLocale();
 
   return (
     <button
       type="submit"
       disabled={pending}
       aria-pressed={!open}
-      aria-label={open ? "Restaurant schliessen" : "Restaurant öffnen"}
+      aria-label={open ? t("admin.storeClose") : t("admin.storeOpenAction")}
       className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:opacity-60 ${
         open ? "bg-emerald-500" : "bg-red-500"
       }`}

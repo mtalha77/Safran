@@ -26,9 +26,26 @@ export const messages = {
     "admin.nav.menu": "Speisekarte",
     "admin.nav.discounts": "Rabatte",
     "admin.nav.settings": "Einstellungen",
+    "admin.nav.label": "Admin-Navigation",
+    "admin.nav.open": "Menü öffnen",
+    "admin.nav.close": "Menü schliessen",
     "admin.logout": "Abmelden",
     "admin.storeOpen": "Bestellungen offen",
     "admin.storeClosed": "Bestellungen zu",
+    "admin.storeOpenAction": "Restaurant öffnen",
+    "admin.storeClose": "Restaurant schliessen",
+    "admin.login.eyebrow": "Administration",
+    "admin.login.title": "Willkommen zurück",
+    "admin.login.desc": "Melde dich mit deinem freigeschalteten Admin-Konto an.",
+    "admin.login.email": "E-Mail",
+    "admin.login.password": "Passwort",
+    "admin.login.submit": "Sicher anmelden",
+    "admin.login.submitting": "Anmeldung läuft…",
+    "admin.login.footnote": "Zugriff nur für autorisierte Mitarbeitende.",
+    "admin.setup.eyebrow": "Einrichtung erforderlich",
+    "admin.setup.title": "Admin-Verbindung ist noch nicht konfiguriert",
+    "admin.setup.desc":
+      "Hinterlege die Supabase-Umgebungsvariablen und stelle die Server- und Browser-Clients bereit. Danach ist dieser Bereich automatisch verfügbar.",
 
     "hero.eyebrow": "Indische Küche in Romanshorn",
     "hero.title1": "Lust auf Desi Food?",
@@ -333,6 +350,7 @@ export const messages = {
     "admin.menu.save": "Speichern",
 
     "admin.common.saving": "Wird gespeichert…",
+    "admin.common.loading": "Seite wird geladen",
 
     "admin.msg.storeOpen": "Das Restaurant nimmt wieder Bestellungen an.",
     "admin.msg.storeClosed": "Das Restaurant ist jetzt geschlossen.",
@@ -375,6 +393,78 @@ export const messages = {
     "admin.err.fee_invalid": "Die Liefergebühr darf nicht negativ sein.",
     "admin.err.notice_invalid":
       "Die Vorlaufzeit muss zwischen 0 und 600 Minuten liegen.",
+    "admin.err.login_failed": "Anmeldung fehlgeschlagen.",
+    "admin.err.credentials_required": "Bitte E-Mail und Passwort eingeben.",
+    "admin.err.unauthenticated":
+      "Anmeldung fehlgeschlagen. Bitte Zugangsdaten prüfen.",
+    "admin.err.forbidden": "Für dieses Konto fehlt die Admin-Berechtigung.",
+    "admin.err.category_name_required": "Der Kategoriename ist erforderlich.",
+    "admin.err.category_id_invalid":
+      "Aus diesem Namen lässt sich keine Kategorie-ID bilden.",
+    "admin.err.category_id_required": "Die Kategorie ist erforderlich.",
+    "admin.err.category_not_empty":
+      "Die Kategorie enthält noch Gerichte und kann nicht gelöscht werden.",
+    "admin.err.category_create_failed":
+      "Die Kategorie konnte nicht erstellt werden.",
+    "admin.err.category_update_failed":
+      "Die Kategorie konnte nicht gespeichert werden.",
+    "admin.err.category_delete_failed":
+      "Die Kategorie konnte nicht gelöscht werden.",
+    "admin.err.category_check_failed":
+      "Die Kategorie konnte nicht geprüft werden.",
+    "admin.err.category_sort_failed":
+      "Die Reihenfolge der Kategorien konnte nicht gespeichert werden.",
+    "admin.err.item_name_required": "Der Name des Gerichts ist erforderlich.",
+    "admin.err.item_number_invalid":
+      "Die Artikelnummer muss eine positive Zahl sein.",
+    "admin.err.item_price_invalid": "Der Preis muss 0 oder höher sein.",
+    "admin.err.item_id_invalid": "Das Gericht wurde nicht gefunden.",
+    "admin.err.item_create_failed": "Das Gericht konnte nicht erstellt werden.",
+    "admin.err.item_update_failed": "Das Gericht konnte nicht gespeichert werden.",
+    "admin.err.item_delete_failed": "Das Gericht konnte nicht gelöscht werden.",
+    "admin.err.item_sort_failed":
+      "Die Reihenfolge der Gerichte konnte nicht gespeichert werden.",
+    "admin.err.item_availability_failed":
+      "Die Verfügbarkeit konnte nicht geändert werden.",
+    "admin.err.item_image_failed":
+      "Das Bild konnte dem Gericht nicht zugewiesen werden.",
+    "admin.err.sort_empty": "Es wurde keine Reihenfolge übermittelt.",
+    "admin.err.image_required": "Bitte ein Bild auswählen.",
+    "admin.err.image_type_invalid":
+      "Erlaubt sind JPEG-, PNG-, WebP- oder AVIF-Bilder.",
+    "admin.err.image_too_large": "Das Bild darf höchstens 5 MB gross sein.",
+    "admin.err.image_upload_failed": "Das Bild konnte nicht hochgeladen werden.",
+    "admin.err.audio_type_invalid": "Erlaubt sind MP3-, WAV- oder OGG-Dateien.",
+    "admin.err.audio_too_large": "Die Audiodatei ist zu gross.",
+    "admin.err.invalid_email": "Bitte eine gültige E-Mail angeben.",
+    "admin.err.invalid_email_domain":
+      "Zu dieser E-Mail-Domain existiert kein Mailserver.",
+    "admin.err.time_invalid": "Bitte Zeiten als HH:MM angeben.",
+    "admin.err.hours_invalid":
+      "Öffnungszeiten müssen ein gültiges Start- und Endzeitpaar bilden.",
+    "admin.err.weekday_invalid": "Ungültiger Wochentag.",
+    "admin.err.settings_save_failed":
+      "Die Einstellungen konnten nicht gespeichert werden.",
+    "admin.err.hours_save_failed":
+      "Die Öffnungszeiten konnten nicht gespeichert werden.",
+    "admin.err.store_toggle_failed":
+      "Die Bestellannahme konnte nicht umgestellt werden.",
+    "admin.err.order_alert_read_failed":
+      "Die Alarmeinstellungen konnten nicht geladen werden.",
+    "admin.err.order_alert_save_failed":
+      "Die Alarmeinstellungen konnten nicht gespeichert werden.",
+    "admin.err.order_alert_upload_failed":
+      "Der Alarmton konnte nicht hochgeladen werden.",
+    "admin.err.order_not_found": "Die Bestellung wurde nicht gefunden.",
+    "admin.err.orders_read_failed":
+      "Die Bestellungen konnten nicht geladen werden.",
+    "admin.err.invalid_status": "Unbekannter Bestellstatus.",
+    "admin.err.status_changed":
+      "Der Status wurde zwischenzeitlich geändert. Bitte Seite neu laden.",
+    "admin.err.status_update_failed":
+      "Der Bestellstatus konnte nicht aktualisiert werden.",
+    "admin.err.print_enqueue_failed":
+      "Der Druckauftrag konnte nicht erstellt werden.",
 
     "admin.settings.eyebrow": "Konfiguration",
     "admin.settings.title": "Einstellungen",
@@ -519,9 +609,26 @@ export const messages = {
     "admin.nav.menu": "Menu",
     "admin.nav.discounts": "Discounts",
     "admin.nav.settings": "Settings",
+    "admin.nav.label": "Admin navigation",
+    "admin.nav.open": "Open menu",
+    "admin.nav.close": "Close menu",
     "admin.logout": "Log out",
     "admin.storeOpen": "Orders open",
     "admin.storeClosed": "Orders closed",
+    "admin.storeOpenAction": "Open the restaurant",
+    "admin.storeClose": "Close the restaurant",
+    "admin.login.eyebrow": "Administration",
+    "admin.login.title": "Welcome back",
+    "admin.login.desc": "Sign in with your approved admin account.",
+    "admin.login.email": "Email",
+    "admin.login.password": "Password",
+    "admin.login.submit": "Sign in securely",
+    "admin.login.submitting": "Signing in…",
+    "admin.login.footnote": "Access for authorised staff only.",
+    "admin.setup.eyebrow": "Setup required",
+    "admin.setup.title": "The admin connection is not configured yet",
+    "admin.setup.desc":
+      "Add the Supabase environment variables and provide the server and browser clients. This area becomes available automatically afterwards.",
 
     "hero.eyebrow": "Indian cuisine in Romanshorn",
     "hero.title1": "Craving Desi Food?",
@@ -823,6 +930,7 @@ export const messages = {
     "admin.menu.save": "Save",
 
     "admin.common.saving": "Saving…",
+    "admin.common.loading": "Loading page",
 
     "admin.msg.storeOpen": "The restaurant is accepting orders again.",
     "admin.msg.storeClosed": "The restaurant is now closed.",
@@ -862,6 +970,57 @@ export const messages = {
     "admin.err.minimum_invalid": "Order minimums cannot be negative.",
     "admin.err.fee_invalid": "The delivery fee cannot be negative.",
     "admin.err.notice_invalid": "Lead time must be between 0 and 600 minutes.",
+    "admin.err.login_failed": "Sign-in failed.",
+    "admin.err.credentials_required": "Please enter your email and password.",
+    "admin.err.unauthenticated": "Sign-in failed. Please check your credentials.",
+    "admin.err.forbidden": "This account does not have admin access.",
+    "admin.err.category_name_required": "The category name is required.",
+    "admin.err.category_id_invalid": "This name cannot be turned into a category ID.",
+    "admin.err.category_id_required": "The category is required.",
+    "admin.err.category_not_empty":
+      "The category still contains dishes and cannot be deleted.",
+    "admin.err.category_create_failed": "The category could not be created.",
+    "admin.err.category_update_failed": "The category could not be saved.",
+    "admin.err.category_delete_failed": "The category could not be deleted.",
+    "admin.err.category_check_failed": "The category could not be checked.",
+    "admin.err.category_sort_failed": "The category order could not be saved.",
+    "admin.err.item_name_required": "The dish name is required.",
+    "admin.err.item_number_invalid": "The item number must be a positive number.",
+    "admin.err.item_price_invalid": "The price must be 0 or higher.",
+    "admin.err.item_id_invalid": "The dish could not be found.",
+    "admin.err.item_create_failed": "The dish could not be created.",
+    "admin.err.item_update_failed": "The dish could not be saved.",
+    "admin.err.item_delete_failed": "The dish could not be deleted.",
+    "admin.err.item_sort_failed": "The dish order could not be saved.",
+    "admin.err.item_availability_failed": "Availability could not be changed.",
+    "admin.err.item_image_failed": "The image could not be linked to the dish.",
+    "admin.err.sort_empty": "No order was submitted.",
+    "admin.err.image_required": "Please choose an image.",
+    "admin.err.image_type_invalid": "Allowed formats are JPEG, PNG, WebP, or AVIF.",
+    "admin.err.image_too_large": "The image may be at most 5 MB.",
+    "admin.err.image_upload_failed": "The image could not be uploaded.",
+    "admin.err.audio_type_invalid": "Allowed formats are MP3, WAV, or OGG.",
+    "admin.err.audio_too_large": "The audio file is too large.",
+    "admin.err.invalid_email": "Please enter a valid email address.",
+    "admin.err.invalid_email_domain":
+      "This email domain has no mail server.",
+    "admin.err.time_invalid": "Please enter times as HH:MM.",
+    "admin.err.hours_invalid":
+      "Opening hours need a valid start and end time pair.",
+    "admin.err.weekday_invalid": "Invalid weekday.",
+    "admin.err.settings_save_failed": "The settings could not be saved.",
+    "admin.err.hours_save_failed": "The opening hours could not be saved.",
+    "admin.err.store_toggle_failed": "Order acceptance could not be switched.",
+    "admin.err.order_alert_read_failed": "The alert settings could not be loaded.",
+    "admin.err.order_alert_save_failed": "The alert settings could not be saved.",
+    "admin.err.order_alert_upload_failed": "The alert sound could not be uploaded.",
+    "admin.err.order_not_found": "The order could not be found.",
+    "admin.err.orders_read_failed": "The orders could not be loaded.",
+    "admin.err.invalid_status": "Unknown order status.",
+    "admin.err.status_changed":
+      "The status changed in the meantime. Please reload the page.",
+    "admin.err.status_update_failed": "The order status could not be updated.",
+    "admin.err.print_enqueue_failed": "The print job could not be created.",
 
     "admin.settings.eyebrow": "Configuration",
     "admin.settings.title": "Settings",

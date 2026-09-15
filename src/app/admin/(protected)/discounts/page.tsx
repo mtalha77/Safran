@@ -16,7 +16,11 @@ export default async function DiscountsAdminPage({ searchParams }: DiscountsPage
       message={params.message}
       error={params.error ?? error ?? undefined}
       categories={(categories ?? [])
-        .map((category) => ({ id: category.id, title: category.title }))
+        .map((category) => ({
+          id: category.id,
+          title: category.title,
+          subtitle: category.subtitle ?? null,
+        }))
         .filter((category) => Boolean(category.id))}
       items={(items ?? []).map((item) => ({
         id: item.id,

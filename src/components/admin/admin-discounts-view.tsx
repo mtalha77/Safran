@@ -5,15 +5,21 @@ import {
   applyMenuDiscountAction,
   clearMenuDiscountAction,
 } from "@/app/admin/actions";
+import { useAdminFormat } from "@/components/admin/format";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { Card, EmptyState, Notice, PageHeader, fieldClass } from "@/components/admin/ui";
 import { useLocale } from "@/lib/i18n/locale-context";
+import {
+  localizedCategoryTitle,
+  localizedDishName,
+} from "@/lib/i18n/menu-text";
 
 const MAX_PERCENT = 99;
 
 export type AdminDiscountCategory = {
   id: number | string;
   title: string;
+  subtitle?: string | null;
 };
 
 export type AdminDiscountItem = {
@@ -33,13 +39,6 @@ type AdminDiscountsViewProps = {
   items: AdminDiscountItem[];
 };
 
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(Number.isFinite(value) ? value : 0);
-}
-
 /** Mirrors `discountedPrice` on the server so the preview matches the charge. */
 function salePrice(price: number, percent: number) {
   const reduced = price * (1 - Math.min(Math.max(percent, 0), MAX_PERCENT) / 100);
@@ -56,7 +55,9 @@ export function AdminDiscountsView({
   categories,
   items,
 }: AdminDiscountsViewProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const { formatMoney } = useAdminFormat();
+  const dishName = (name: string) => localizedDishName(name, locale);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [percentInput, setPercentInput] = useState("10");
   const [query, setQuery] = useState("");
@@ -208,7 +209,11 @@ export function AdminDiscountsView({
                 <Card key={String(category.id)}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="font-sans text-xl font-semibold tracking-tight">
-                      {category.title}
+                      {localizedCategoryTitle(
+                        category.title,
+                        category.subtitle,
+                        locale,
+                      )}
                     </h2>
                     <label className="flex items-center gap-2 text-sm font-semibold text-sage-deep">
                       <input
@@ -242,7 +247,7 @@ export function AdminDiscountsView({
                               {String(item.item_number).padStart(2, "0")}.
                             </span>
                             <span className="min-w-0 flex-1 text-sm font-medium text-ink">
-                              {item.name}
+                              {dishName(item.name)}
                               {!item.is_active ? (
                                 <span className="ml-2 rounded-full bg-ink/8 px-2 py-0.5 text-[11px] font-semibold text-muted">
                                   {t("admin.discounts.hidden")}

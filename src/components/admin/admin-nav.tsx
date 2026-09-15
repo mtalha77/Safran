@@ -44,7 +44,7 @@ export function AdminNav({
   const { t } = useLocale();
 
   return (
-    <nav className="space-y-1 p-3" aria-label="Admin-Navigation">
+    <nav className="space-y-1 p-3" aria-label={t("admin.nav.label")}>
       {navigation.map((item) => {
         const active =
           item.href === "/admin"

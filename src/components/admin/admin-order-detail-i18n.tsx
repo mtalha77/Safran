@@ -6,6 +6,7 @@ import {
   updateOrderStatusAction,
 } from "@/app/admin/actions";
 import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
+import { useAdminFormat } from "@/components/admin/format";
 import { OrderBillPreview } from "@/components/admin/order-bill-preview";
 import { printStatusClass } from "@/components/admin/status-styles";
 import {
@@ -20,25 +21,7 @@ import {
 } from "@/components/admin/ui";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
 import { useLocale } from "@/lib/i18n/locale-context";
-
-function formatDate(value: string | null | undefined, locale: string) {
-  if (!value) return "–";
-  return new Intl.DateTimeFormat(locale === "en" ? "en-CH" : "de-CH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function formatMoney(
-  value: number | string | null | undefined,
-  locale: string,
-) {
-  const amount = typeof value === "string" ? Number(value) : (value ?? 0);
-  return new Intl.NumberFormat(locale === "en" ? "en-CH" : "de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
+import { localizedDishName } from "@/lib/i18n/menu-text";
 
 const labelClass = "text-xs uppercase tracking-wider text-muted";
 
@@ -51,7 +34,8 @@ export function AdminOrderDetailHeader({
   orderNumber: string | number | null | undefined;
   createdAt: string | null | undefined;
 }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
+  const { formatDateTime } = useAdminFormat();
   const n = orderNumber ?? String(id).slice(0, 8);
 
   return (
@@ -59,7 +43,7 @@ export function AdminOrderDetailHeader({
       eyebrow={t("admin.detail.eyebrow")}
       title={t("admin.detail.title", { n })}
       description={t("admin.detail.received", {
-        date: formatDate(createdAt, locale),
+        date: formatDateTime(createdAt),
       })}
       action={
         <Link href="/admin/orders" className={secondaryButtonClass}>
@@ -136,7 +120,8 @@ export function AdminOrderBillCard({
   orderId: string;
   printJob: PrintJobSummary | null;
 }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
+  const { formatDateTime } = useAdminFormat();
   const printStatusLabel = usePrintStatusLabel();
 
   return (
@@ -195,14 +180,14 @@ export function AdminOrderBillCard({
         </div>
         <div>
           <dt className={labelClass}>{t("admin.detail.lastPrinted")}</dt>
-          <dd className="mt-1">{formatDate(printJob?.printed_at, locale)}</dd>
+          <dd className="mt-1">{formatDateTime(printJob?.printed_at)}</dd>
         </div>
         <div>
           <dt className={labelClass}>{t("admin.detail.nextAttempt")}</dt>
           <dd className="mt-1">
             {printJob &&
             (printJob.status === "pending" || printJob.status === "failed")
-              ? formatDate(printJob.next_attempt_at, locale)
+              ? formatDateTime(printJob.next_attempt_at)
               : "–"}
           </dd>
         </div>
@@ -239,7 +224,7 @@ export function AdminOrderItemsCard({
   total: number | string | null;
 }) {
   const { t, locale } = useLocale();
-  const money = (value: number | string | null) => formatMoney(value, locale);
+  const { formatMoney: money } = useAdminFormat();
 
   return (
     <Card>
@@ -254,7 +239,9 @@ export function AdminOrderItemsCard({
           >
             <span className="font-bold text-sage-deep">{item.quantity}×</span>
             <div>
-              <p className="font-semibold">{item.name}</p>
+              <p className="font-semibold">
+                {localizedDishName(item.name, locale)}
+              </p>
               {item.notes ? (
                 <p className="mt-1 text-xs text-muted">{item.notes}</p>
               ) : null}

@@ -104,7 +104,9 @@ export function AdminShell({
               <button
                 type="button"
                 className="flex h-8 w-8 items-center justify-center rounded-lg text-ink transition hover:bg-ink/5 lg:hidden"
-                aria-label={mobileOpen ? "Menü schliessen" : "Menü öffnen"}
+                aria-label={
+                  mobileOpen ? t("admin.nav.close") : t("admin.nav.open")
+                }
                 onClick={() => setMobileOpen((value) => !value)}
               >
                 <SidebarPanelIcon />
@@ -156,7 +158,7 @@ export function AdminShell({
             <button
               type="button"
               className="absolute inset-0 bg-ink/50"
-              aria-label="Menü schliessen"
+              aria-label={t("admin.nav.close")}
               onClick={() => setMobileOpen(false)}
             />
             <aside className="absolute inset-y-0 left-0 flex w-[min(100%,18rem)] flex-col bg-ink text-white shadow-xl">
@@ -171,7 +173,7 @@ export function AdminShell({
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  aria-label="Menü schliessen"
+                  aria-label={t("admin.nav.close")}
                   className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-cream"
                 >
                   ✕
@@ -290,18 +292,19 @@ export function Notice({
 }
 
 export function SetupState() {
+  const { t } = useLocale();
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-36">
       <Card>
         <p className="text-xs font-bold tracking-[0.2em] text-sage-deep uppercase">
-          Einrichtung erforderlich
+          {t("admin.setup.eyebrow")}
         </p>
         <h1 className="mt-2 font-sans text-3xl font-semibold tracking-tight">
-          Admin-Verbindung ist noch nicht konfiguriert
+          {t("admin.setup.title")}
         </h1>
         <p className="mt-3 text-sm leading-6 text-muted">
-          Hinterlege die Supabase-Umgebungsvariablen und stelle die Server- und
-          Browser-Clients bereit. Danach ist dieser Bereich automatisch verfügbar.
+          {t("admin.setup.desc")}
         </p>
         <div className="mt-5 rounded-xl bg-ink p-4 font-mono text-xs leading-6 text-cream">
           NEXT_PUBLIC_SUPABASE_URL

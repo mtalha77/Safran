@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { DashboardRangeFilter } from "@/components/admin/dashboard-range-filter";
+import { useAdminFormat } from "@/components/admin/format";
 import { OrderStatusBadge } from "@/components/admin/t";
 import {
   Card,
@@ -35,33 +36,6 @@ export type DashboardKpis = {
   outForDelivery: number;
   completed: number;
 };
-
-function formatMoney(value: number | string | null | undefined) {
-  const amount = typeof value === "string" ? Number(value) : (value ?? 0);
-  return new Intl.NumberFormat("de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
-
-function formatDate(value: string | null | undefined) {
-  if (!value) return "–";
-  return new Intl.DateTimeFormat("de-CH", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function formatRange(range: { from: string; to: string }, locale: string) {
-  const formatter = new Intl.DateTimeFormat(
-    locale === "en" ? "en-GB" : "de-CH",
-    { dateStyle: "medium" },
-  );
-  const day = (key: string) => formatter.format(new Date(`${key}T12:00:00Z`));
-  return range.from === range.to
-    ? day(range.from)
-    : `${day(range.from)} – ${day(range.to)}`;
-}
 
 function IconWrap({
   children,
@@ -131,11 +105,16 @@ export function AdminDashboardView({
   message?: string;
   error?: string;
 }) {
-  const { t, locale } = useLocale();
+  const { t } = useLocale();
+  const { formatMoney, formatDateTime, formatDate } = useAdminFormat();
   const rangeRevenue = kpis.cashRevenue + kpis.onlineRevenue;
   const avgOrder =
     kpis.transactions > 0 ? rangeRevenue / kpis.transactions : 0;
-  const rangeLabel = formatRange(range, locale);
+  const day = (key: string) => formatDate(`${key}T12:00:00Z`);
+  const rangeLabel =
+    range.from === range.to
+      ? day(range.from)
+      : `${day(range.from)} – ${day(range.to)}`;
 
   const paidTotal = kpis.cashRevenue + kpis.onlineRevenue;
   const cashPct = paidTotal > 0 ? (kpis.cashRevenue / paidTotal) * 100 : 0;
@@ -406,7 +385,7 @@ export function AdminDashboardView({
                       {order.customer_name ?? t("admin.dash.guest")}
                     </td>
                     <td className="py-3.5 text-muted">
-                      {formatDate(order.created_at)}
+                      {formatDateTime(order.created_at)}
                     </td>
                     <td className="py-3.5">
                       <OrderStatusBadge status={order.status} />

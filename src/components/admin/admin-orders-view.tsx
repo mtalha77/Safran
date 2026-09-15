@@ -6,6 +6,7 @@ import {
   OrderStatusBadge,
   usePrintStatusLabel,
 } from "@/components/admin/t";
+import { useAdminFormat } from "@/components/admin/format";
 import { printStatusClass } from "@/components/admin/status-styles";
 import {
   Card,
@@ -29,21 +30,6 @@ export type OrdersListItem = {
 
 type PrintJob = { status: string } | undefined;
 
-function formatMoney(value: number | string | null | undefined) {
-  const amount = typeof value === "string" ? Number(value) : (value ?? 0);
-  return new Intl.NumberFormat("de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("de-CH", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
 export function AdminOrdersView({
   orders,
   count,
@@ -66,6 +52,7 @@ export function AdminOrdersView({
   printJobsByOrderId: Record<string, PrintJob>;
 }) {
   const { t } = useLocale();
+  const { formatMoney, formatDateTime } = useAdminFormat();
   const printLabel = usePrintStatusLabel();
   const query = { ...(q ? { q } : {}), ...(status ? { status } : {}) };
 
@@ -121,7 +108,7 @@ export function AdminOrdersView({
                           : t("admin.orders.pickup")}
                       </td>
                       <td className="py-4 text-muted">
-                        {formatDate(order.created_at)}
+                        {formatDateTime(order.created_at)}
                       </td>
                       <td className="py-4">
                         <OrderStatusBadge status={order.status} />

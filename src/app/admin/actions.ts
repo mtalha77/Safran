@@ -80,7 +80,7 @@ async function handle(
         redirect(`${LOGIN_PATH}?next=${encodeURIComponent(returnTo)}`);
       }
       await signOut();
-      destination(LOGIN_PATH, "error", error.message);
+      destination(LOGIN_PATH, "error", `admin.err.${error.code}::${error.message}`);
     }
     failure = isAppError(error)
       ? `admin.err.${error.code}::${error.message}`
@@ -105,7 +105,9 @@ export async function loginAction(formData: FormData) {
     destination(
       LOGIN_PATH,
       "error",
-      isAppError(error) ? error.message : "Anmeldung fehlgeschlagen.",
+      isAppError(error)
+        ? `admin.err.${error.code}::${error.message}`
+        : "admin.err.login_failed",
     );
   }
 

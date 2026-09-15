@@ -1,11 +1,17 @@
+"use client";
+
+import { useLocale } from "@/lib/i18n/locale-context";
+
 /** Instant feedback while the next admin page streams in. Matches Card / cream tokens. */
 export default function AdminLoading() {
+  const { t } = useLocale();
+
   return (
     <div
       className="animate-pulse space-y-5"
       aria-busy="true"
       aria-live="polite"
-      aria-label="Seite wird geladen"
+      aria-label={t("admin.common.loading")}
     >
       <div className="space-y-2">
         <div className="h-3 w-24 rounded bg-sage/20" />

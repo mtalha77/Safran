@@ -10,6 +10,7 @@ import {
   updateCategoryAction,
   updateMenuItemAction,
 } from "@/app/admin/actions";
+import { useAdminFormat } from "@/components/admin/format";
 import { MenuPdfDownload } from "@/components/admin/menu-pdf-download";
 import { AdminFileInput } from "@/components/admin/admin-file-input";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
@@ -21,14 +22,10 @@ import {
   fieldClass,
 } from "@/components/admin/ui";
 import { useLocale } from "@/lib/i18n/locale-context";
-
-function formatMoney(value: number | string | null | undefined) {
-  const amount = typeof value === "string" ? Number(value) : (value ?? 0);
-  return new Intl.NumberFormat("de-CH", {
-    style: "currency",
-    currency: "CHF",
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
+import {
+  localizedCategoryTitle,
+  localizedDishName,
+} from "@/lib/i18n/menu-text";
 
 export type AdminMenuCategory = {
   id: number | string;
@@ -66,7 +63,12 @@ export function AdminMenuView({
   categories,
   items,
 }: AdminMenuViewProps) {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const { formatMoney } = useAdminFormat();
+  // Headings and list labels follow the admin language; the edit fields below
+  // keep the raw database values so saving never rewrites a name.
+  const categoryLabel = (category: AdminMenuCategory) =>
+    localizedCategoryTitle(category.title, category.subtitle, locale);
 
   return (
     <>
@@ -144,7 +146,7 @@ export function AdminMenuView({
                     <summary className="cursor-pointer list-none px-3 py-3 text-sm font-semibold">
                       <span className="flex items-center justify-between gap-2">
                         <span>
-                          {category.sort_order}. {category.title}
+                          {category.sort_order}. {categoryLabel(category)}
                         </span>
                         <span
                           className={`rounded-full px-2 py-0.5 text-[11px] ${
@@ -238,7 +240,7 @@ export function AdminMenuView({
                     <option value="">{t("admin.menu.select")}</option>
                     {categories.map((category) => (
                       <option key={category.id} value={category.id}>
-                        {category.title}
+                        {categoryLabel(category)}
                       </option>
                     ))}
                   </select>
@@ -333,7 +335,7 @@ export function AdminMenuView({
                 <Card key={category.id}>
                   <div className="mb-4">
                     <h2 className="font-sans text-2xl font-semibold tracking-tight">
-                      {category.title}
+                      {categoryLabel(category)}
                     </h2>
                     <p className="text-sm text-muted">
                       {t("admin.menu.itemCount", { n: categoryItems.length })}
@@ -360,7 +362,8 @@ export function AdminMenuView({
                             />
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-sm font-semibold">
-                                {item.item_number}. {item.name}
+                                {item.item_number}.{" "}
+                                {localizedDishName(item.name, locale)}
                               </span>
                               <span className="mt-1 block text-xs text-muted">
                                 {formatMoney(item.price)} ·{" "}
