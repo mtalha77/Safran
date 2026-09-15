@@ -157,6 +157,15 @@ select:-webkit-autofill:focus {
   }
 }
 
+/* Menu sections skip rendering while off screen, so their height is only an
+   estimate until they scroll into view. During a category jump we render them
+   all, otherwise the smooth scroll aims at an estimated offset and lands on a
+   neighbouring category. `contain-intrinsic-size: auto` keeps the measured
+   heights afterwards. */
+.menu-sections-measure > section {
+  content-visibility: visible;
+}
+
 .btn-fill {
   --fill: #2f0d29;
   --hover-color: #ffffff;

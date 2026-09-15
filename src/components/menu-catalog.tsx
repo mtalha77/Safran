@@ -1,7 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+  type RefObject,
+} from "react";
 import { useCart } from "@/components/cart-provider";
 import type { MenuCategory } from "@/data/menu";
 import { useLocale } from "@/lib/i18n/locale-context";
@@ -52,6 +60,95 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
+/** Matches `scroll-mt-36` on the category sections (9rem). */
+const SECTION_SCROLL_OFFSET = 144;
+
+/**
+ * Jumps to a category section reliably.
+ *
+ * The sections use `content-visibility: auto`, so every section below the
+ * viewport reports a placeholder height. A plain `#anchor` jump therefore aims
+ * at an estimated offset and, while the smooth scroll is running, the real
+ * heights replace the estimates and the page ends up on the wrong category —
+ * which is why a second click was needed. Rendering all sections first, then
+ * scrolling, removes the guesswork; the browser keeps the measured heights
+ * afterwards, so the class is only needed during the jump.
+ */
+function useCategoryJump(sectionsRef: RefObject<HTMLDivElement | null>) {
+  const cleanupRef = useRef<(() => void) | null>(null);
+
+  const release = useCallback(() => {
+    cleanupRef.current?.();
+    cleanupRef.current = null;
+  }, []);
+
+  useEffect(() => release, [release]);
+
+  return useCallback(
+    (id: string, options?: { instant?: boolean }) => {
+      const container = sectionsRef.current;
+      const target = document.getElementById(id);
+      if (!container || !target) return;
+
+      release();
+      container.classList.add("menu-sections-measure");
+
+      const reduceMotion =
+        options?.instant ||
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      let timer = 0;
+      let cancelled = false;
+      // A manual scroll during the animation means the visitor took over, so we
+      // must not pull them back to the category afterwards.
+      const cancel = () => {
+        cancelled = true;
+      };
+      const finish = () => {
+        window.clearTimeout(timer);
+        window.removeEventListener("scrollend", finish);
+        window.removeEventListener("wheel", cancel);
+        window.removeEventListener("touchstart", cancel);
+        const section = document.getElementById(id);
+        // Late layout shifts (fonts, images) can still nudge the target; one
+        // instant correction lands it exactly, and is a no-op at page end.
+        if (
+          !cancelled &&
+          section &&
+          Math.abs(section.getBoundingClientRect().top - SECTION_SCROLL_OFFSET) >
+            4
+        ) {
+          section.scrollIntoView({ behavior: "auto", block: "start" });
+        }
+        container.classList.remove("menu-sections-measure");
+      };
+
+      cleanupRef.current = () => {
+        cancelled = true;
+        finish();
+      };
+
+      window.addEventListener("wheel", cancel, { passive: true });
+      window.addEventListener("touchstart", cancel, { passive: true });
+
+      // One frame for the class to apply, one for layout to settle with the
+      // real section heights, then scroll to a position that will not move.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          target.scrollIntoView({
+            behavior: reduceMotion ? "auto" : "smooth",
+            block: "start",
+          });
+          window.history.replaceState(null, "", `#${id}`);
+          window.addEventListener("scrollend", finish, { once: true });
+          timer = window.setTimeout(finish, reduceMotion ? 150 : 1500);
+        });
+      });
+    },
+    [release, sectionsRef],
+  );
+}
+
 export function MenuCatalog({
   categories,
 }: {
@@ -60,6 +157,16 @@ export function MenuCatalog({
   const [query, setQuery] = useState("");
   const { items: cartItems, addItem, updateQuantity } = useCart();
   const { locale, t } = useLocale();
+  const sectionsRef = useRef<HTMLDivElement>(null);
+  const jumpToCategory = useCategoryJump(sectionsRef);
+
+  // Deep links from the homepage (`/speisekarte#biryani`) are resolved by the
+  // browser before the sections below the fold have their real height, so the
+  // landing position needs the same correction as an in-page jump.
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.replace("#", ""));
+    if (id) jumpToCategory(id, { instant: true });
+  }, [jumpToCategory]);
   const cartById = useMemo(
     () => new Map(cartItems.map((item) => [item.id, item])),
     [cartItems],
@@ -129,6 +236,20 @@ export function MenuCatalog({
                   <a
                     key={category.id}
                     href={`#${category.id}`}
+                    onClick={(event: MouseEvent<HTMLAnchorElement>) => {
+                      // Leave modified clicks (new tab, download …) to the browser.
+                      if (
+                        event.metaKey ||
+                        event.ctrlKey ||
+                        event.shiftKey ||
+                        event.altKey ||
+                        event.button !== 0
+                      ) {
+                        return;
+                      }
+                      event.preventDefault();
+                      jumpToCategory(category.id);
+                    }}
                     className="group flex items-center gap-3 border-b border-white/8 px-4 py-3.5 text-xs text-cream/70 transition hover:bg-sage hover:text-white sm:px-5 lg:last:border-b-0"
                   >
                     <span className="font-serif text-cream/55 transition group-hover:text-white/70">
@@ -147,7 +268,7 @@ export function MenuCatalog({
             </div>
           </aside>
 
-          <div className="min-w-0 space-y-20">
+          <div ref={sectionsRef} className="min-w-0 space-y-20">
             {visibleCategories.map((category) => (
             <section
               key={category.id}
