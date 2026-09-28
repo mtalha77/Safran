@@ -48,14 +48,29 @@ function withinWindow(start: unknown, end: unknown, time: string): boolean {
   );
 }
 
-/** True when `time` falls inside the lunch or the dinner window of that day. */
+/**
+ * Collapses legacy lunch/dinner rows into one open→close window.
+ * Prefer lunch open and dinner close when both eras exist so the midday break
+ * disappears without requiring an immediate re-save.
+ */
+export function resolveDailyWindow(
+  hours: DailyHours | null | undefined,
+): { opens: string; closes: string } | null {
+  if (!hours || hours.is_closed === true) return null;
+
+  const opens = hours.lunch_opens ?? hours.dinner_opens;
+  const closes = hours.dinner_closes ?? hours.lunch_closes;
+  if (typeof opens !== "string" || typeof closes !== "string") return null;
+
+  return { opens: opens.slice(0, 5), closes: closes.slice(0, 5) };
+}
+
+/** True when `time` falls inside the day's single opening window. */
 export function isWithinOpeningHours(
   hours: DailyHours | null | undefined,
   time: string,
 ): boolean {
-  if (!hours || hours.is_closed === true) return false;
-  return (
-    withinWindow(hours.lunch_opens, hours.lunch_closes, time) ||
-    withinWindow(hours.dinner_opens, hours.dinner_closes, time)
-  );
+  const window = resolveDailyWindow(hours);
+  if (!window) return false;
+  return withinWindow(window.opens, window.closes, time);
 }

@@ -357,10 +357,8 @@ export async function updateOpeningHoursAction(formData: FormData) {
   const days = Array.from({ length: 7 }, (_, day) => ({
     weekday: day,
     isClosed: checked(formData, `day_${day}_closed`),
-    lunchOpens: text(formData, `day_${day}_open`),
-    lunchCloses: text(formData, `day_${day}_close`),
-    dinnerOpens: text(formData, `day_${day}_second_open`),
-    dinnerCloses: text(formData, `day_${day}_second_close`),
+    opens: text(formData, `day_${day}_open`),
+    closes: text(formData, `day_${day}_close`),
   }));
 
   await handle(

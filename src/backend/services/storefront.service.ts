@@ -66,12 +66,12 @@ const fallbackSettings: StorefrontSettings = {
 };
 
 const fallbackHours: OpeningDay[] = [
-  { day: 1, label: "Montag", ranges: [["11:00", "14:00"], ["17:00", "22:30"]] },
-  { day: 2, label: "Dienstag", ranges: [["11:00", "14:00"], ["17:00", "22:30"]] },
-  { day: 3, label: "Mittwoch", ranges: [["11:00", "14:00"], ["17:00", "22:30"]] },
-  { day: 4, label: "Donnerstag", ranges: [["11:00", "14:00"], ["17:00", "22:30"]] },
-  { day: 5, label: "Freitag", ranges: [["11:00", "14:00"], ["17:00", "22:30"]] },
-  { day: 6, label: "Samstag", ranges: [["11:00", "14:00"], ["17:00", "22:30"]] },
+  { day: 1, label: "Montag", ranges: [["11:00", "22:30"]] },
+  { day: 2, label: "Dienstag", ranges: [["11:00", "22:30"]] },
+  { day: 3, label: "Mittwoch", ranges: [["11:00", "22:30"]] },
+  { day: 4, label: "Donnerstag", ranges: [["11:00", "22:30"]] },
+  { day: 5, label: "Freitag", ranges: [["11:00", "22:30"]] },
+  { day: 6, label: "Samstag", ranges: [["11:00", "22:30"]] },
   { day: 0, label: "Sonntag", ranges: [] },
 ];
 
@@ -160,13 +160,14 @@ function normalizeHours(rows: Row[] | null): OpeningDay[] {
       ranges: [],
     };
     const closed = boolean(row.is_closed ?? row.closed, false);
-    const start = text(row.lunch_opens ?? row.open_time ?? row.opens_at);
-    const end = text(row.lunch_closes ?? row.close_time ?? row.closes_at);
-    if (!closed && start && end) current.ranges.push([start.slice(0, 5), end.slice(0, 5)]);
-    const secondStart = text(row.dinner_opens ?? row.second_open_time);
-    const secondEnd = text(row.dinner_closes ?? row.second_close_time);
-    if (!closed && secondStart && secondEnd) {
-      current.ranges.push([secondStart.slice(0, 5), secondEnd.slice(0, 5)]);
+    const start =
+      text(row.lunch_opens ?? row.open_time ?? row.opens_at) ??
+      text(row.dinner_opens ?? row.second_open_time);
+    const end =
+      text(row.dinner_closes ?? row.second_close_time) ??
+      text(row.lunch_closes ?? row.close_time ?? row.closes_at);
+    if (!closed && start && end) {
+      current.ranges.push([start.slice(0, 5), end.slice(0, 5)]);
     }
     days.set(day, current);
   }

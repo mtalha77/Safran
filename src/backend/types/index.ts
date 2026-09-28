@@ -96,8 +96,6 @@ export type RestaurantSettingsInput = {
 export type OpeningHoursInput = Array<{
   weekday: number;
   isClosed: boolean;
-  lunchOpens: string | null;
-  lunchCloses: string | null;
-  dinnerOpens: string | null;
-  dinnerCloses: string | null;
+  opens: string | null;
+  closes: string | null;
 }>;

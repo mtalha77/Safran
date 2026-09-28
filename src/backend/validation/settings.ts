@@ -75,22 +75,14 @@ export function parseOpeningHours(
 ): OpeningHoursInput {
   return input.map((day, index) => {
     const isClosed = boolean(day.isClosed);
-    const lunchOpens = isClosed ? null : parseTime(day.lunchOpens);
-    const lunchCloses = isClosed ? null : parseTime(day.lunchCloses);
-    const dinnerOpens = isClosed ? null : parseTime(day.dinnerOpens);
-    const dinnerCloses = isClosed ? null : parseTime(day.dinnerCloses);
+    const opens = isClosed ? null : parseTime(day.opens);
+    const closes = isClosed ? null : parseTime(day.closes);
 
-    const pairs: Array<[string | null, string | null]> = [
-      [lunchOpens, lunchCloses],
-      [dinnerOpens, dinnerCloses],
-    ];
-    for (const [start, end] of pairs) {
-      if ((start && !end) || (!start && end) || (start && end && start >= end)) {
-        throw new ValidationError(
-          "hours_invalid",
-          "Öffnungszeiten müssen ein gültiges Start- und Endzeitpaar bilden.",
-        );
-      }
+    if ((opens && !closes) || (!opens && closes) || (opens && closes && opens >= closes)) {
+      throw new ValidationError(
+        "hours_invalid",
+        "Öffnungszeiten müssen ein gültiges Start- und Endzeitpaar bilden.",
+      );
     }
 
     return {
@@ -102,10 +94,8 @@ export function parseOpeningHours(
         "Ungültiger Wochentag.",
       ),
       isClosed,
-      lunchOpens,
-      lunchCloses,
-      dinnerOpens,
-      dinnerCloses,
+      opens,
+      closes,
     };
   });
 }

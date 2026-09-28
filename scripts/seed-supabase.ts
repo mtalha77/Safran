@@ -146,9 +146,9 @@ async function upsertContent() {
             weekday,
             is_closed: false,
             lunch_opens: "11:00",
-            lunch_closes: "14:00",
-            dinner_opens: "17:00",
-            dinner_closes: "22:30",
+            lunch_closes: "22:30",
+            dinner_opens: null,
+            dinner_closes: null,
             note: null,
           },
     );

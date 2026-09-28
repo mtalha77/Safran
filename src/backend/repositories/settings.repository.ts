@@ -159,10 +159,11 @@ export function upsertOpeningHours(db: Db, input: OpeningHoursInput) {
     input.map((day) => ({
       weekday: day.weekday,
       is_closed: day.isClosed,
-      lunch_opens: day.lunchOpens,
-      lunch_closes: day.lunchCloses,
-      dinner_opens: day.dinnerOpens,
-      dinner_closes: day.dinnerCloses,
+      // Single daily window is stored on the lunch columns; dinner is cleared.
+      lunch_opens: day.opens,
+      lunch_closes: day.closes,
+      dinner_opens: null,
+      dinner_closes: null,
     })),
     { onConflict: "weekday" },
   );

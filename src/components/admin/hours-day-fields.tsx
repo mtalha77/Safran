@@ -8,10 +8,8 @@ import type { MessageKey } from "@/lib/i18n/messages";
 type HoursDayFieldsProps = {
   index: number;
   defaultClosed: boolean;
-  lunchOpens: string;
-  lunchCloses: string;
-  dinnerOpens: string;
-  dinnerCloses: string;
+  opens: string;
+  closes: string;
 };
 
 /**
@@ -21,10 +19,8 @@ type HoursDayFieldsProps = {
 export function HoursDayFields({
   index,
   defaultClosed,
-  lunchOpens,
-  lunchCloses,
-  dinnerOpens,
-  dinnerCloses,
+  opens,
+  closes,
 }: HoursDayFieldsProps) {
   const { t } = useLocale();
   const [closed, setClosed] = useState(defaultClosed);
@@ -32,7 +28,7 @@ export function HoursDayFields({
 
   return (
     <fieldset className="rounded-xl border border-sage/20 bg-white p-3">
-      <div className="grid items-end gap-3 md:grid-cols-[130px_1fr_1fr_1fr_1fr]">
+      <div className="grid items-end gap-3 md:grid-cols-[130px_1fr_1fr]">
         <div>
           <legend className="font-semibold">{t(dayKey)}</legend>
           <label className="mt-2 flex items-center gap-2 text-xs text-muted">
@@ -51,7 +47,7 @@ export function HoursDayFields({
             className={`${fieldClass} mt-1`}
             name={`day_${index}_open`}
             type="time"
-            defaultValue={lunchOpens}
+            defaultValue={opens}
             disabled={closed}
           />
         </label>
@@ -61,27 +57,7 @@ export function HoursDayFields({
             className={`${fieldClass} mt-1`}
             name={`day_${index}_close`}
             type="time"
-            defaultValue={lunchCloses}
-            disabled={closed}
-          />
-        </label>
-        <label className="text-xs font-semibold text-muted">
-          {t("admin.settings.opensAgain")}
-          <input
-            className={`${fieldClass} mt-1`}
-            name={`day_${index}_second_open`}
-            type="time"
-            defaultValue={dinnerOpens}
-            disabled={closed}
-          />
-        </label>
-        <label className="text-xs font-semibold text-muted">
-          {t("admin.settings.closes")}
-          <input
-            className={`${fieldClass} mt-1`}
-            name={`day_${index}_second_close`}
-            type="time"
-            defaultValue={dinnerCloses}
+            defaultValue={closes}
             disabled={closed}
           />
         </label>

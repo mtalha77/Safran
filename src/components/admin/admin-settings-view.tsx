@@ -44,6 +44,20 @@ function timeValue(value: string | null | undefined) {
   return value?.slice(0, 5) ?? "";
 }
 
+/** Prefer continuous open→close when a legacy lunch+dinner row still exists. */
+function dayWindow(row: {
+  lunch_opens: string | null;
+  lunch_closes: string | null;
+  dinner_opens: string | null;
+  dinner_closes: string | null;
+} | undefined) {
+  if (!row) return { opens: "", closes: "" };
+  return {
+    opens: timeValue(row.lunch_opens ?? row.dinner_opens),
+    closes: timeValue(row.dinner_closes ?? row.lunch_closes),
+  };
+}
+
 export function AdminSettingsView({
   message,
   error,
@@ -269,22 +283,21 @@ export function AdminSettingsView({
             {t("admin.settings.hoursDesc")}
           </p>
           <DirtyForm
-            key={`hours-${formKey}-${hours.map((h) => `${h.weekday}:${h.lunch_opens}`).join("|")}`}
+            key={`hours-${formKey}-${hours.map((h) => `${h.weekday}:${h.lunch_opens}:${h.dinner_closes ?? h.lunch_closes}`).join("|")}`}
             action={updateOpeningHoursAction}
             className="mt-5"
           >
             <div className="space-y-3">
               {Array.from({ length: 7 }, (_, index) => {
                 const row = hoursByDay.get(index);
+                const window = dayWindow(row);
                 return (
                   <HoursDayFields
                     key={index}
                     index={index}
                     defaultClosed={row?.is_closed ?? index === 0}
-                    lunchOpens={timeValue(row?.lunch_opens)}
-                    lunchCloses={timeValue(row?.lunch_closes)}
-                    dinnerOpens={timeValue(row?.dinner_opens)}
-                    dinnerCloses={timeValue(row?.dinner_closes)}
+                    opens={window.opens}
+                    closes={window.closes}
                   />
                 );
               })}
