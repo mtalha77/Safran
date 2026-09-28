@@ -78,7 +78,14 @@ export function parseOpeningHours(
     const opens = isClosed ? null : parseTime(day.opens);
     const closes = isClosed ? null : parseTime(day.closes);
 
-    if ((opens && !closes) || (!opens && closes) || (opens && closes && opens >= closes)) {
+    if (!isClosed && (!opens || !closes)) {
+      throw new ValidationError(
+        "hours_invalid",
+        "Öffnungszeiten müssen ein gültiges Start- und Endzeitpaar bilden.",
+      );
+    }
+
+    if (opens && closes && opens >= closes) {
       throw new ValidationError(
         "hours_invalid",
         "Öffnungszeiten müssen ein gültiges Start- und Endzeitpaar bilden.",

@@ -11,14 +11,13 @@ const MINUTES = Array.from({ length: 12 }, (_, i) =>
 );
 
 function parseTime(value: string): { hour: string; minute: string } {
-  const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
+  const match = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(value.trim());
   if (!match) return { hour: "", minute: "" };
   const hour = String(Math.min(23, Math.max(0, Number(match[1])))).padStart(
     2,
     "0",
   );
   const rawMinute = Math.min(59, Math.max(0, Number(match[2])));
-  // Snap to nearest 5 minutes for the select list.
   const snapped = Math.round(rawMinute / 5) * 5;
   const minute = String(snapped === 60 ? 55 : snapped).padStart(2, "0");
   return { hour, minute };
@@ -33,6 +32,7 @@ type Time24InputProps = {
 
 /**
  * Always shows 24-hour HH:MM picks (native `type="time"` follows the OS clock).
+ * Picking an hour defaults minutes to 00 so the form never submits a half pair.
  */
 export function Time24Input({
   name,
@@ -44,17 +44,27 @@ export function Time24Input({
   const [hour, setHour] = useState(initial.hour);
   const [minute, setMinute] = useState(initial.minute);
 
-  const combined = hour && minute ? `${hour}:${minute}` : "";
+  const resolvedMinute = hour ? minute || "00" : "";
+  const combined = hour ? `${hour}:${resolvedMinute}` : "";
 
   return (
     <div className={`mt-1 flex items-center gap-1.5 ${className}`.trim()}>
-      <input type="hidden" name={name} value={combined} disabled={disabled} />
+      {/* Always submit (even when UI disabled) so FormData keys stay stable. */}
+      <input type="hidden" name={name} value={disabled ? "" : combined} />
       <select
-        aria-label="Hour"
+        aria-label="Hour (0–23)"
         className={`${fieldClass} mt-0 min-w-0 flex-1`}
         value={hour}
         disabled={disabled}
-        onChange={(event) => setHour(event.target.value)}
+        onChange={(event) => {
+          const next = event.target.value;
+          setHour(next);
+          if (!next) {
+            setMinute("");
+            return;
+          }
+          setMinute((prev) => prev || "00");
+        }}
       >
         <option value="">--</option>
         {HOURS.map((h) => (
@@ -69,11 +79,11 @@ export function Time24Input({
       <select
         aria-label="Minute"
         className={`${fieldClass} mt-0 min-w-0 flex-1`}
-        value={minute}
-        disabled={disabled}
+        value={resolvedMinute}
+        disabled={disabled || !hour}
         onChange={(event) => setMinute(event.target.value)}
       >
-        <option value="">--</option>
+        {!hour ? <option value="">--</option> : null}
         {MINUTES.map((m) => (
           <option key={m} value={m}>
             {m}
