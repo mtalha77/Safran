@@ -41,8 +41,12 @@ function backoffMs(attempt: number) {
 /** Printed bills are English; keep Swiss local time for the kitchen. */
 function formatCreatedAt(iso: string) {
   return new Intl.DateTimeFormat("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
     timeZone: "Europe/Zurich",
   }).format(new Date(iso));
 }

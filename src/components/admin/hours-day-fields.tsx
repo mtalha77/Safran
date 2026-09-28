@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { fieldClass } from "@/components/admin/ui";
+import { Time24Input } from "@/components/admin/time-24-input";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { MessageKey } from "@/lib/i18n/messages";
 
@@ -43,20 +43,16 @@ export function HoursDayFields({
         </div>
         <label className="text-xs font-semibold text-muted">
           {t("admin.settings.opens")}
-          <input
-            className={`${fieldClass} mt-1`}
+          <Time24Input
             name={`day_${index}_open`}
-            type="time"
             defaultValue={opens}
             disabled={closed}
           />
         </label>
         <label className="text-xs font-semibold text-muted">
           {t("admin.settings.closes")}
-          <input
-            className={`${fieldClass} mt-1`}
+          <Time24Input
             name={`day_${index}_close`}
-            type="time"
             defaultValue={closes}
             disabled={closed}
           />

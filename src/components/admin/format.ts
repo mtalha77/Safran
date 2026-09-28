@@ -23,8 +23,12 @@ export function useAdminFormat() {
       currency: "CHF",
     });
     const dateTime = new Intl.DateTimeFormat(tag, {
-      dateStyle: "medium",
-      timeStyle: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
       timeZone: RESTAURANT_TIMEZONE,
     });
     const date = new Intl.DateTimeFormat(tag, {
