@@ -17,6 +17,7 @@ export const messages = {
     "footer.about":
       "Authentische indische Küche am Romanshorner Hafen, frisch zubereitet, herzlich serviert und bequem nach Hause bestellt.",
     "footer.tagline": "100% Halal · Ohne Alkohol · Abholung & Lieferung",
+    "footer.follow": "Folgen Sie uns",
 
     "contact.eyebrow": "Kontakt",
     "contact.title": "Wir freuen uns auf Sie",
@@ -619,6 +620,7 @@ export const messages = {
     "footer.about":
       "Authentic Indian cuisine at Romanshorn harbour, freshly prepared, warmly served and conveniently delivered to your door.",
     "footer.tagline": "100% Halal · Alcohol-free · Pickup & delivery",
+    "footer.follow": "Follow us",
 
     "contact.eyebrow": "Contact",
     "contact.title": "We look forward to seeing you",
