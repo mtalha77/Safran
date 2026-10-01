@@ -368,6 +368,8 @@ export const messages = {
     "admin.menu.imageHint": "Bild (max. 5 MB, wird automatisch komprimiert)",
     "admin.menu.imageSpec":
       "Format quadratisch 1:1, empfohlen 1500 × 1500 px. Andere Formate werden im Menü mittig zugeschnitten.",
+    "admin.menu.imageReselect":
+      "Bitte das Bild erneut auswählen (Dateien bleiben nach einem Fehler nicht erhalten).",
     "admin.menu.save": "Speichern",
 
     "admin.common.saving": "Wird gespeichert…",
@@ -441,6 +443,9 @@ export const messages = {
     "admin.err.item_price_invalid": "Der Preis muss 0 oder höher sein.",
     "admin.err.item_id_invalid": "Das Gericht wurde nicht gefunden.",
     "admin.err.item_create_failed": "Das Gericht konnte nicht erstellt werden.",
+    "admin.err.item_number_taken":
+      "Diese Artikelnummer ist bereits vergeben. Bitte eine andere Nummer wählen.",
+    "admin.err.item_duplicate": "Dieses Gericht existiert bereits.",
     "admin.err.item_update_failed": "Das Gericht konnte nicht gespeichert werden.",
     "admin.err.item_delete_failed": "Das Gericht konnte nicht gelöscht werden.",
     "admin.err.item_sort_failed":
@@ -968,6 +973,8 @@ export const messages = {
     "admin.menu.imageHint": "Image (max. 5 MB, compressed automatically)",
     "admin.menu.imageSpec":
       "Square 1:1 format, 1500 × 1500 px recommended. Other ratios are centre-cropped in the menu.",
+    "admin.menu.imageReselect":
+      "Please choose the image again (files are not kept after an error).",
     "admin.menu.save": "Save",
 
     "admin.common.saving": "Saving…",
@@ -1030,6 +1037,9 @@ export const messages = {
     "admin.err.item_price_invalid": "The price must be 0 or higher.",
     "admin.err.item_id_invalid": "The dish could not be found.",
     "admin.err.item_create_failed": "The dish could not be created.",
+    "admin.err.item_number_taken":
+      "This item number is already in use. Please choose a different number.",
+    "admin.err.item_duplicate": "This dish already exists.",
     "admin.err.item_update_failed": "The dish could not be saved.",
     "admin.err.item_delete_failed": "The dish could not be deleted.",
     "admin.err.item_sort_failed": "The dish order could not be saved.",

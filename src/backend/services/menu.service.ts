@@ -27,8 +27,22 @@ async function menuContext() {
   return { db: supabase as unknown as Db, actor };
 }
 
-function assertOk(error: { message: string } | null, code: string) {
-  if (error) throw new UnavailableError(code, error.message);
+function assertOk(error: { message: string; code?: string } | null, code: string) {
+  if (!error) return;
+  const message = error.message || "";
+  if (/duplicate key|unique constraint/i.test(message) && /item_number/i.test(message)) {
+    throw new ConflictError(
+      "item_number_taken",
+      "Diese Artikelnummer ist bereits vergeben. Bitte eine andere Nummer wählen.",
+    );
+  }
+  if (/duplicate key|unique constraint/i.test(message)) {
+    throw new ConflictError(
+      "item_duplicate",
+      "Dieses Gericht existiert bereits.",
+    );
+  }
+  throw new UnavailableError(code, message);
 }
 
 export async function listMenu() {

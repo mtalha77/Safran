@@ -26,22 +26,59 @@ function pt(px: number) {
  */
 const L = {
   titleY: 380,
-  contentBottom: 3180,
-  rowH: 200,
-  maxItems: 12,
-  circleX: 300,
-  circleD: 148,
-  textX: 500,
+  /** Last design-px for menu content — everything below is footer/ornament. */
+  contentBottom: 2980,
+  rowH: 210,
+  circleX: 280,
+  circleD: 190,
+  textX: 520,
   priceRight: 2160,
-  nameSize: 40,
-  descSize: 26,
+  nameSize: 46,
+  descSize: 30,
   /** Shop category caps are large; Times needs a bit more size than Playfair. */
   titleSize: 128,
   subtitleSize: 36,
   titleMaxWidth: 1780,
-  footerLabel: "SAFRAN - Speisekarte",
-  footerEn: "SAFRAN - Menu",
-  footerY: 220,
+  footerLabel: "SAFRAN • Speisekarte",
+  footerEn: "SAFRAN • Menu",
+  /** Design-px from page bottom — high enough to clear corner filigree. */
+  footerY: 330,
+  footerBadge: "Aktuell nur Abholung und Lieferservice",
+  footerBadgeX: 430,
+  /** Right edge for page label — inset from ornate corner. */
+  footerRight: 2040,
+} as const;
+
+/** Minimum vertical space one dish row needs (circle + padding). */
+function minItemRowH() {
+  return L.circleD + 24;
+}
+
+const CLOSING = {
+  de: {
+    title: "FLEISCH/FISH/LAMM",
+    lines: [
+      "Poulet Schenkel, Poule Brust,",
+      "(Thailand & Brasilien)",
+      "LammFleisch,",
+      "(Neuseeland)",
+      "Fish, (Vietnam)",
+      "Paneer (Schweiz)",
+    ],
+    thanks: "Thank You",
+  },
+  en: {
+    title: "MEAT/FISH/LAMB",
+    lines: [
+      "Chicken thigh, chicken breast,",
+      "(Thailand & Brazil)",
+      "Lamb,",
+      "(New Zealand)",
+      "Fish, (Vietnam)",
+      "Paneer (Switzerland)",
+    ],
+    thanks: "Thank You",
+  },
 } as const;
 
 type PdfItem = {
@@ -65,9 +102,9 @@ type PageBlock =
 
 let templateCache: { cover: Buffer; blank: Buffer; version: number } | null =
   null;
-const TEMPLATE_CACHE_VERSION = 6;
+const TEMPLATE_CACHE_VERSION = 13;
 const thumbCache = new Map<string, Buffer>();
-const THUMB_CACHE_VERSION = 2;
+const THUMB_CACHE_VERSION = 6;
 
 function thumbCacheKey(url: string) {
   return `v${THUMB_CACHE_VERSION}:${url}`;
@@ -92,8 +129,12 @@ function menuPdfSignature(
   categories: Awaited<ReturnType<typeof listMenu>>["categories"],
   items: Awaited<ReturnType<typeof listMenu>>["items"],
 ) {
-  // Compact fingerprint — any catalog/content change invalidates the cache.
-  const parts: string[] = [lang];
+  // Compact fingerprint — any catalog/content/template change invalidates the cache.
+  const parts: string[] = [
+    lang,
+    `t:${TEMPLATE_CACHE_VERSION}`,
+    `th:${THUMB_CACHE_VERSION}`,
+  ];
   for (const category of categories) {
     parts.push(
       `c:${category.id}:${category.sort_order}:${category.is_active ? 1 : 0}:${category.title}:${category.subtitle ?? ""}:${category.note_de ?? ""}:${category.note_en ?? ""}`,
@@ -107,7 +148,7 @@ function menuPdfSignature(
   return parts.join("|");
 }
 
-/** Cover = shop PDF page 1; blank = provided ornate frame (text drawn on top). */
+/** Cover = shop PDF page 1 only; blank = ornate frame (all other pages drawn in code). */
 async function loadTemplates() {
   if (templateCache?.version === TEMPLATE_CACHE_VERSION) return templateCache;
   const assetsDir = path.join(process.cwd(), "public", "brand", "menu-pdf");
@@ -268,19 +309,47 @@ function buildCategories(
   });
 }
 
+function estimateCategoryHeaderHeight(category: {
+  title: string;
+  subtitle?: string;
+  note?: string;
+}) {
+  const avgChar = L.titleSize * 0.52;
+  const titleLines = Math.min(
+    3,
+    Math.max(1, Math.ceil((category.title.length * avgChar) / L.titleMaxWidth)),
+  );
+  let h = titleLines * (L.titleSize + 8) + 20 + 28;
+  if (category.subtitle) h += L.subtitleSize + 18;
+  if (category.note) h += 34 * 2 + 8;
+  return h;
+}
+
+/**
+ * Height-aware pagination: never pack more content than fits above the footer.
+ * Extra items move to the next page instead of overlapping the footer band.
+ */
 function paginate(categories: PdfCategory[]): PageBlock[][] {
   const pages: PageBlock[][] = [];
   let current: PageBlock[] = [];
-  let itemCount = 0;
+  let yUsed = L.titleY;
+  let hasItem = false;
+  const rowH = minItemRowH();
 
   const flush = () => {
-    if (current.some((block) => block.type === "item")) pages.push(current);
+    if (hasItem) pages.push(current);
     current = [];
-    itemCount = 0;
+    yUsed = L.titleY;
+    hasItem = false;
   };
 
   for (const category of categories) {
-    if (itemCount >= L.maxItems - 1) flush();
+    const headerH = estimateCategoryHeaderHeight(category);
+
+    // New category needs header + at least one row — otherwise start a fresh page.
+    if (hasItem && yUsed + headerH + rowH > L.contentBottom) {
+      flush();
+    }
 
     current.push({
       type: "category",
@@ -288,14 +357,16 @@ function paginate(categories: PdfCategory[]): PageBlock[][] {
       subtitle: category.subtitle,
       note: category.note,
     });
+    yUsed += headerH;
 
     for (const item of category.items) {
-      if (itemCount >= L.maxItems) {
+      if (yUsed + rowH > L.contentBottom) {
         flush();
         // Continue items on the next page without repeating the category heading.
       }
       current.push({ type: "item", item });
-      itemCount += 1;
+      yUsed += rowH;
+      hasItem = true;
     }
   }
 
@@ -346,6 +417,142 @@ function drawCentered(
   });
 }
 
+/** Shop-style peaked horizontal rule used around the closing origin block. */
+function drawPeakedRule(page: PDFPage, y: number) {
+  const left = pt(L.circleX + 80);
+  const right = pt(L.priceRight - 80);
+  const mid = (left + right) / 2;
+  const peak = 7;
+  const color = rgb(0.28, 0.12, 0.12);
+  const thickness = 1.1;
+  page.drawLine({
+    start: { x: left, y },
+    end: { x: mid - 14, y },
+    thickness,
+    color,
+  });
+  page.drawLine({
+    start: { x: mid - 14, y },
+    end: { x: mid, y: y + peak },
+    thickness,
+    color,
+  });
+  page.drawLine({
+    start: { x: mid, y: y + peak },
+    end: { x: mid + 14, y },
+    thickness,
+    color,
+  });
+  page.drawLine({
+    start: { x: mid + 14, y },
+    end: { x: right, y },
+    thickness,
+    color,
+  });
+}
+
+function drawPageFooter(
+  page: PDFPage,
+  fontBold: PDFFont,
+  lang: MenuPdfLang,
+  pageNumber: number,
+) {
+  const ink = rgb(0.1, 0.08, 0.05);
+  const badgeSize = pt(26);
+  const badgePadX = pt(20);
+  const badgePadY = pt(11);
+  const badgeText = L.footerBadge;
+  const badgeTextW = fontBold.widthOfTextAtSize(badgeText, badgeSize);
+  const badgeW = badgeTextW + badgePadX * 2;
+  const badgeH = badgeSize + badgePadY * 2;
+  const badgeX = pt(L.footerBadgeX);
+  const baseline = pt(L.footerY);
+  const badgeY = baseline - badgePadY;
+
+  page.drawRectangle({
+    x: badgeX,
+    y: badgeY,
+    width: badgeW,
+    height: badgeH,
+    color: rgb(0.05, 0.05, 0.05),
+  });
+  page.drawText(badgeText, {
+    x: badgeX + badgePadX,
+    y: baseline,
+    size: badgeSize,
+    font: fontBold,
+    color: rgb(1, 1, 1),
+  });
+
+  const label = lang === "de" ? L.footerLabel : L.footerEn;
+  const footer = `${label} | ${String(pageNumber).padStart(2, "0")}`;
+  const footerSize = pt(26);
+  const footerWidth = fontBold.widthOfTextAtSize(footer, footerSize);
+  page.drawText(footer, {
+    x: pt(L.footerRight) - footerWidth,
+    y: baseline,
+    size: footerSize,
+    font: fontBold,
+    color: ink,
+  });
+}
+
+function drawClosingBlock(
+  page: PDFPage,
+  font: PDFFont,
+  fontBold: PDFFont,
+  lang: MenuPdfLang,
+  startYPx: number,
+) {
+  const copy = CLOSING[lang];
+  const ink = rgb(0.1, 0.07, 0.05);
+
+  let yPx = startYPx + 56;
+  drawPeakedRule(page, A4.h - pt(yPx));
+  yPx += 58;
+
+  const titleSize = pt(64);
+  drawCentered(page, copy.title, fontBold, titleSize, A4.h - pt(yPx) - titleSize, ink);
+  yPx += 64 + 32;
+
+  const lineSize = pt(34);
+  for (const line of copy.lines) {
+    drawCentered(page, line, font, lineSize, A4.h - pt(yPx) - lineSize, ink);
+    yPx += 46;
+  }
+
+  yPx += 24;
+  drawPeakedRule(page, A4.h - pt(yPx));
+  yPx += 110;
+
+  const thanksSize = pt(96);
+  drawCentered(
+    page,
+    copy.thanks,
+    font,
+    thanksSize,
+    A4.h - pt(yPx) - thanksSize,
+    rgb(0.18, 0.1, 0.2),
+  );
+}
+
+/** Approximate height used by the origin + thank-you block (design px). */
+function closingBlockHeightPx() {
+  return 56 + 58 + 64 + 32 + 6 * 46 + 24 + 20 + 110 + 96;
+}
+
+function drawClosingPage(
+  page: PDFPage,
+  font: PDFFont,
+  fontBold: PDFFont,
+  lang: MenuPdfLang,
+  pageNumber: number,
+) {
+  // Dedicated page — place the block lower-center like the shop Speisekarte.
+  drawClosingBlock(page, font, fontBold, lang, 1100);
+  drawPageFooter(page, fontBold, lang, pageNumber);
+}
+
 export async function buildMenuPdf(
   lang: MenuPdfLang,
 ): Promise<{ bytes: Uint8Array; filename: string }> {
@@ -390,8 +597,12 @@ export async function buildMenuPdf(
   );
 
   let pageNumber = 2;
+  let closingDrawn = false;
+  const closingH = closingBlockHeightPx();
 
-  for (const blocks of pages) {
+  for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+    const blocks = pages[pageIndex]!;
+    const isLastContentPage = pageIndex === pages.length - 1;
     const page = pdf.addPage([A4.w, A4.h]);
     page.drawImage(blankImage, { x: 0, y: 0, width: A4.w, height: A4.h });
 
@@ -412,15 +623,25 @@ export async function buildMenuPdf(
       headerPx += 24;
     }
     const startItemsY = L.titleY + headerPx;
-    const rowH =
+    const minRow = minItemRowH();
+
+    // Last page: keep compact rows when thank-you/origin can fit below.
+    const compactRow = Math.max(minRow, Math.min(230, L.rowH));
+    const canFitClosingOnPage =
+      isLastContentPage &&
+      itemCount > 0 &&
+      startItemsY + itemCount * compactRow + closingH <= L.contentBottom;
+
+    // Stretch rows to fill the page, but NEVER past contentBottom (footer zone).
+    // If a page is slightly over-packed, squeeze row height instead of overlapping footer.
+    const available = Math.max(0, L.contentBottom - startItemsY);
+    const stretchRow =
+      itemCount > 0 ? Math.floor(available / itemCount) : minRow;
+    const finalRowH =
       itemCount > 0
-        ? Math.min(
-            250,
-            Math.max(
-              168,
-              Math.floor((L.contentBottom - startItemsY) / itemCount),
-            ),
-          )
+        ? canFitClosingOnPage
+          ? compactRow
+          : Math.min(260, Math.max(150, stretchRow))
         : L.rowH;
 
     let yPx = L.titleY;
@@ -486,7 +707,22 @@ export async function buildMenuPdf(
       const price = formatPrice(item.price);
       const priceWidth = fontBold.widthOfTextAtSize(price, nameSize);
       const rowTop = yPx;
-      const circleDraw = Math.min(L.circleD, rowH - 16);
+      const circleDraw = Math.min(L.circleD, finalRowH - 16);
+      const descMaxW = pt(L.priceRight - L.textX);
+      const descLines = item.description
+        ? wrapText(item.description, font, descSize, descMaxW)
+        : [];
+      // Center name + description as one block against the dish circle.
+      const descGapPx = 14;
+      const descLinePx = L.descSize + 8;
+      const textBlockH = descLines.length
+        ? Math.round(L.nameSize * 1.78) +
+          descGapPx +
+          descLines.length * descLinePx
+        : L.nameSize;
+      const textBlockTop =
+        rowTop + Math.max(0, Math.round((circleDraw - textBlockH) / 2));
+      const textTop = textBlockTop + Math.round(L.nameSize * 0.78);
 
       if (item.imageUrl) {
         const embedded = thumbEmbeds.get(item.imageUrl);
@@ -500,14 +736,13 @@ export async function buildMenuPdf(
         }
       }
 
-      const textTop = rowTop + Math.round(circleDraw * 0.28);
       page.drawText(name, {
         x: pt(L.textX),
         y: A4.h - pt(textTop),
         size: nameSize,
         font: fontBold,
         color: rgb(0.1, 0.08, 0.05),
-        maxWidth: pt(L.priceRight - L.textX) - priceWidth - pt(24),
+        maxWidth: descMaxW - priceWidth - pt(24),
       });
       page.drawText(price, {
         x: pt(L.priceRight) - priceWidth,
@@ -517,36 +752,34 @@ export async function buildMenuPdf(
         color: rgb(0.1, 0.08, 0.05),
       });
 
-      if (item.description) {
-        wrapText(item.description, font, descSize, pt(L.priceRight - L.textX)).forEach(
-          (line, index) => {
-            page.drawText(line, {
-              x: pt(L.textX),
-              y: A4.h - pt(textTop + 32) - index * (descSize + 2),
-              size: descSize,
-              font,
-              color: rgb(0.25, 0.2, 0.15),
-            });
-          },
-        );
-      }
+      // Description starts fully below the name baseline (+ gap) to avoid overlap.
+      const descStart = textTop + L.nameSize + descGapPx;
+      descLines.forEach((line, index) => {
+        page.drawText(line, {
+          x: pt(L.textX),
+          y: A4.h - pt(descStart + index * descLinePx),
+          size: descSize,
+          font,
+          color: rgb(0.25, 0.2, 0.15),
+        });
+      });
 
-      yPx += rowH;
+      yPx += finalRowH;
     }
 
-    const label = lang === "de" ? L.footerLabel : L.footerEn;
-    const footer = `${label} | ${String(pageNumber).padStart(2, "0")}`;
-    const footerSize = pt(22);
-    const footerWidth = font.widthOfTextAtSize(footer, footerSize);
-    page.drawText(footer, {
-      x: pt(L.priceRight) - footerWidth,
-      y: pt(L.footerY),
-      size: footerSize,
-      font,
-      color: rgb(0.1, 0.08, 0.05),
-    });
+    if (canFitClosingOnPage && yPx + closingH <= L.contentBottom) {
+      drawClosingBlock(page, font, fontBold, lang, yPx);
+      closingDrawn = true;
+    }
 
+    drawPageFooter(page, fontBold, lang, pageNumber);
     pageNumber += 1;
+  }
+
+  if (!closingDrawn) {
+    const page = pdf.addPage([A4.w, A4.h]);
+    page.drawImage(blankImage, { x: 0, y: 0, width: A4.w, height: A4.h });
+    drawClosingPage(page, font, fontBold, lang, pageNumber);
   }
 
   const bytes = await pdf.save({ useObjectStreams: true });

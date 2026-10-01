@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  createCategoryAction,
-  createMenuItemAction,
-  deleteCategoryAction,
-  deleteMenuItemAction,
-  replaceMenuItemImageAction,
-  setMenuItemAvailabilityAction,
-  updateCategoryAction,
-  updateMenuItemAction,
-} from "@/app/admin/actions";
-import { useAdminFormat } from "@/components/admin/format";
+import { CreateMenuItemForm } from "@/components/admin/create-menu-item-form";
 import { MenuPdfDownload } from "@/components/admin/menu-pdf-download";
 import { AdminFileInput } from "@/components/admin/admin-file-input";
 import { PendingSubmitButton } from "@/components/admin/pending-submit-button";
@@ -21,6 +11,16 @@ import {
   PageHeader,
   fieldClass,
 } from "@/components/admin/ui";
+import {
+  createCategoryAction,
+  deleteCategoryAction,
+  deleteMenuItemAction,
+  replaceMenuItemImageAction,
+  setMenuItemAvailabilityAction,
+  updateCategoryAction,
+  updateMenuItemAction,
+} from "@/app/admin/actions";
+import { useAdminFormat } from "@/components/admin/format";
 import { useLocale } from "@/lib/i18n/locale-context";
 import {
   localizedCategoryTitle,
@@ -218,106 +218,10 @@ export function AdminMenuView({
         </div>
 
         <div className="space-y-5">
-          <Card>
-            <details>
-              <summary className="cursor-pointer list-none">
-                <span className="flex items-center justify-between">
-                  <span className="font-sans text-xl font-semibold tracking-tight">
-                    {t("admin.menu.newItem")}
-                  </span>
-                  <span className="inline-flex min-h-10 items-center justify-center rounded-xl bg-sage-deep px-4 py-2 text-sm font-semibold text-white">
-                    {t("admin.menu.add")}
-                  </span>
-                </span>
-              </summary>
-              <form
-                action={createMenuItemAction}
-                className="mt-5 grid gap-3 sm:grid-cols-2"
-              >
-                <label className="flex flex-col gap-0 text-sm font-semibold">
-                  {t("admin.menu.category")}
-                  <select className={fieldClass} name="category_id" required>
-                    <option value="">{t("admin.menu.select")}</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {categoryLabel(category)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold">
-                  {t("admin.menu.number")}
-                  <input
-                    className={fieldClass}
-                    name="number"
-                    type="number"
-                    required
-                  />
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
-                  {t("admin.menu.name")}
-                  <input className={fieldClass} name="name" required />
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
-                  {t("admin.menu.descDe")}
-                  <textarea
-                    className={fieldClass}
-                    name="description_de"
-                    rows={2}
-                  />
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
-                  {t("admin.menu.descEn")}
-                  <textarea
-                    className={fieldClass}
-                    name="description_en"
-                    rows={2}
-                  />
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold">
-                  {t("admin.menu.priceChf")}
-                  <input
-                    className={fieldClass}
-                    name="price"
-                    type="number"
-                    min="0"
-                    step="0.05"
-                    required
-                  />
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold">
-                  {t("admin.menu.position")}
-                  <input
-                    className={fieldClass}
-                    name="sort_order"
-                    type="number"
-                    defaultValue={items.length}
-                  />
-                </label>
-                <label className="flex flex-col gap-0 text-sm font-semibold sm:col-span-2">
-                  {t("admin.menu.imageHint")}
-                  <span className="mt-1 text-xs font-normal text-muted">
-                    {t("admin.menu.imageSpec")}
-                  </span>
-                  <AdminFileInput
-                    className="mt-1.5"
-                    name="image"
-                    accept="image/jpeg,image/png,image/webp,image/avif"
-                  />
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input name="is_available" type="checkbox" defaultChecked />{" "}
-                  {t("admin.menu.available")}
-                </label>
-                <PendingSubmitButton
-                  className="sm:col-span-2"
-                  pendingLabel={t("admin.menu.creating")}
-                >
-                  {t("admin.menu.createItem")}
-                </PendingSubmitButton>
-              </form>
-            </details>
-          </Card>
+          <CreateMenuItemForm
+            categories={categories}
+            nextSortOrder={items.length}
+          />
 
           {!categories.length || !items.length ? (
             <Card>

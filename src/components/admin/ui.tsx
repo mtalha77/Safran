@@ -270,8 +270,16 @@ export function Notice({
   const resolve = (raw?: string) => {
     if (!raw) return undefined;
     const [code, ...rest] = raw.split("::");
-    if (code && code in messages.de) return t(code as MessageKey);
-    return rest.join("::") || raw;
+    const fallback = rest.join("::").trim();
+    if (code && code in messages.de) {
+      const translated = t(code as MessageKey);
+      // Keep concrete DB/service detail on generic "*_failed" codes.
+      if (fallback && /_failed$/.test(code) && fallback !== translated) {
+        return `${translated} — ${fallback}`;
+      }
+      return translated;
+    }
+    return fallback || raw;
   };
 
   const text = resolve(error) ?? resolve(message);

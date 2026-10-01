@@ -239,13 +239,75 @@ function menuItemFields(formData: FormData) {
   };
 }
 
-export async function createMenuItemAction(formData: FormData) {
-  await handle(
-    MENU_PATH,
-    () => menuService.createMenuItem(menuItemFields(formData), file(formData, "image")),
-    "admin.msg.itemCreated",
-    refreshMenu,
-  );
+export type CreateMenuItemState = {
+  error?: string;
+  stamp?: number;
+  values?: {
+    category_id: string;
+    number: string;
+    name: string;
+    description_de: string;
+    description_en: string;
+    price: string;
+    sort_order: string;
+    is_available: boolean;
+  };
+};
+
+function readCreateMenuItemDraft(
+  formData: FormData,
+): NonNullable<CreateMenuItemState["values"]> {
+  return {
+    category_id: text(formData, "category_id"),
+    number: String(formData.get("number") ?? "").trim(),
+    name: text(formData, "name"),
+    description_de: text(formData, "description_de"),
+    description_en: text(formData, "description_en"),
+    price: String(formData.get("price") ?? "").trim(),
+    sort_order: String(formData.get("sort_order") ?? "").trim(),
+    is_available: checked(formData, "is_available"),
+  };
+}
+
+export async function createMenuItemAction(
+  _prev: CreateMenuItemState,
+  formData: FormData,
+): Promise<CreateMenuItemState> {
+  const values = readCreateMenuItemDraft(formData);
+
+  try {
+    await menuService.createMenuItem(
+      {
+        categoryId: values.category_id,
+        itemNumber: numberValue(formData, "number"),
+        name: values.name,
+        descriptionDe: values.description_de,
+        descriptionEn: values.description_en,
+        price: numberValue(formData, "price"),
+        sortOrder: numberValue(formData, "sort_order"),
+        isActive: values.is_available,
+      },
+      file(formData, "image"),
+    );
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      if (error.code === "unauthenticated") {
+        redirect(`${LOGIN_PATH}?next=${encodeURIComponent(MENU_PATH)}`);
+      }
+      await signOut();
+      destination(LOGIN_PATH, "error", `admin.err.${error.code}::${error.message}`);
+    }
+    return {
+      error: isAppError(error)
+        ? `admin.err.${error.code}::${error.message}`
+        : "admin.err.generic",
+      values,
+      stamp: Date.now(),
+    };
+  }
+
+  refreshMenu();
+  destination(MENU_PATH, "message", "admin.msg.itemCreated");
 }
 
 export async function updateMenuItemAction(formData: FormData) {
