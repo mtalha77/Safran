@@ -76,7 +76,7 @@ export function CheckoutForm({
   // DB may still hold the old German paused_reason; always localize the banner.
   const closedLabel = isManualClosedMessage(closedMessage)
     ? t("checkout.closedDefault")
-    : closedMessage;
+    : (closedMessage ?? t("checkout.closedDefault"));
 
   useEffect(() => {
     const value = emailValue.trim().toLowerCase();
