@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { StorefrontSettings } from "@/backend/services/storefront.service";
 import { useLocale } from "@/lib/i18n/locale-context";
 import type { MessageKey } from "@/lib/i18n/messages";
+import { isManualClosedMessage } from "@/lib/manual-closed-message";
 import {
   formatOpeningRanges,
   groupOpeningHours,
@@ -113,7 +114,9 @@ export function ContactPageView({
           />
           {isOpen
             ? t("contact.openNow")
-            : (closedMessage || t("contact.closedNow"))}
+            : isManualClosedMessage(closedMessage)
+              ? t("contact.closedNow")
+              : closedMessage}
         </p>
       </header>
 

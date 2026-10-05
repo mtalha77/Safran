@@ -12,6 +12,7 @@ import { useCart } from "@/components/cart-provider";
 import { useLocale } from "@/lib/i18n/locale-context";
 import { localizedDishName } from "@/lib/i18n/menu-text";
 import { fetchLiveStoreAvailability } from "@/lib/live-store-status";
+import { isManualClosedMessage } from "@/lib/manual-closed-message";
 
 type Fulfillment = "delivery" | "pickup";
 
@@ -72,7 +73,10 @@ export function CheckoutForm({
   const [submitting, setSubmitting] = useState(false);
   const [idempotencyKey, setIdempotencyKey] = useState("");
   const emailCheckSeq = useRef(0);
-  const closedLabel = closedMessage || t("checkout.closedDefault");
+  // DB may still hold the old German paused_reason; always localize the banner.
+  const closedLabel = isManualClosedMessage(closedMessage)
+    ? t("checkout.closedDefault")
+    : closedMessage;
 
   useEffect(() => {
     const value = emailValue.trim().toLowerCase();
@@ -490,7 +494,7 @@ export function CheckoutForm({
           <h2 className="font-serif text-2xl text-ink">
             {t("checkout.paymentTitle")}
           </h2>
-          <div className="mt-3 space-y-3">
+          <div className="mt-3">
             <label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-sage bg-sage/8 p-4">
               <input
                 type="radio"
@@ -511,25 +515,6 @@ export function CheckoutForm({
                 </span>
               </span>
             </label>
-            <div
-              aria-disabled="true"
-              className="flex items-center gap-4 rounded-2xl border border-ink/10 bg-ink/[0.02] p-4 opacity-55"
-            >
-              <input
-                type="radio"
-                disabled
-                aria-label={t("checkout.payOnlineAria")}
-                className="h-4 w-4"
-              />
-              <span>
-                <span className="block text-sm font-semibold">
-                  {t("checkout.payOnline")}
-                </span>
-                <span className="mt-0.5 block text-xs text-muted">
-                  {t("checkout.payOnlineHint")}
-                </span>
-              </span>
-            </div>
           </div>
         </fieldset>
 

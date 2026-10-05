@@ -128,7 +128,7 @@ export const messages = {
 
     "checkout.closedTitle": "Derzeit geschlossen",
     "checkout.closedDefault":
-      "Das Restaurant nimmt derzeit keine Bestellungen an.",
+      "Online-Bestellungen sind derzeit geschlossen.",
     "checkout.howOrder": "Wie möchten Sie bestellen?",
     "checkout.delivery": "Lieferung",
     "checkout.deliveryHint": "Zu Ihnen nach Hause",

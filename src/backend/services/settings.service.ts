@@ -14,7 +14,8 @@ import type { Database, Json } from "@/types/database";
 
 type Db = SupabaseClient<Database>;
 
-const CLOSED_REASON = "Online-Bestellungen sind derzeit geschlossen.";
+/** Stable key — storefront translates this; do not store localized copy. */
+const CLOSED_REASON = "manual_closed";
 
 /** Unset settings are stored as an empty string (see `settingValue`). */
 function jsonString(value: Json | undefined): string | null {

@@ -107,7 +107,7 @@ export function AdminDashboardView({
 }) {
   const { t } = useLocale();
   const { formatMoney, formatDateTime, formatDate } = useAdminFormat();
-  const rangeRevenue = kpis.cashRevenue + kpis.onlineRevenue;
+  const rangeRevenue = kpis.cashRevenue;
   const avgOrder =
     kpis.transactions > 0 ? rangeRevenue / kpis.transactions : 0;
   const day = (key: string) => formatDate(`${key}T12:00:00Z`);
@@ -115,10 +115,6 @@ export function AdminDashboardView({
     range.from === range.to
       ? day(range.from)
       : `${day(range.from)} – ${day(range.to)}`;
-
-  const paidTotal = kpis.cashRevenue + kpis.onlineRevenue;
-  const cashPct = paidTotal > 0 ? (kpis.cashRevenue / paidTotal) * 100 : 0;
-  const onlinePct = paidTotal > 0 ? (kpis.onlineRevenue / paidTotal) * 100 : 0;
 
   return (
     <>
@@ -279,51 +275,6 @@ export function AdminDashboardView({
             </IconWrap>
           }
         />
-      </div>
-
-      <div className="mt-4">
-        <Card>
-          <div className="mb-5">
-            <h2 className="font-sans text-2xl font-semibold tracking-tight text-ink">
-              {t("admin.dash.payments")}
-            </h2>
-            <p className="mt-1 text-sm text-muted">
-              {t("admin.dash.paymentsHint")}
-            </p>
-          </div>
-          <div className="h-3 overflow-hidden rounded-full bg-[#ebe6df]">
-            <div className="flex h-full w-full">
-              <div
-                className="h-full bg-emerald-500"
-                style={{ width: `${cashPct}%` }}
-              />
-              <div
-                className="h-full bg-ink/55"
-                style={{ width: `${onlinePct}%` }}
-              />
-            </div>
-          </div>
-          <ul className="mt-5 space-y-3 text-sm">
-            <li className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                {t("admin.dash.cash")} {cashPct.toFixed(0)}%
-              </span>
-              <span className="font-semibold tabular-nums">
-                {formatMoney(kpis.cashRevenue)}
-              </span>
-            </li>
-            <li className="flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full bg-ink/50" />
-                {t("admin.dash.online")} {onlinePct.toFixed(0)}%
-              </span>
-              <span className="font-semibold tabular-nums">
-                {formatMoney(kpis.onlineRevenue)}
-              </span>
-            </li>
-          </ul>
-        </Card>
       </div>
 
       <Card className="mt-4">

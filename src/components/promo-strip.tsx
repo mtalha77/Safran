@@ -9,7 +9,6 @@ const HIGHLIGHTS: MessageKey[] = [
   "strip.fresh",
   "hero.alcohol",
   "hero.delivery",
-  "strip.cash",
 ];
 
 function StarIcon() {
